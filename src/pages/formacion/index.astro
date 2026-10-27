@@ -1,0 +1,407 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import CourseCard from '../../components/CourseCard.astro';
+import {
+  calendario,
+  categorias,
+  estadoPlazas,
+  formatoMes,
+  ordenarCursos,
+  rangoCorto,
+  type Categoria,
+} from '../../data/formacion';
+
+const cursos = ordenarCursos(await getCollection('cursos'));
+const convocatorias = calendario(cursos);
+
+// Agrupar convocatorias por mes
+const meses = new Map<string, typeof convocatorias>();
+for (const c of convocatorias) {
+  const key = c.inicio.toISOString().slice(0, 7);
+  meses.set(key, [...(meses.get(key) ?? []), c]);
+}
+
+const grupos = (Object.keys(categorias) as Categoria[])
+  .map((cat) => ({ cat, ...categorias[cat], cursos: cursos.filter((c) => c.data.categoria === cat) }))
+  .filter((g) => g.cursos.length > 0);
+
+const hayEjemplos = cursos.some((c) => c.data.ejemplo);
+---
+
+<BaseLayout
+  title="Formación"
+  description="Cursos de simulación táctica, primeros auxilios tácticos y uso de la fuerza no letal para Policía Local y Fuerzas y Cuerpos de Seguridad."
+>
+  <section class="page-hero">
+    <div class="container">
+      <p class="eyebrow">Formación</p>
+      <h1 class="h-xl">Cursos y <span class="accent">calendario</span></h1>
+      <p class="lead">
+        Simulación táctica inmersiva, primeros auxilios tácticos y uso de la fuerza no letal. Convocatorias abiertas o a
+        demanda en tus instalaciones.
+      </p>
+      {hayEjemplos && <p class="sample">Cursos y fechas de ejemplo · contenido provisional</p>}
+
+      <div class="filters" role="group" aria-label="Filtrar por área">
+        <button type="button" class="chip" aria-pressed="true" data-filter="todos">Todos</button>
+        {
+          grupos.map((g) => (
+            <button type="button" class="chip" aria-pressed="false" data-filter={g.cat}>
+              {g.label}
+            </button>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="section calendar-section" id="calendario">
+    <div class="container">
+      <div class="section-head">
+        <h2 class="h-lg">Próximas <span class="accent">convocatorias</span></h2>
+        <p class="muted">Selecciona una fecha para solicitar plaza.</p>
+      </div>
+
+      {
+        convocatorias.length === 0 ? (
+          <p class="muted">No hay convocatorias abiertas ahora mismo. Escríbenos y te avisamos de las próximas fechas.</p>
+        ) : (
+          <div class="months">
+            {[...meses].map(([key, items]) => (
+              <div class="month" data-month={key}>
+                <h3 class="month-title">{formatoMes(items[0].inicio)}</h3>
+                <ul class="rows">
+                  {items.map((c) => {
+                    const estado = estadoPlazas(c.plazasLibres);
+                    const full = estado.tone === 'full';
+                    return (
+                      <li class="row" data-categoria={c.curso.data.categoria}>
+                        <span class="date">{rangoCorto(c.inicio, c.fin)}</span>
+                        <div class="info">
+                          <a href={`/formacion/${c.curso.id}/`} class="title">
+                            {c.curso.data.titulo}
+                          </a>
+                          <span class="meta">
+                            {categorias[c.curso.data.categoria].label} · {c.lugar} · {c.curso.data.duracion}
+                          </span>
+                        </div>
+                        <span class:list={['pill', `pill--${estado.tone}`]}>{estado.label}</span>
+                        {full ? (
+                          <span class="cta-disabled">Completo</span>
+                        ) : (
+                          <a href={`/formacion/${c.curso.id}/?convocatoria=${c.id}`} class="btn btn-ghost small">
+                            Solicitar plaza
+                          </a>
+                        )}
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            ))}
+          </div>
+        )
+      }
+    </div>
+  </section>
+
+  <section class="section catalog">
+    <div class="container">
+      {
+        grupos.map((g) => (
+          <div class="group" id={g.cat} data-group={g.cat}>
+            <div class="group-head">
+              <div>
+                <p class="eyebrow">{g.partner}</p>
+                <h2 class="h-lg">{g.label}</h2>
+              </div>
+              <span class="count">
+                {g.cursos.length} {g.cursos.length === 1 ? 'curso' : 'cursos'}
+              </span>
+            </div>
+            <div class="grid">
+              {g.cursos.map((c) => (
+                <CourseCard curso={c} />
+              ))}
+            </div>
+          </div>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="custom">
+    <div class="container inner">
+      <div>
+        <h2 class="h-md">¿Necesitas un curso a medida para tu unidad?</h2>
+        <p class="muted">Adaptamos contenidos, fechas y lugar. Lo impartimos en tus instalaciones.</p>
+      </div>
+      <a href="/?interes=otro#contacto" class="btn btn-primary">Solicitar presupuesto <span class="arrow">→</span></a>
+    </div>
+  </section>
+</BaseLayout>
+
+<script>
+  const chips = document.querySelectorAll<HTMLButtonElement>('[data-filter]');
+
+  const apply = (filter: string) => {
+    chips.forEach((c) => c.setAttribute('aria-pressed', String(c.dataset.filter === filter)));
+    const match = (cat?: string) => filter === 'todos' || cat === filter;
+    document.querySelectorAll<HTMLElement>('[data-group]').forEach((g) => (g.hidden = !match(g.dataset.group)));
+    document.querySelectorAll<HTMLElement>('.row[data-categoria]').forEach((r) => (r.hidden = !match(r.dataset.categoria)));
+    // Ocultar meses que se quedan vacíos
+    document.querySelectorAll<HTMLElement>('[data-month]').forEach((m) => {
+      m.hidden = !m.querySelector('.row:not([hidden])');
+    });
+  };
+
+  chips.forEach((c) => c.addEventListener('click', () => apply(c.dataset.filter!)));
+
+  // Llegar con /formacion/#auxilios filtra directamente esa área
+  const fromHash = location.hash.slice(1);
+  if ([...chips].some((c) => c.dataset.filter === fromHash)) apply(fromHash);
+</script>
+
+<style>
+  .page-hero {
+    padding: calc(var(--header-h) + clamp(56px, 8vw, 104px)) 0 clamp(40px, 5vw, 64px);
+    background:
+      radial-gradient(ellipse at 85% 0%, rgba(247, 196, 0, 0.12), transparent 55%),
+      var(--bg);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .page-hero h1 {
+    margin-bottom: 1.25rem;
+  }
+
+  .sample {
+    display: inline-block;
+    font-family: var(--font-label);
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    padding: 4px 10px;
+    border: 1px dashed var(--yellow);
+    color: var(--yellow);
+  }
+
+  .filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 32px;
+  }
+
+  .chip {
+    font-family: var(--font-label);
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+    padding: 0.6em 1.1em;
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--line-strong);
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s, border-color 0.2s;
+  }
+
+  .chip:hover {
+    border-color: var(--yellow);
+  }
+
+  .chip[aria-pressed='true'] {
+    background: var(--yellow);
+    border-color: var(--yellow);
+    color: var(--ink);
+  }
+
+  .section-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 40px;
+  }
+
+  .section-head p {
+    margin: 0;
+  }
+
+  .months {
+    display: grid;
+    gap: 40px;
+  }
+
+  .month-title {
+    font-family: var(--font-label);
+    font-weight: 600;
+    letter-spacing: 0.22em;
+    font-size: 0.9rem;
+    color: var(--yellow);
+    padding-bottom: 12px;
+    border-bottom: 2px solid var(--yellow);
+  }
+
+  .rows {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .row {
+    display: grid;
+    grid-template-columns: 150px 1fr auto 170px;
+    gap: 20px;
+    align-items: center;
+    padding: 18px 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .row[hidden],
+  [data-month][hidden],
+  [data-group][hidden] {
+    display: none;
+  }
+
+  .date {
+    font-family: var(--font-display);
+    font-size: 1.9rem;
+    line-height: 1;
+    text-transform: uppercase;
+  }
+
+  .info {
+    display: grid;
+    gap: 2px;
+  }
+
+  .title {
+    font-weight: 600;
+    font-size: 1.1rem;
+    text-decoration: none;
+  }
+
+  .title:hover {
+    color: var(--yellow);
+  }
+
+  .meta {
+    color: var(--text-muted);
+    font-size: 0.925rem;
+  }
+
+  .btn.small {
+    padding: 0.65em 1em;
+    font-size: 0.85rem;
+  }
+
+  .cta-disabled {
+    font-family: var(--font-label);
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    color: var(--text-dim);
+    text-align: center;
+  }
+
+  .catalog {
+    background: var(--bg-2);
+    border-block: 1px solid var(--line);
+  }
+
+  .group + .group {
+    margin-top: clamp(64px, 8vw, 104px);
+  }
+
+  .group-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+
+  .count {
+    font-family: var(--font-label);
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    color: var(--text-dim);
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+
+  .custom {
+    padding-block: 56px;
+  }
+
+  .custom .inner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 32px;
+    flex-wrap: wrap;
+  }
+
+  .custom h2 {
+    margin-bottom: 8px;
+  }
+
+  .custom p {
+    margin: 0;
+  }
+
+  @media (max-width: 960px) {
+    .grid {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .row {
+      grid-template-columns: 110px 1fr auto;
+    }
+
+    .row .btn,
+    .cta-disabled {
+      grid-column: 2 / -1;
+      justify-self: start;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .grid {
+      grid-template-columns: 1fr;
+    }
+
+    .row {
+      grid-template-columns: 1fr auto;
+      gap: 8px 12px;
+    }
+
+    .date {
+      font-size: 1.6rem;
+    }
+
+    .info {
+      grid-column: 1 / -1;
+      grid-row: 2;
+    }
+
+    .row .btn,
+    .cta-disabled {
+      grid-column: 1 / -1;
+      grid-row: 3;
+    }
+  }
+</style>

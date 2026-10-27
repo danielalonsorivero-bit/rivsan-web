@@ -1,0 +1,128 @@
+---
+import { Image } from 'astro:assets';
+import { categorias, convocatoriasDe, rangoCorto, type Curso } from '../data/formacion';
+
+interface Props {
+  curso: Curso;
+}
+const { curso } = Astro.props;
+const { data } = curso;
+const proxima = convocatoriasDe(curso)[0];
+const href = `/formacion/${curso.id}/`;
+---
+
+<article class="course-card" data-categoria={data.categoria}>
+  <a href={href} class="media" tabindex="-1" aria-hidden="true">
+    <Image src={data.imagen} alt="" widths={[480, 800]} sizes="(max-width: 960px) 100vw, 33vw" />
+  </a>
+  <div class="body">
+    <span class="cat">{categorias[data.categoria].label}</span>
+    <h3><a href={href}>{data.titulo}</a></h3>
+    <p class="summary">{data.resumen}</p>
+    <dl class="facts">
+      <div><dt>Duración</dt><dd>{data.duracion}</dd></div>
+      <div><dt>Plazas</dt><dd>{data.asistentes}</dd></div>
+      <div>
+        <dt>Próxima</dt>
+        <dd>{proxima ? `${rangoCorto(proxima.inicio, proxima.fin)} · ${proxima.lugar}` : 'A demanda'}</dd>
+      </div>
+    </dl>
+    <a href={href} class="link-arrow">+ Info <span aria-hidden="true">→</span></a>
+  </div>
+</article>
+
+<style>
+  .course-card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    display: flex;
+    flex-direction: column;
+    transition: border-color 0.25s;
+  }
+
+  .course-card:hover {
+    border-color: rgba(247, 196, 0, 0.5);
+  }
+
+  .media {
+    display: block;
+    overflow: hidden;
+    border-bottom: 3px solid var(--yellow);
+  }
+
+  .media img {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    filter: grayscale(0.3);
+    transition: transform 0.5s ease, filter 0.5s ease;
+  }
+
+  .course-card:hover .media img {
+    transform: scale(1.04);
+    filter: grayscale(0);
+  }
+
+  .body {
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+  }
+
+  .cat {
+    font-family: var(--font-label);
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    font-size: 0.78rem;
+    color: var(--yellow);
+    margin-bottom: 8px;
+  }
+
+  h3 {
+    font-size: clamp(1.6rem, 2.2vw, 2rem);
+    margin-bottom: 10px;
+  }
+
+  h3 a {
+    text-decoration: none;
+  }
+
+  h3 a:hover {
+    color: var(--yellow);
+  }
+
+  .summary {
+    color: var(--text-muted);
+    font-size: 0.975rem;
+  }
+
+  .facts {
+    margin: 4px 0 20px;
+    padding-top: 14px;
+    border-top: 1px solid var(--line);
+    display: grid;
+    gap: 6px;
+    font-size: 0.925rem;
+  }
+
+  .facts div {
+    display: flex;
+    gap: 12px;
+  }
+
+  .facts dt {
+    width: 72px;
+    flex: none;
+    color: var(--text-dim);
+  }
+
+  .facts dd {
+    margin: 0;
+  }
+
+  .link-arrow {
+    margin-top: auto;
+  }
+</style>

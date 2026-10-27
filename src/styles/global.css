@@ -231,6 +231,32 @@ p {
   color: #fff;
 }
 
+/* Etiqueta de estado (plazas, etc.) */
+.pill {
+  font-family: var(--font-label);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  padding: 4px 9px;
+  border-radius: 999px;
+  border: 1px solid currentColor;
+  white-space: nowrap;
+  justify-self: end;
+}
+
+.pill--ok {
+  color: #7ed99a;
+}
+
+.pill--low {
+  color: var(--yellow);
+}
+
+.pill--full {
+  color: #ff6b6b;
+}
+
 /* Esquinas tipo visor (HUD) */
 .hud {
   position: relative;

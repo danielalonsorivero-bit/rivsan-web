@@ -1,0 +1,257 @@
+---
+// Formulario de solicitud reutilizable (demo general y solicitud de un curso).
+// TODO: conectar con el envío real cuando esté el alojamiento.
+
+// Valores enlazados desde otras secciones con ?interes=<valor>#contacto
+const interests = [
+  { value: 'demo', label: 'Demostración operativa del simulador' },
+  { value: 'jornada', label: 'Jornada formativa con simulador' },
+  { value: 'renting', label: 'Renting anual del simulador' },
+  { value: 'compra', label: 'Compra llave en mano' },
+  { value: 'auxilios', label: 'Curso de primeros auxilios tácticos' },
+  { value: 'fuerza', label: 'Curso de uso de la fuerza no letal' },
+  { value: 'ahorro', label: 'Estudio de ahorro / justificación económica' },
+  { value: 'tienda', label: 'Tienda de material táctico' },
+  { value: 'otro', label: 'Otro' },
+];
+
+interface Props {
+  /** Si se indica, el formulario es la solicitud de este curso */
+  curso?: { titulo: string; id: string };
+  /** Convocatorias para elegir (solo con `curso`) */
+  convocatorias?: { id: string; label: string; disabled?: boolean }[];
+  aDemanda?: boolean;
+  submitLabel?: string;
+}
+
+const { curso, convocatorias = [], aDemanda = true, submitLabel = 'Enviar solicitud' } = Astro.props;
+const uid = curso ? `f-${curso.id}` : 'f-demo';
+---
+
+<form class="form" data-request-form novalidate>
+  {
+    curso && (
+      <>
+        <input type="hidden" name="curso" value={curso.id} />
+        <label>
+          <span>Convocatoria *</span>
+          <select name="convocatoria" required>
+            {convocatorias.map((c) => (
+              <option value={c.id} disabled={c.disabled}>
+                {c.label}
+              </option>
+            ))}
+            {aDemanda && <option value="a-demanda">En nuestras instalaciones / otra fecha</option>}
+          </select>
+        </label>
+      </>
+    )
+  }
+
+  <div class="row">
+    <label>
+      <span>Nombre y apellidos *</span>
+      <input name="nombre" autocomplete="name" required />
+    </label>
+    <label>
+      <span>Cargo *</span>
+      <input name="cargo" placeholder="Ej. Intendente, Jefe de formación" required />
+    </label>
+  </div>
+
+  <label>
+    <span>Jefatura / Unidad *</span>
+    <input name="unidad" autocomplete="organization" placeholder="Ej. Policía Local de …" required />
+  </label>
+
+  <div class="row">
+    <label>
+      <span>Email profesional *</span>
+      <input name="email" type="email" autocomplete="email" required />
+    </label>
+    <label>
+      <span>Teléfono</span>
+      <input name="telefono" type="tel" autocomplete="tel" />
+    </label>
+  </div>
+
+  {
+    !curso && (
+      <label>
+        <span>¿Qué te interesa? *</span>
+        <select name="interes" required>
+          {interests.map((i) => (
+            <option value={i.value}>{i.label}</option>
+          ))}
+        </select>
+      </label>
+    )
+  }
+
+  <div class="row">
+    <label>
+      <span>{curso ? 'Nº de plazas que necesitas' : 'Nº de agentes a formar'}</span>
+      <input name="agentes" type="number" min="1" inputmode="numeric" />
+    </label>
+    {
+      !curso && (
+        <label>
+          <span>Fecha preferente</span>
+          <input name="fecha" type="date" />
+        </label>
+      )
+    }
+  </div>
+
+  <label>
+    <span>Mensaje</span>
+    <textarea
+      name="mensaje"
+      rows="4"
+      placeholder={curso ? 'Dudas sobre el curso, necesidades de tu unidad…' : 'Cuéntanos qué necesitas: espacio disponible, objetivos de formación…'}
+    ></textarea>
+  </label>
+
+  <label class="check">
+    <input type="checkbox" name="privacidad" required id={`${uid}-priv`} />
+    <span>He leído y acepto la <a href="#">política de privacidad</a>. *</span>
+  </label>
+
+  <button type="submit" class="btn btn-primary">{submitLabel} <span class="arrow">→</span></button>
+  <p class="status" role="status" aria-live="polite" data-status></p>
+</form>
+
+<script>
+  document.querySelectorAll<HTMLFormElement>('[data-request-form]').forEach((form) => {
+    const status = form.querySelector<HTMLElement>('[data-status]')!;
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      if (!form.checkValidity()) {
+        form.classList.add('was-validated');
+        status.textContent = 'Revisa los campos marcados.';
+        status.dataset.state = 'error';
+        form.querySelector<HTMLElement>(':invalid')?.focus();
+        return;
+      }
+      status.textContent = 'Gracias. Te contactaremos en menos de 48 horas laborables. (Maqueta: el formulario aún no envía.)';
+      status.dataset.state = 'ok';
+      form.reset();
+      form.classList.remove('was-validated');
+    });
+  });
+</script>
+
+<style>
+  .form {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    padding: clamp(24px, 4vw, 48px);
+    display: grid;
+    gap: 20px;
+  }
+
+  .row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+
+  label {
+    display: grid;
+    gap: 8px;
+  }
+
+  label > span {
+    font-family: var(--font-label);
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+  }
+
+  input,
+  select,
+  textarea {
+    width: 100%;
+    font: inherit;
+    font-size: 1rem;
+    color: var(--text);
+    background: var(--bg);
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius);
+    padding: 0.8em 0.9em;
+    transition: border-color 0.2s;
+    color-scheme: dark;
+  }
+
+  input::placeholder,
+  textarea::placeholder {
+    color: var(--text-dim);
+  }
+
+  input:focus,
+  select:focus,
+  textarea:focus {
+    outline: none;
+    border-color: var(--yellow);
+  }
+
+  .was-validated :invalid {
+    border-color: #e5484d;
+  }
+
+  .check {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+
+  .check input {
+    width: 20px;
+    height: 20px;
+    flex: none;
+    accent-color: var(--yellow);
+    margin-top: 2px;
+  }
+
+  .check span {
+    font-family: var(--font-body);
+    text-transform: none;
+    letter-spacing: 0;
+    font-size: 0.95rem;
+  }
+
+  .check a {
+    color: var(--yellow);
+  }
+
+  .form .btn {
+    justify-self: start;
+  }
+
+  .status {
+    margin: 0;
+    min-height: 1.5em;
+    font-size: 0.95rem;
+  }
+
+  .status[data-state='ok'] {
+    color: var(--yellow);
+  }
+
+  .status[data-state='error'] {
+    color: #ff6b6b;
+  }
+
+  @media (max-width: 560px) {
+    .row {
+      grid-template-columns: 1fr;
+    }
+
+    .form .btn {
+      justify-self: stretch;
+    }
+  }
+</style>

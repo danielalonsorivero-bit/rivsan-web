@@ -22,7 +22,7 @@ export type NavItem = { label: string; href: string; soon?: boolean };
 export const nav: NavItem[] = [
   { label: 'Simulador VR', href: '/#simulador' },
   { label: 'Módulos', href: '/#modulos' },
-  { label: 'Formación', href: '/#formacion' },
+  { label: 'Formación', href: '/formacion/' },
   { label: 'Normativa', href: '/#normativa' },
   { label: 'Contratación', href: '/#contratacion' },
   { label: 'Tienda', href: '/#tienda', soon: true },
