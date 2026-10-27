@@ -5,6 +5,7 @@ import bebasLatin from '@fontsource/bebas-neue/files/bebas-neue-latin-400-normal
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import Crosshair from '../components/Crosshair.astro';
+import Gate from '../components/Gate.astro';
 import { site } from '../data/site';
 import { indexable, organizationLd } from '../data/seo';
 import defaultShare from '../assets/img/hero-binomio.jpg';
@@ -59,6 +60,7 @@ const shareUrl = new URL(share.src, Astro.site);
     {jsonLd && <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />}
   </head>
   <body>
+    <Gate />
     <a class="skip-link" href="#main">Saltar al contenido</a>
     <Header />
     <main id="main">

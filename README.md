@@ -22,6 +22,19 @@ El panel solo existe en tu ordenador: escribe directamente en los archivos del p
 Los cambios se ven al momento en la web local; para publicarlos hay que compilar y subir `dist/` como siempre
 (y, si usas git, hacer commit de los archivos cambiados). El código está en `admin/` y se activa en `astro.config.mjs`.
 
+## Versión de muestra (GitHub Pages)
+
+Cada push a `main` publica la web en **https://danielalonsorivero-bit.github.io/rivsan-web/**
+(`.github/workflows/pages.yml`). Esa compilación:
+
+- va en la subcarpeta `/rivsan-web/` (`BASE_PATH`); `integrations/base-links.mjs` adapta los enlaces del HTML,
+- no se indexa (como siempre sin `PUBLIC_INDEXABLE`),
+- pide contraseña (`PUBLIC_PASSWORD_HASH`, SHA-256 de la contraseña; ver `src/components/Gate.astro`).
+  Es una barrera de cortesía, no seguridad: el repositorio es público. Para cambiarla:
+  `printf '%s' 'nueva' | shasum -a 256` y sustituir el valor en el workflow.
+
+En local (`npm run dev` / `npm run build` sin variables) la web va en la raíz y sin contraseña.
+
 ## Publicación
 
 - La web **no se indexa** en buscadores por defecto (`noindex` en las páginas y `Disallow: /` en `robots.txt`).

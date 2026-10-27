@@ -1,0 +1,137 @@
+---
+// Pantalla de contraseña para la versión de muestra (GitHub Pages).
+// Solo se incluye si se compila con PUBLIC_PASSWORD_HASH (SHA-256 en hexadecimal de la contraseña).
+// OJO: es una barrera de cortesía, no seguridad real: la web es estática y el código del repo es público.
+import Logo from './Logo.astro';
+const hash = import.meta.env.PUBLIC_PASSWORD_HASH;
+---
+
+{
+  hash && (
+    <>
+      <script is:inline define:vars={{ hash }}>
+        // Antes de pintar: si no hay acceso guardado, se bloquea la página
+        try {
+          if (localStorage.getItem('rivsan-gate') !== hash) document.documentElement.classList.add('locked');
+        } catch {
+          document.documentElement.classList.add('locked');
+        }
+      </script>
+      <div class="gate" data-gate data-hash={hash}>
+        <form class="gate-box" data-gate-form>
+          <Logo />
+          <p class="gate-label data">Versión de presentación · acceso restringido</p>
+          <label>
+            <span class="visually-hidden">Contraseña</span>
+            <input type="password" name="password" placeholder="Contraseña" autocomplete="current-password" required />
+          </label>
+          <p class="gate-error" data-gate-error hidden>
+            Contraseña incorrecta.
+          </p>
+          <button type="submit" class="btn btn-primary">
+            Entrar <span class="arrow">→</span>
+          </button>
+        </form>
+      </div>
+    </>
+  )
+}
+
+<script>
+  const gate = document.querySelector<HTMLElement>('[data-gate]');
+  if (gate) {
+    const form = gate.querySelector<HTMLFormElement>('[data-gate-form]')!;
+    const error = gate.querySelector<HTMLElement>('[data-gate-error]')!;
+    const input = form.querySelector('input')!;
+    if (document.documentElement.classList.contains('locked')) input.focus();
+
+    const sha256 = async (text: string) => {
+      const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
+      return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, '0')).join('');
+    };
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if ((await sha256(input.value)) === gate.dataset.hash) {
+        try {
+          localStorage.setItem('rivsan-gate', gate.dataset.hash!);
+        } catch {}
+        document.documentElement.classList.remove('locked');
+      } else {
+        error.hidden = false;
+        input.select();
+      }
+    });
+  }
+</script>
+
+<style is:global>
+  html.locked body > :not(.gate) {
+    display: none !important;
+  }
+
+  html.locked,
+  html.locked * {
+    cursor: auto !important;
+  }
+</style>
+
+<style>
+  .gate {
+    display: none;
+  }
+
+  :global(html.locked) .gate {
+    display: grid;
+    place-items: center;
+    min-height: 100svh;
+    padding: var(--gutter);
+    background:
+      radial-gradient(ellipse at 50% 0%, rgba(247, 196, 0, 0.12), transparent 60%),
+      var(--bg);
+  }
+
+  .gate-box {
+    width: min(100%, 380px);
+    display: grid;
+    gap: 16px;
+    padding: 36px 32px;
+    background: var(--surface);
+    border: 1px solid var(--line-strong);
+    border-top: 3px solid var(--yellow);
+  }
+
+  .gate-box :global(.logo) {
+    font-size: 19px;
+    margin-bottom: 8px;
+  }
+
+  .gate-label {
+    margin: 0;
+    font-size: 0.75rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  input {
+    width: 100%;
+    padding: 0.85em 1em;
+    font: inherit;
+    color: var(--text);
+    background: var(--bg);
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius);
+  }
+
+  input:focus {
+    outline: 2px solid var(--yellow);
+    outline-offset: 1px;
+  }
+
+  .gate-error {
+    margin: 0;
+    font-size: 0.9rem;
+    color: #ff6b6b;
+  }
+</style>
