@@ -16,6 +16,7 @@ npm run build    # genera dist/ para subir al alojamiento
 - `src/pages/simulador.astro`: página del simulador VR
 - `src/pages/nosotros.astro`: sobre RIVSAN, RE-liON y alianzas
 - `src/pages/normativa.astro`: marco legal y calculadora de ahorro
+- `src/pages/legal/`: aviso legal, privacidad y cookies (plantilla en `src/layouts/LegalLayout.astro`)
 - `src/pages/formacion/`: catálogo, calendario y fichas de cursos
 - `src/components/Crosshair.astro`: cursor de punto de mira (solo con ratón; sin estela con «reducir movimiento»)
 - `src/components/home/`: secciones de la home
@@ -42,7 +43,8 @@ así que hay que recompilar la web periódicamente (o al añadir fechas).
 
 ## Provisional
 
-- Teléfono, CIF, razón social y dirección en `src/data/site.ts` son **ficticios**.
+- Teléfono, CIF, razón social, dirección, registro mercantil y email de privacidad en `src/data/site.ts` son **ficticios**.
+- Los textos legales son un borrador: debe revisarlos un profesional y quitar el aviso de `LegalLayout.astro`. Si se añade analítica o la tienda usa cookies, hay que actualizar la política de cookies y poner un banner de consentimiento.
 - Los 6 cursos y sus fechas son de ejemplo (`ejemplo: true`).
 - Las fotos se sacaron del dossier comercial y del catálogo de RE-liON; habrá que sustituirlas.
 - El formulario aún no envía (falta el backend del alojamiento).

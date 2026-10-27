@@ -12,6 +12,9 @@ export const site = {
   legalName: 'RIVSAN Formación Táctica S.L.',
   cif: 'B00000000',
   address: 'Calle Ejemplo, 1 · 41001 Sevilla',
+  registry: 'Registro Mercantil de Sevilla, Tomo 0000, Folio 00, Hoja SE-000000',
+  privacyEmail: 'privacidad@rivsan.com',
+  domains: ['rivsan.es', 'rivsan.com'],
   partner: { name: 'RE-liON', url: 'https://re-lion.com/' },
 };
 

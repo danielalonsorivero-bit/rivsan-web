@@ -1,6 +1,7 @@
 ---
 // Formulario de solicitud reutilizable (demo general y solicitud de un curso).
 // TODO: conectar con el envío real cuando esté el alojamiento.
+import { site } from '../data/site';
 
 // Valores enlazados desde otras secciones con ?interes=<valor>#contacto
 const interests = [
@@ -114,8 +115,15 @@ const uid = curso ? `f-${curso.id}` : 'f-demo';
 
   <label class="check">
     <input type="checkbox" name="privacidad" required id={`${uid}-priv`} />
-    <span>He leído y acepto la <a href="#">política de privacidad</a>. *</span>
+    <span>He leído y acepto la <a href="/legal/privacidad/" target="_blank">política de privacidad</a>. *</span>
   </label>
+
+  <p class="gdpr">
+    <strong>Responsable:</strong> {site.legalName}. <strong>Finalidad:</strong> atender tu solicitud.
+    <strong>Legitimación:</strong> tu consentimiento. <strong>Destinatarios:</strong> no se ceden datos salvo
+    obligación legal. <strong>Derechos:</strong> acceso, rectificación, supresión y otros, en
+    <a href={`mailto:${site.privacyEmail}`}>{site.privacyEmail}</a>.
+  </p>
 
   <button type="submit" class="btn btn-primary">{submitLabel} <span class="arrow">→</span></button>
   <p class="status" role="status" aria-live="polite" data-status></p>
@@ -225,6 +233,22 @@ const uid = curso ? `f-${curso.id}` : 'f-demo';
 
   .check a {
     color: var(--yellow);
+  }
+
+  .gdpr {
+    margin: -8px 0 0;
+    font-size: 0.8rem;
+    line-height: 1.5;
+    color: var(--text-dim);
+  }
+
+  .gdpr strong {
+    color: var(--text-muted);
+    font-weight: 600;
+  }
+
+  .gdpr a {
+    color: var(--text-muted);
   }
 
   .form .btn {

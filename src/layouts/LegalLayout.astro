@@ -1,0 +1,254 @@
+---
+import BaseLayout from './BaseLayout.astro';
+
+interface Props {
+  title: string;
+  description: string;
+  updated: string; // fecha legible, p. ej. "27 de octubre de 2026"
+}
+const { title, description, updated } = Astro.props;
+
+const pages = [
+  { href: '/legal/aviso-legal/', label: 'Aviso legal' },
+  { href: '/legal/privacidad/', label: 'Privacidad' },
+  { href: '/legal/cookies/', label: 'Cookies' },
+];
+const current = Astro.url.pathname.replace(/\/?$/, '/');
+---
+
+<BaseLayout title={title} description={description}>
+  <section class="legal-hero">
+    <div class="container">
+      <p class="eyebrow">Información legal</p>
+      <h1 class="h-lg">{title}</h1>
+      <p class="updated">Última actualización: {updated}</p>
+      <!-- Quitar este aviso cuando un profesional haya revisado los textos y los datos sean reales -->
+      <p class="draft">
+        Borrador con datos ficticios. Debe revisarlo un profesional antes de publicar la web.
+      </p>
+    </div>
+  </section>
+
+  <section class="section legal-body">
+    <div class="container layout">
+      <nav class="legal-nav" aria-label="Documentos legales">
+        <ul>
+          {
+            pages.map((p) => (
+              <li>
+                <a href={p.href} aria-current={current === p.href ? 'page' : undefined}>
+                  {p.label}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </nav>
+      <article class="prose">
+        <slot />
+      </article>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .legal-hero {
+    padding: calc(var(--header-h) + clamp(48px, 6vw, 88px)) 0 40px;
+    border-bottom: 1px solid var(--line);
+    background:
+      radial-gradient(ellipse at 85% 0%, rgba(247, 196, 0, 0.08), transparent 55%),
+      var(--bg);
+  }
+
+  .legal-hero h1 {
+    margin-bottom: 12px;
+  }
+
+  .updated {
+    color: var(--text-dim);
+    font-size: 0.95rem;
+    margin: 0 0 20px;
+  }
+
+  .draft {
+    display: inline-block;
+    margin: 0;
+    font-family: var(--font-label);
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    padding: 6px 12px;
+    border: 1px dashed var(--yellow);
+    color: var(--yellow);
+  }
+
+  .layout {
+    display: grid;
+    grid-template-columns: 220px minmax(0, 760px);
+    gap: clamp(32px, 6vw, 88px);
+    align-items: start;
+  }
+
+  .legal-nav {
+    position: sticky;
+    top: calc(var(--header-h) + 24px);
+  }
+
+  .legal-nav ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-left: 1px solid var(--line);
+  }
+
+  .legal-nav a {
+    display: block;
+    padding: 10px 0 10px 18px;
+    margin-left: -1px;
+    border-left: 2px solid transparent;
+    font-family: var(--font-label);
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    text-decoration: none;
+  }
+
+  .legal-nav a:hover {
+    color: var(--text);
+  }
+
+  .legal-nav a[aria-current='page'] {
+    color: var(--yellow);
+    border-left-color: var(--yellow);
+  }
+
+  /* Texto legal: legibilidad por encima de todo */
+  .prose {
+    color: #cfcfc9;
+  }
+
+  .prose :global(h2) {
+    font-size: clamp(1.75rem, 2.6vw, 2.25rem);
+    color: var(--text);
+    margin: 2em 0 0.6em;
+    scroll-margin-top: calc(var(--header-h) + 16px);
+  }
+
+  .prose :global(h2:first-child) {
+    margin-top: 0;
+  }
+
+  .prose :global(h3) {
+    font-family: var(--font-label);
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    font-size: 1.05rem;
+    color: var(--text);
+    margin: 1.6em 0 0.5em;
+  }
+
+  .prose :global(a) {
+    color: var(--yellow);
+  }
+
+  .prose :global(strong) {
+    color: var(--text);
+  }
+
+  .prose :global(ul) {
+    padding-left: 1.2em;
+    margin: 0 0 1em;
+  }
+
+  .prose :global(li) {
+    margin-bottom: 0.4em;
+  }
+
+  .prose :global(li::marker) {
+    color: var(--yellow);
+  }
+
+  .prose :global(dl) {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: 10px 24px;
+    margin: 0 0 1.5em;
+    padding: 20px 24px;
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+  }
+
+  .prose :global(dt) {
+    color: var(--text-dim);
+  }
+
+  .prose :global(dd) {
+    margin: 0;
+    color: var(--text);
+  }
+
+  .prose :global(table) {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0 0 1.5em;
+    font-size: 0.95rem;
+  }
+
+  .prose :global(th),
+  .prose :global(td) {
+    text-align: left;
+    padding: 10px 12px 10px 0;
+    border-bottom: 1px solid var(--line);
+    vertical-align: top;
+  }
+
+  .prose :global(th) {
+    font-family: var(--font-label);
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    color: var(--text-dim);
+  }
+
+  @media (max-width: 860px) {
+    .layout {
+      grid-template-columns: 1fr;
+    }
+
+    .legal-nav {
+      position: static;
+    }
+
+    .legal-nav ul {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px 20px;
+      border-left: 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .legal-nav a {
+      padding: 10px 0;
+      margin: 0 0 -1px;
+      border-left: 0;
+      border-bottom: 2px solid transparent;
+    }
+
+    .legal-nav a[aria-current='page'] {
+      border-bottom-color: var(--yellow);
+    }
+
+    .prose :global(dl) {
+      grid-template-columns: 1fr;
+      gap: 2px;
+    }
+
+    .prose :global(dd) {
+      margin-bottom: 10px;
+    }
+  }
+</style>

@@ -1,0 +1,95 @@
+---
+import LegalLayout from '../../layouts/LegalLayout.astro';
+import { site } from '../../data/site';
+---
+
+<LegalLayout
+  title="Aviso legal"
+  description="Aviso legal y condiciones de uso del sitio web de RIVSAN."
+  updated="27 de octubre de 2026"
+>
+  <h2>1. Datos identificativos</h2>
+  <p>
+    En cumplimiento del artículo 10 de la Ley 34/2002, de 11 de julio, de Servicios de la Sociedad de la Información y
+    de Comercio Electrónico (LSSI-CE), se informa de los datos del titular de este sitio web:
+  </p>
+  <dl>
+    <dt>Titular</dt>
+    <dd>{site.legalName}</dd>
+    <dt>Nombre comercial</dt>
+    <dd>{site.name}</dd>
+    <dt>CIF</dt>
+    <dd>{site.cif}</dd>
+    <dt>Domicilio</dt>
+    <dd>{site.address}</dd>
+    <dt>Registro</dt>
+    <dd>{site.registry}</dd>
+    <dt>Email</dt>
+    <dd><a href={`mailto:${site.email}`}>{site.email}</a></dd>
+    <dt>Teléfono</dt>
+    <dd>{site.phone}</dd>
+    <dt>Dominios</dt>
+    <dd>{site.domains.join(' · ')}</dd>
+  </dl>
+
+  <h2>2. Objeto</h2>
+  <p>
+    Este sitio web tiene por objeto informar sobre los productos y servicios de {site.name}: soluciones de simulación y
+    entrenamiento táctico inmersivo como socio exclusivo de RE-liON en España, jornadas y cursos de formación para
+    Fuerzas y Cuerpos de Seguridad, y facilitar el contacto para solicitar demostraciones, información o presupuestos.
+  </p>
+  <p>
+    La información publicada tiene carácter orientativo. Las condiciones concretas de cada servicio se establecen en la
+    propuesta o contrato correspondiente.
+  </p>
+
+  <h2>3. Condiciones de uso</h2>
+  <p>
+    El acceso a este sitio web atribuye la condición de usuario e implica la aceptación de este aviso legal. El usuario se
+    compromete a hacer un uso adecuado de los contenidos y a no emplearlos para:
+  </p>
+  <ul>
+    <li>Realizar actividades ilícitas o contrarias a la buena fe y al orden público.</li>
+    <li>Introducir virus o cualquier otro sistema que pueda dañar el sitio o los sistemas de terceros.</li>
+    <li>Suplantar la identidad de otra persona o entidad al utilizar los formularios de contacto.</li>
+  </ul>
+
+  <h2>4. Propiedad intelectual e industrial</h2>
+  <p>
+    Los contenidos de este sitio web (textos, diseño, logotipos, imágenes y código) son titularidad de {site.legalName}
+    o de terceros que han autorizado su uso, y están protegidos por la normativa de propiedad intelectual e industrial.
+  </p>
+  <p>
+    RE-liON y sus logotipos son marcas de su titular y se utilizan en el marco de la relación de socio exclusivo en
+    España. Las denominaciones de otras entidades se mencionan con fines informativos.
+  </p>
+  <p>
+    Queda prohibida la reproducción, distribución o transformación de los contenidos sin autorización expresa del
+    titular.
+  </p>
+
+  <h2>5. Responsabilidad</h2>
+  <p>
+    {site.name} no se hace responsable de los daños derivados de interrupciones del servicio, errores técnicos o del uso
+    que los usuarios hagan de la información publicada. Las cifras y resultados que se muestran, incluida la
+    calculadora de ahorro, son estimaciones orientativas y no constituyen una oferta vinculante.
+  </p>
+
+  <h3>Enlaces externos</h3>
+  <p>
+    Este sitio puede contener enlaces a webs de terceros. {site.name} no controla su contenido ni se responsabiliza de
+    él. El enlace no implica relación con dichos terceros más allá de la indicada expresamente.
+  </p>
+
+  <h2>6. Protección de datos y cookies</h2>
+  <p>
+    El tratamiento de los datos personales se describe en la <a href="/legal/privacidad/">política de privacidad</a> y
+    el uso de cookies, en la <a href="/legal/cookies/">política de cookies</a>.
+  </p>
+
+  <h2>7. Legislación aplicable y jurisdicción</h2>
+  <p>
+    Este aviso legal se rige por la legislación española. Para cualquier controversia, las partes se someten a los
+    juzgados y tribunales de Sevilla, salvo que la normativa aplicable disponga otro fuero.
+  </p>
+</LegalLayout>

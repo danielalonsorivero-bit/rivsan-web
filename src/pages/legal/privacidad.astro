@@ -1,0 +1,120 @@
+---
+import LegalLayout from '../../layouts/LegalLayout.astro';
+import { site } from '../../data/site';
+---
+
+<LegalLayout
+  title="Política de privacidad"
+  description="Cómo trata RIVSAN los datos personales de quienes contactan a través de su web."
+  updated="27 de octubre de 2026"
+>
+  <p>
+    Esta política explica cómo tratamos los datos personales que nos facilitas a través de este sitio web, conforme al
+    Reglamento (UE) 2016/679 (RGPD) y a la Ley Orgánica 3/2018, de Protección de Datos Personales y garantía de los
+    derechos digitales (LOPDGDD).
+  </p>
+
+  <h2>1. Responsable del tratamiento</h2>
+  <dl>
+    <dt>Responsable</dt>
+    <dd>{site.legalName}</dd>
+    <dt>CIF</dt>
+    <dd>{site.cif}</dd>
+    <dt>Domicilio</dt>
+    <dd>{site.address}</dd>
+    <dt>Contacto privacidad</dt>
+    <dd><a href={`mailto:${site.privacyEmail}`}>{site.privacyEmail}</a></dd>
+  </dl>
+
+  <h2>2. Qué datos tratamos</h2>
+  <p>Solo los que nos facilitas en los formularios de la web:</p>
+  <ul>
+    <li><strong>Identificación y contacto:</strong> nombre y apellidos, cargo, jefatura o unidad, email profesional y teléfono.</li>
+    <li><strong>Datos de la solicitud:</strong> servicio o curso de interés, convocatoria elegida, número de agentes o plazas, fecha preferente, mensaje y, si lo envías, el resultado de la calculadora de ahorro.</li>
+  </ul>
+  <p>
+    No solicitamos categorías especiales de datos. Te pedimos que no las incluyas en el campo de mensaje.
+  </p>
+
+  <h2>3. Para qué y con qué base legal</h2>
+  <table>
+    <thead>
+      <tr>
+        <th scope="col">Finalidad</th>
+        <th scope="col">Base legal</th>
+        <th scope="col">Conservación</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Responder a solicitudes de información, demostraciones y presupuestos.</td>
+        <td>Tu consentimiento (art. 6.1.a RGPD) y la aplicación de medidas precontractuales a petición tuya (art. 6.1.b).</td>
+        <td>Hasta resolver la solicitud y, después, un máximo de 2 años para atender seguimientos.</td>
+      </tr>
+      <tr>
+        <td>Gestionar la inscripción y la organización de cursos y jornadas.</td>
+        <td>Ejecución del contrato o de medidas precontractuales (art. 6.1.b RGPD).</td>
+        <td>Mientras dure la relación y los plazos legales de prescripción.</td>
+      </tr>
+      <tr>
+        <td>Cumplir obligaciones legales (fiscales, contables, de facturación).</td>
+        <td>Obligación legal (art. 6.1.c RGPD).</td>
+        <td>Los plazos que marque la normativa aplicable.</td>
+      </tr>
+    </tbody>
+  </table>
+  <p>
+    No tomamos decisiones automatizadas ni elaboramos perfiles con tus datos. No te enviaremos comunicaciones
+    comerciales sin tu consentimiento previo y expreso.
+  </p>
+
+  <h2>4. Destinatarios</h2>
+  <p>No cedemos tus datos a terceros, salvo obligación legal. Pueden acceder a ellos:</p>
+  <ul>
+    <li>
+      <strong>Entidades colaboradoras que imparten un curso</strong> (por ejemplo, Iberotac en los cursos de primeros
+      auxilios tácticos), solo cuando te inscribas en él y en la medida necesaria para organizarlo.
+    </li>
+    <li>
+      <strong>Proveedores que nos prestan servicios</strong> (alojamiento web, correo electrónico), como encargados del
+      tratamiento y con contrato conforme al artículo 28 del RGPD.
+    </li>
+  </ul>
+  <p>
+    No está previsto realizar transferencias internacionales de datos. Si algún proveedor estuviera fuera del Espacio
+    Económico Europeo, se aplicarían las garantías del capítulo V del RGPD.
+  </p>
+
+  <h2>5. Tus derechos</h2>
+  <p>Puedes ejercer en cualquier momento los derechos de:</p>
+  <ul>
+    <li>Acceso, rectificación y supresión de tus datos.</li>
+    <li>Limitación del tratamiento y oposición.</li>
+    <li>Portabilidad.</li>
+    <li>Retirar el consentimiento prestado, sin que afecte a la licitud del tratamiento anterior.</li>
+  </ul>
+  <p>
+    Escríbenos a <a href={`mailto:${site.privacyEmail}`}>{site.privacyEmail}</a> o a la dirección postal indicada,
+    indicando el derecho que quieres ejercer. Si consideras que no hemos atendido correctamente tu solicitud, puedes
+    presentar una reclamación ante la Agencia Española de Protección de Datos
+    (<a href="https://www.aepd.es" target="_blank" rel="noopener">www.aepd.es</a>).
+  </p>
+
+  <h2>6. Exactitud de los datos</h2>
+  <p>
+    Garantizas que los datos facilitados son veraces y que, si incluyes datos de otras personas de tu unidad, cuentas con
+    su autorización para comunicárnoslos.
+  </p>
+
+  <h2>7. Seguridad</h2>
+  <p>
+    Aplicamos medidas técnicas y organizativas adecuadas al riesgo para proteger tus datos frente a pérdida, acceso no
+    autorizado o alteración, incluida la transmisión cifrada (HTTPS) de los formularios.
+  </p>
+
+  <h2>8. Cambios en esta política</h2>
+  <p>
+    Podemos actualizar esta política para adaptarla a cambios legales o de los servicios. La fecha de la última
+    actualización figura al principio de la página.
+  </p>
+</LegalLayout>
