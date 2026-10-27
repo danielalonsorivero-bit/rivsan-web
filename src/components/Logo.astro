@@ -43,11 +43,14 @@ const { variant = 'light', showTagline = true, intro = false, class: className }
       pathLength="1"
       d="M0,76.649L11.533,69.862L0.777,63.688L-10.816,70.321L0,76.649ZM-66.485,65.594L-55.972,59.577L-55.964,45.917L-66.582,52.061L-66.485,65.594ZM-12.072,19.39L-12.119,8.185L-23.727,1.366L-23.853,12.699L-12.072,19.39ZM-11.994,40.808L-7.157,43.821L-7.169,53.492L13.978,65.746L13.903,51.99L-26.387,28.903L-37.198,35.078L-37.405,29.669L-28.688,24.743L-28.678,1.231L-40.455,8.078L-40.446,53.338L-29.442,59.925L-34.255,62.646L-42.913,57.563L-64.152,69.888L-52.567,76.625L-12.091,53.421L-11.994,40.808ZM-20.495,70.458L-4.031,60.9L-9.602,57.623L-52.56,82.36L-71.55,71.141L-71.466,49.247L-51.043,37.511L-51.054,56.53L-45.49,53.356L-45.483,5.291L-26.436,-5.711L-7.175,5.409L-7.178,27.857L-23.655,18.376L-23.85,24.665L18.798,49.198L18.931,71.175L0.058,82.349L-20.495,70.458Z"
     ></path>
-    <path
-      class="logo-dot"
-      transform="translate(-32.878 44.892)"
-      d="M0,0.482C0.119,-2.24 1.434,-4.211 2.914,-5.213C5.105,-6.697 7.652,-6.822 9.789,-5.511C12.744,-3.696 13.897,-0.571 12.741,2.559C11.708,5.357 8.875,7.304 5.619,6.883C2.892,6.531 -0.152,3.97 0,0.482"
-    ></path>
+    <!-- La posición va en el <g>: si fuera en el propio punto, la animación CSS de escala la anularía -->
+    <g transform="translate(-32.878 44.892)">
+      <circle class="logo-ping" cx="6.9" cy="0.3" r="7"></circle>
+      <path
+        class="logo-dot"
+        d="M0,0.482C0.119,-2.24 1.434,-4.211 2.914,-5.213C5.105,-6.697 7.652,-6.822 9.789,-5.511C12.744,-3.696 13.897,-0.571 12.741,2.559C11.708,5.357 8.875,7.304 5.619,6.883C2.892,6.531 -0.152,3.97 0,0.482"
+      ></path>
+    </g>
   </svg>
   <svg class="logo-type" viewBox={showTagline ? '187 176 167 45' : '187 176 167 34'} aria-hidden="true">
       <path class="logo-ink" transform="translate(200.2788 191.6957)" d="M0,2.969C4.86,2.969 7.649,0.899 7.649,-3.376C7.649,-7.515 4.86,-9.495 0,-9.495L-7.47,-9.495L-7.47,2.969L0,2.969ZM1.44,7.694C0.99,7.739 0.495,7.739 0,7.739L-7.47,7.739L-7.47,17.234L-12.78,17.234L-12.78,-14.265L0,-14.265C8.055,-14.265 12.689,-10.35 12.689,-3.51C12.689,1.529 10.35,5.084 6.165,6.704L13.229,17.234L7.2,17.234L1.44,7.694Z"></path>
@@ -104,6 +107,7 @@ const { variant = 'light', showTagline = true, intro = false, class: className }
     width: 2.6em;
     height: auto;
     flex: none;
+    overflow: visible; /* el pulso y la onda del punto pueden salirse del dibujo */
   }
 
   .logo--light .logo-shape {
@@ -116,6 +120,13 @@ const { variant = 'light', showTagline = true, intro = false, class: className }
 
   .logo-dot {
     fill: var(--yellow);
+  }
+
+  .logo-ping {
+    fill: none;
+    stroke: var(--yellow);
+    stroke-width: 1.2;
+    opacity: 0;
   }
 
   .logo-type {
@@ -149,7 +160,13 @@ const { variant = 'light', showTagline = true, intro = false, class: className }
   :global(html.logo-intro) .logo--intro .logo-dot {
     transform-box: fill-box;
     transform-origin: center;
-    animation: logo-dot 0.6s 0.95s cubic-bezier(0.3, 1.6, 0.5, 1) both;
+    animation: logo-dot 0.9s 0.9s ease-out both;
+  }
+
+  :global(html.logo-intro) .logo--intro .logo-ping {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: logo-ping 0.8s 1.15s ease-out forwards; /* invisible hasta que empieza */
   }
 
   :global(html.logo-intro) .logo--intro .logo-type {
@@ -178,18 +195,38 @@ const { variant = 'light', showTagline = true, intro = false, class: className }
     }
   }
 
+  /* El punto nace en su sitio y late hasta asentarse */
   @keyframes logo-dot {
     0% {
       transform: scale(0);
       filter: drop-shadow(0 0 0 transparent);
     }
-    60% {
-      transform: scale(1.6);
-      filter: drop-shadow(0 0 4px #f7c400);
+    35% {
+      transform: scale(1.45);
+      filter: drop-shadow(0 0 3px #f7c400);
+    }
+    55% {
+      transform: scale(0.85);
+    }
+    75% {
+      transform: scale(1.12);
+      filter: drop-shadow(0 0 2px #f7c400);
     }
     100% {
       transform: scale(1);
       filter: drop-shadow(0 0 0 transparent);
+    }
+  }
+
+  /* Onda de «blanco fijado» que sale del punto y se desvanece */
+  @keyframes logo-ping {
+    0% {
+      transform: scale(0.6);
+      opacity: 0.9;
+    }
+    100% {
+      transform: scale(2.6);
+      opacity: 0;
     }
   }
 
