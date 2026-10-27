@@ -23,7 +23,7 @@ export const nav: NavItem[] = [
   { label: 'Simulador VR', href: '/simulador/' },
   { label: 'Módulos', href: '/simulador/#modulos' },
   { label: 'Formación', href: '/formacion/' },
-  { label: 'Normativa', href: '/#normativa' },
+  { label: 'Normativa', href: '/normativa/' },
   { label: 'Contratación', href: '/#contratacion' },
   { label: 'Tienda', href: '/#tienda', soon: true },
 ];

@@ -1,0 +1,731 @@
+---
+import { Image } from 'astro:assets';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import DemoForm from '../components/DemoForm.astro';
+import galeria from '../assets/img/galeria-tradicional.jpg';
+
+const laws = [
+  {
+    ref: 'Ley 6/2023',
+    title: 'Formación continua obligatoria',
+    text: 'Establece la formación continua obligatoria para las Policías Locales de Andalucía y regula los centros y las actividades formativas.',
+    points: ['La formación pasa a ser una obligación, no una opción', 'Exige planificar y acreditar actividades formativas', 'Regula qué centros y actividades son válidos'],
+  },
+  {
+    ref: 'Decreto 8/2026',
+    title: 'Ingreso, formación y promoción',
+    text: 'Publicado en el BOJA el 3 de febrero de 2026 y en vigor desde el 23 de febrero de 2026. Regula el ingreso, la formación, la promoción y la convocatoria unificada de las Policías Locales de Andalucía.',
+    points: ['Convocatorias unificadas de ingreso', 'Formación vinculada a la promoción', 'En vigor desde el 23/02/2026'],
+  },
+];
+
+// Campos de la calculadora. Los valores por defecto reproducen el escenario del dossier (~21.500 €/año).
+const fields = [
+  { id: 'agentes', label: 'Agentes a formar', unit: 'agentes', value: 40, min: 1, max: 1000, step: 1 },
+  { id: 'sesiones', label: 'Sesiones de tiro por agente y año', unit: 'sesiones', value: 3, min: 1, max: 24, step: 1 },
+  { id: 'cartuchos', label: 'Cartuchos por agente y sesión', unit: 'cartuchos', value: 50, min: 0, max: 500, step: 5 },
+  { id: 'precio', label: 'Precio por cartucho', unit: '€', value: 0.35, min: 0, max: 2, step: 0.01 },
+  { id: 'galeria', label: 'Alquiler de galería externa al año', unit: '€', value: 18000, min: 0, max: 200000, step: 500 },
+  { id: 'dietas', label: 'Dietas y desplazamiento por agente y sesión', unit: '€', value: 25, min: 0, max: 500, step: 5 },
+  { id: 'horas', label: 'Horas fuera de servicio por agente y sesión', unit: 'h', value: 4, min: 0, max: 24, step: 0.5 },
+];
+---
+
+<BaseLayout
+  title="Normativa y ahorro"
+  description="Ley 6/2023 y Decreto 8/2026: la formación continua de las Policías Locales de Andalucía es obligatoria. Calcula cuánto cuesta tu modelo actual y cuánto puedes ahorrar."
+>
+  <section class="page-hero">
+    <div class="container hero-grid">
+      <div>
+        <p class="eyebrow">Normativa y justificación económica</p>
+        <h1 class="h-xl">La formación <span class="accent">ya no es opcional</span></h1>
+        <p class="lead">
+          La normativa andaluza convierte la formación continua de las Policías Locales en una obligación. El reto ya no es
+          si formar, sino cómo hacerlo con más frecuencia y menos coste.
+        </p>
+        <div class="actions">
+          <a href="#calculadora" class="btn btn-primary">Calcular mi ahorro <span class="arrow">→</span></a>
+          <a href="#marco-legal" class="btn btn-ghost">Ver marco legal</a>
+        </div>
+      </div>
+      <div class="hero-media hud">
+        <Image src={galeria} alt="Agentes de Policía Local practicando tiro en una galería tradicional" widths={[500, 900]} sizes="(max-width: 960px) 100vw, 40vw" loading="eager" />
+      </div>
+    </div>
+  </section>
+
+  <!-- Marco legal -->
+  <section class="section" id="marco-legal">
+    <div class="container">
+      <div class="head reveal">
+        <p class="eyebrow">Marco legal · Andalucía</p>
+        <h2 class="h-lg">Lo que dice <span class="accent">la norma</span></h2>
+      </div>
+      <div class="laws">
+        {
+          laws.map((l) => (
+            <article class="law reveal">
+              <span class="law-ref">{l.ref}</span>
+              <h3 class="h-md">{l.title}</h3>
+              <p class="muted">{l.text}</p>
+              <ul>
+                {l.points.map((p) => (
+                  <li>{p}</li>
+                ))}
+              </ul>
+            </article>
+          ))
+        }
+      </div>
+      <p class="disclaimer">
+        Resumen orientativo. Para cualquier decisión, consulta el texto oficial publicado en el BOJA.
+      </p>
+    </div>
+  </section>
+
+  <!-- Calculadora -->
+  <section class="section calc-section" id="calculadora">
+    <div class="container">
+      <div class="head reveal">
+        <p class="eyebrow">Calculadora de ahorro</p>
+        <h2 class="h-lg">¿Cuánto te cuesta <span class="accent">seguir igual</span>?</h2>
+        <p class="lead">
+          Introduce los datos de tu jefatura. Calculamos el coste anual del modelo tradicional y lo que dejarías de gastar
+          al trasladar parte del entrenamiento al simulador, en tus propias instalaciones.
+        </p>
+      </div>
+
+      <div class="calc" data-calc>
+        <form class="calc-inputs" aria-label="Datos de tu jefatura" onsubmit="return false">
+          {
+            fields.map((f) => (
+              <label class="field">
+                <span class="field-label">{f.label}</span>
+                <span class="field-input">
+                  <input
+                    type="number"
+                    name={f.id}
+                    value={f.value}
+                    min={f.min}
+                    max={f.max}
+                    step={f.step}
+                    inputmode="decimal"
+                  />
+                  <span class="field-unit">{f.unit}</span>
+                </span>
+              </label>
+            ))
+          }
+
+          <label class="field field--range">
+            <span class="field-label">
+              Entrenamiento que pasa al simulador
+              <output name="pctOut" for="pct">50 %</output>
+            </span>
+            <input type="range" name="pct" id="pct" min="0" max="100" step="5" value="50" />
+            <span class="range-scale" aria-hidden="true"><span>0 %</span><span>100 %</span></span>
+          </label>
+        </form>
+
+        <div class="calc-results" aria-live="polite">
+          <div class="kpis">
+            <div class="kpi">
+              <span class="kpi-label">Coste anual actual</span>
+              <span class="kpi-value" data-out="actual">—</span>
+            </div>
+            <div class="kpi kpi--accent">
+              <span class="kpi-label">Ahorro potencial al año</span>
+              <span class="kpi-value" data-out="ahorro">—</span>
+            </div>
+            <div class="kpi">
+              <span class="kpi-label">Horas de servicio recuperadas</span>
+              <span class="kpi-value" data-out="horas">—</span>
+            </div>
+          </div>
+
+          <figure class="chart">
+            <figcaption>Coste directo anual (€)</figcaption>
+            <div class="bars">
+              <div class="bar-row">
+                <span class="bar-name">Modelo actual</span>
+                <div class="bar-track">
+                  <div class="bar bar--actual" data-bar="actual" title=""></div>
+                </div>
+                <span class="bar-value" data-out="actual-short">—</span>
+              </div>
+              <div class="bar-row">
+                <span class="bar-name">Con simulador</span>
+                <div class="bar-track">
+                  <div class="bar bar--sim" data-bar="sim" title=""></div>
+                </div>
+                <span class="bar-value" data-out="sim-short">—</span>
+              </div>
+            </div>
+          </figure>
+
+          <table class="breakdown">
+            <caption class="visually-hidden">Desglose del coste anual</caption>
+            <thead>
+              <tr>
+                <th scope="col">Concepto</th>
+                <th scope="col">Actual</th>
+                <th scope="col">Con simulador</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><th scope="row">Alquiler de galería</th><td data-out="galeria-a"></td><td data-out="galeria-s"></td></tr>
+              <tr><th scope="row">Munición</th><td data-out="municion-a"></td><td data-out="municion-s"></td></tr>
+              <tr><th scope="row">Dietas y desplazamientos</th><td data-out="dietas-a"></td><td data-out="dietas-s"></td></tr>
+              <tr><th scope="row">Cartuchos disparados</th><td data-out="cartuchos-a"></td><td data-out="cartuchos-s"></td></tr>
+              <tr><th scope="row">Horas fuera de servicio</th><td data-out="horas-a"></td><td data-out="horas-s"></td></tr>
+            </tbody>
+          </table>
+
+          <p class="note">
+            Estimación orientativa con tus datos. Supone que la parte trasladada al simulador se realiza en la propia
+            jefatura, sin munición ni desplazamientos, y que el alquiler de la galería se reduce en la misma proporción.
+            No incluye el coste del servicio RIVSAN, que se presupuesta a medida.
+          </p>
+
+          <button type="button" class="btn btn-primary" data-send-calc>
+            Quiero un estudio personalizado <span class="arrow">→</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Argumentos -->
+  <section class="section">
+    <div class="container">
+      <div class="head reveal">
+        <p class="eyebrow">Más allá del ahorro</p>
+        <h2 class="h-lg">Más frecuencia, <span class="accent">mejor preparación</span></h2>
+      </div>
+      <div class="args">
+        <article class="arg reveal">
+          <span class="arg-n">01</span>
+          <h3>Entrenar más a menudo</h3>
+          <p class="muted">Sin desplazamientos ni reservas de galería, la formación se integra en el turno y se repite tantas veces como haga falta.</p>
+        </article>
+        <article class="arg reveal">
+          <span class="arg-n">02</span>
+          <h3>Acreditar con datos</h3>
+          <p class="muted">El After-Action Review registra tiempos, decisiones y disparos de cada agente: un respaldo objetivo para la formación obligatoria.</p>
+        </article>
+        <article class="arg reveal">
+          <span class="arg-n">03</span>
+          <h3>Escenarios imposibles en galería</h3>
+          <p class="muted">Entradas, perímetros, desescalada y trabajo en equipo de hasta 12 agentes, algo que una galería de tiro no permite.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <DemoForm />
+</BaseLayout>
+
+<script>
+  const root = document.querySelector<HTMLElement>('[data-calc]')!;
+  const form = root.querySelector('form')!;
+  const out = (k: string) => root.querySelectorAll<HTMLElement>(`[data-out="${k}"]`);
+
+  const eur = new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0, useGrouping: 'always' });
+  const num = new Intl.NumberFormat('es-ES', { maximumFractionDigits: 0, useGrouping: 'always' });
+  const eurShort = (v: number) =>
+    v >= 1000 ? `${new Intl.NumberFormat('es-ES', { maximumFractionDigits: 1 }).format(v / 1000)} k€` : eur.format(v);
+
+  const val = (name: string) => {
+    const el = form.elements.namedItem(name) as HTMLInputElement;
+    const n = parseFloat(el.value.replace(',', '.'));
+    return Number.isFinite(n) && n >= 0 ? n : 0;
+  };
+
+  let last = { actual: 0, sim: 0, ahorro: 0, horas: 0, agentes: 0, pct: 0 };
+
+  const calc = () => {
+    const agentes = val('agentes');
+    const sesiones = val('sesiones');
+    const cartuchos = val('cartuchos');
+    const precio = val('precio');
+    const galeria = val('galeria');
+    const dietas = val('dietas');
+    const horas = val('horas');
+    const pct = val('pct') / 100;
+
+    const s = agentes * sesiones; // sesiones-agente al año
+    const a = {
+      galeria,
+      municion: s * cartuchos * precio,
+      dietas: s * dietas,
+      cartuchos: s * cartuchos,
+      horas: s * horas,
+    };
+    const keep = 1 - pct;
+    const m = {
+      galeria: a.galeria * keep,
+      municion: a.municion * keep,
+      dietas: a.dietas * keep,
+      cartuchos: a.cartuchos * keep,
+      horas: a.horas * keep,
+    };
+
+    const actual = a.galeria + a.municion + a.dietas;
+    const sim = m.galeria + m.municion + m.dietas;
+    const ahorro = actual - sim;
+    const horasRec = a.horas - m.horas;
+
+    (form.elements.namedItem('pctOut') as HTMLOutputElement).value = `${Math.round(pct * 100)} %`;
+
+    out('actual').forEach((e) => (e.textContent = eur.format(actual)));
+    out('ahorro').forEach((e) => (e.textContent = eur.format(ahorro)));
+    out('horas').forEach((e) => (e.textContent = `${num.format(horasRec)} h`));
+    out('actual-short').forEach((e) => (e.textContent = eurShort(actual)));
+    out('sim-short').forEach((e) => (e.textContent = eurShort(sim)));
+
+    for (const k of ['galeria', 'municion', 'dietas'] as const) {
+      out(`${k}-a`).forEach((e) => (e.textContent = eur.format(a[k])));
+      out(`${k}-s`).forEach((e) => (e.textContent = eur.format(m[k])));
+    }
+    out('cartuchos-a').forEach((e) => (e.textContent = num.format(a.cartuchos)));
+    out('cartuchos-s').forEach((e) => (e.textContent = num.format(m.cartuchos)));
+    out('horas-a').forEach((e) => (e.textContent = `${num.format(a.horas)} h`));
+    out('horas-s').forEach((e) => (e.textContent = `${num.format(m.horas)} h`));
+
+    const max = Math.max(actual, 1);
+    const barA = root.querySelector<HTMLElement>('[data-bar="actual"]')!;
+    const barS = root.querySelector<HTMLElement>('[data-bar="sim"]')!;
+    barA.style.width = `${(actual / max) * 100}%`;
+    barS.style.width = `${(sim / max) * 100}%`;
+    barA.title = `Modelo actual: ${eur.format(actual)}`;
+    barS.title = `Con simulador: ${eur.format(sim)}`;
+
+    last = { actual, sim, ahorro, horas: horasRec, agentes, pct };
+  };
+
+  form.addEventListener('input', calc);
+  calc();
+
+  // Llevar el cálculo al formulario de contacto
+  root.querySelector('[data-send-calc]')!.addEventListener('click', () => {
+    const contacto = document.getElementById('contacto');
+    const select = contacto?.querySelector<HTMLSelectElement>('select[name="interes"]');
+    const mensaje = contacto?.querySelector<HTMLTextAreaElement>('textarea[name="mensaje"]');
+    const agentes = contacto?.querySelector<HTMLInputElement>('input[name="agentes"]');
+    if (select) select.value = 'ahorro';
+    if (agentes && last.agentes) agentes.value = String(last.agentes);
+    if (mensaje) {
+      mensaje.value =
+        `Cálculo de la web: coste actual ${eur.format(last.actual)}/año; ` +
+        `trasladando un ${Math.round(last.pct * 100)} % al simulador, ahorro potencial de ${eur.format(last.ahorro)}/año ` +
+        `y ${num.format(last.horas)} horas de servicio recuperadas. Me gustaría un estudio personalizado.`;
+    }
+    contacto?.scrollIntoView({ behavior: 'smooth' });
+    setTimeout(() => contacto?.querySelector<HTMLInputElement>('input[name="nombre"]')?.focus({ preventScroll: true }), 600);
+  });
+</script>
+
+<style>
+  .page-hero {
+    padding: calc(var(--header-h) + clamp(48px, 7vw, 96px)) 0 clamp(56px, 7vw, 96px);
+    background:
+      radial-gradient(ellipse at 85% 10%, rgba(247, 196, 0, 0.1), transparent 55%),
+      var(--bg);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .hero-grid {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: clamp(32px, 5vw, 72px);
+    align-items: center;
+  }
+
+  .hero-grid h1 {
+    font-size: clamp(2.75rem, 5.6vw, 5.25rem);
+    margin-bottom: 1.25rem;
+  }
+
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-top: 2rem;
+  }
+
+  .hero-media img {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    object-position: 50% 30%;
+    filter: grayscale(0.5);
+  }
+
+  .head {
+    max-width: 780px;
+    margin-bottom: 48px;
+  }
+
+  .head h2 {
+    margin-bottom: 1rem;
+  }
+
+  /* Marco legal */
+  .laws {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+
+  .law {
+    padding: clamp(28px, 4vw, 40px);
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+    border-top: 3px solid var(--yellow);
+  }
+
+  .law-ref {
+    font-family: var(--font-display);
+    font-size: clamp(2.5rem, 4.5vw, 3.5rem);
+    line-height: 1;
+    color: var(--yellow);
+  }
+
+  .law h3 {
+    margin: 8px 0 14px;
+  }
+
+  .law ul {
+    list-style: none;
+    margin: 16px 0 0;
+    padding: 16px 0 0;
+    border-top: 1px solid var(--line);
+    display: grid;
+    gap: 8px;
+  }
+
+  .law li {
+    padding-left: 22px;
+    position: relative;
+  }
+
+  .law li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.6em;
+    width: 8px;
+    height: 8px;
+    background: var(--yellow);
+  }
+
+  .disclaimer {
+    margin-top: 20px;
+    font-size: 0.875rem;
+    color: var(--text-dim);
+  }
+
+  /* Calculadora */
+  .calc-section {
+    background: var(--bg-2);
+    border-block: 1px solid var(--line);
+  }
+
+  .calc {
+    display: grid;
+    grid-template-columns: 0.9fr 1.1fr;
+    gap: 20px;
+    align-items: start;
+  }
+
+  .calc-inputs {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    padding: clamp(24px, 3vw, 36px);
+    display: grid;
+    gap: 18px;
+  }
+
+  .field {
+    display: grid;
+    gap: 6px;
+  }
+
+  .field-label {
+    font-family: var(--font-label);
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .field-input {
+    display: flex;
+    align-items: center;
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius);
+    background: var(--bg);
+    transition: border-color 0.2s;
+  }
+
+  .field-input:focus-within {
+    border-color: var(--yellow);
+  }
+
+  .field-input input {
+    flex: 1;
+    min-width: 0;
+    font: inherit;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text);
+    background: none;
+    border: 0;
+    padding: 0.65em 0.8em;
+    outline: none;
+    color-scheme: dark;
+  }
+
+  .field-unit {
+    padding-right: 0.9em;
+    font-family: var(--font-label);
+    font-size: 0.9rem;
+    color: var(--text-dim);
+  }
+
+  .field--range {
+    padding-top: 12px;
+    border-top: 1px solid var(--line);
+  }
+
+  .field--range output {
+    font-family: var(--font-display);
+    font-size: 1.6rem;
+    line-height: 1;
+    color: var(--yellow);
+  }
+
+  input[type='range'] {
+    width: 100%;
+    accent-color: var(--yellow);
+    height: 28px;
+  }
+
+  .range-scale {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    color: var(--text-dim);
+  }
+
+  .calc-results {
+    background: var(--surface);
+    border: 1px solid rgba(247, 196, 0, 0.35);
+    padding: clamp(24px, 3vw, 36px);
+    display: grid;
+    gap: 28px;
+    position: sticky;
+    top: calc(var(--header-h) + 20px);
+  }
+
+  .kpis {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+
+  .kpi {
+    display: grid;
+    gap: 6px;
+    align-content: start;
+  }
+
+  .kpi-label {
+    font-family: var(--font-label);
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+  }
+
+  .kpi-value {
+    font-family: var(--font-display);
+    font-size: clamp(1.9rem, 3vw, 2.6rem);
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .kpi--accent .kpi-value {
+    color: var(--yellow);
+  }
+
+  .chart {
+    margin: 0;
+  }
+
+  .chart figcaption {
+    font-size: 0.85rem;
+    color: var(--text-dim);
+    margin-bottom: 12px;
+  }
+
+  .bars {
+    display: grid;
+    gap: 10px;
+  }
+
+  .bar-row {
+    display: grid;
+    grid-template-columns: 110px 1fr 64px;
+    gap: 12px;
+    align-items: center;
+  }
+
+  .bar-name {
+    font-size: 0.925rem;
+    color: var(--text-muted);
+  }
+
+  .bar-track {
+    height: 22px;
+    border-left: 1px solid var(--line-strong);
+  }
+
+  .bar {
+    height: 100%;
+    border-radius: 0 4px 4px 0;
+    transition: width 0.35s ease;
+    min-width: 2px;
+  }
+
+  .bar--actual {
+    background: #6f6f69;
+  }
+
+  .bar--sim {
+    background: var(--yellow);
+  }
+
+  .bar-value {
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+  }
+
+  .breakdown {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .breakdown th,
+  .breakdown td {
+    padding: 9px 0;
+    border-bottom: 1px solid var(--line);
+    text-align: right;
+  }
+
+  .breakdown th:first-child,
+  .breakdown tbody th {
+    text-align: left;
+    font-weight: 400;
+    color: var(--text-muted);
+  }
+
+  .breakdown thead th {
+    font-family: var(--font-label);
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-size: 0.78rem;
+    color: var(--text-dim);
+  }
+
+  .breakdown td:last-child {
+    font-weight: 600;
+  }
+
+  .note {
+    margin: 0;
+    font-size: 0.85rem;
+    color: var(--text-dim);
+  }
+
+  .calc-results .btn {
+    justify-self: start;
+  }
+
+  /* Argumentos */
+  .args {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+
+  .arg {
+    padding: 28px;
+    border-left: 3px solid var(--yellow);
+    background: var(--bg-2);
+  }
+
+  .arg-n {
+    font-family: var(--font-label);
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    color: var(--yellow);
+    font-size: 0.9rem;
+  }
+
+  .arg h3 {
+    font-size: 1.9rem;
+    margin: 8px 0 10px;
+  }
+
+  .arg p {
+    margin: 0;
+  }
+
+  @media (max-width: 1100px) {
+    .calc {
+      grid-template-columns: 1fr;
+    }
+
+    .calc-results {
+      position: static;
+    }
+  }
+
+  @media (max-width: 960px) {
+    .hero-grid,
+    .laws,
+    .args {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 560px) {
+    .kpis {
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+
+    .bar-row {
+      grid-template-columns: 1fr 64px;
+    }
+
+    .bar-name {
+      grid-column: 1 / -1;
+    }
+
+    .calc-results .btn {
+      justify-self: stretch;
+    }
+  }
+</style>

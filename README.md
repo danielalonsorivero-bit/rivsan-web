@@ -14,6 +14,7 @@ npm run build    # genera dist/ para subir al alojamiento
 
 - `src/pages/index.astro`: página de inicio
 - `src/pages/simulador.astro`: página del simulador VR
+- `src/pages/normativa.astro`: marco legal y calculadora de ahorro
 - `src/pages/formacion/`: catálogo, calendario y fichas de cursos
 - `src/components/Crosshair.astro`: cursor de punto de mira (solo con ratón; sin estela con «reducir movimiento»)
 - `src/components/home/`: secciones de la home
