@@ -23,18 +23,20 @@ interface Props {
   convocatorias?: { id: string; label: string; disabled?: boolean }[];
   aDemanda?: boolean;
   submitLabel?: string;
+  /** «ficha»: rejilla compacta horizontal para la ventana de inscripción (sin scroll en escritorio) */
+  variant?: 'default' | 'ficha';
 }
 
-const { curso, convocatorias = [], aDemanda = true, submitLabel = 'Enviar solicitud' } = Astro.props;
+const { curso, convocatorias = [], aDemanda = true, submitLabel = 'Enviar solicitud', variant = 'default' } = Astro.props;
 const uid = curso ? `f-${curso.id}` : 'f-demo';
 ---
 
-<form class="form" data-request-form novalidate>
+<form class:list={['form', { 'form--ficha': variant === 'ficha' }]} data-request-form novalidate>
   {
     curso && (
       <>
         <input type="hidden" name="curso" value={curso.id} />
-        <label>
+        <label class="f-conv">
           <span>Convocatoria *</span>
           <select name="convocatoria" required>
             {convocatorias.map((c) => (
@@ -50,27 +52,27 @@ const uid = curso ? `f-${curso.id}` : 'f-demo';
   }
 
   <div class="row">
-    <label>
+    <label class="f-nombre">
       <span>Nombre y apellidos *</span>
       <input name="nombre" autocomplete="name" required />
     </label>
-    <label>
+    <label class="f-cargo">
       <span>Cargo *</span>
       <input name="cargo" placeholder="Ej. Intendente, Jefe de formación" required />
     </label>
   </div>
 
-  <label>
+  <label class="f-unidad">
     <span>Jefatura / Unidad *</span>
     <input name="unidad" autocomplete="organization" placeholder="Ej. Policía Local de …" required />
   </label>
 
   <div class="row">
-    <label>
+    <label class="f-email">
       <span>Email profesional *</span>
       <input name="email" type="email" autocomplete="email" required />
     </label>
-    <label>
+    <label class="f-tel">
       <span>Teléfono</span>
       <input name="telefono" type="tel" autocomplete="tel" />
     </label>
@@ -90,7 +92,7 @@ const uid = curso ? `f-${curso.id}` : 'f-demo';
   }
 
   <div class="row">
-    <label>
+    <label class="f-agentes">
       <span>{curso ? 'Nº de plazas que necesitas' : 'Nº de agentes a formar'}</span>
       <input name="agentes" type="number" min="1" inputmode="numeric" />
     </label>
@@ -104,16 +106,16 @@ const uid = curso ? `f-${curso.id}` : 'f-demo';
     }
   </div>
 
-  <label>
+  <label class="f-msg">
     <span>Mensaje</span>
     <textarea
       name="mensaje"
-      rows="4"
+      rows={variant === 'ficha' ? 2 : 4}
       placeholder={curso ? 'Dudas sobre el curso, necesidades de tu unidad…' : 'Cuéntanos qué necesitas: espacio disponible, objetivos de formación…'}
     ></textarea>
   </label>
 
-  <label class="check">
+  <label class="check f-check">
     <input type="checkbox" name="privacidad" required id={`${uid}-priv`} />
     <span>He leído y acepto la <a href="/legal/privacidad/" target="_blank">política de privacidad</a>. *</span>
   </label>
@@ -267,6 +269,75 @@ const uid = curso ? `f-${curso.id}` : 'f-demo';
 
   .status[data-state='error'] {
     color: #ff6b6b;
+  }
+
+  /* Variante ficha: todos los campos en una rejilla de tres columnas */
+  .form--ficha {
+    padding: 0;
+    gap: 14px 16px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-areas:
+      'conv conv agentes'
+      'nombre cargo unidad'
+      'email tel tel'
+      'msg msg msg'
+      'check check check'
+      'gdpr gdpr gdpr'
+      'btn status status';
+    align-items: start;
+  }
+
+  .form--ficha .row {
+    display: contents;
+  }
+
+  .form--ficha label {
+    gap: 6px;
+  }
+
+  .form--ficha label > span {
+    font-size: 0.75rem;
+  }
+
+  .form--ficha :is(input, select, textarea) {
+    padding: 0.65em 0.8em;
+  }
+
+  .form--ficha .f-conv { grid-area: conv; }
+  .form--ficha .f-agentes { grid-area: agentes; }
+  .form--ficha .f-nombre { grid-area: nombre; }
+  .form--ficha .f-cargo { grid-area: cargo; }
+  .form--ficha .f-unidad { grid-area: unidad; }
+  .form--ficha .f-email { grid-area: email; }
+  .form--ficha .f-tel { grid-area: tel; }
+  .form--ficha .f-msg { grid-area: msg; }
+  .form--ficha .f-check { grid-area: check; }
+  .form--ficha .gdpr { grid-area: gdpr; margin: -6px 0 0; font-size: 0.72rem; }
+  .form--ficha .btn { grid-area: btn; }
+  .form--ficha .status { grid-area: status; align-self: center; font-size: 0.875rem; }
+
+  @media (max-width: 760px) {
+    .form--ficha {
+      grid-template-columns: 1fr 1fr;
+      grid-template-areas:
+        'conv conv'
+        'agentes agentes'
+        'nombre nombre'
+        'cargo unidad'
+        'email tel'
+        'msg msg'
+        'check check'
+        'gdpr gdpr'
+        'btn btn'
+        'status status';
+    }
+  }
+
+  @media (max-width: 480px) {
+    .form--ficha {
+      grid-template-columns: 1fr;
+      grid-template-areas: 'conv' 'agentes' 'nombre' 'cargo' 'unidad' 'email' 'tel' 'msg' 'check' 'gdpr' 'btn' 'status';
+    }
   }
 
   @media (max-width: 560px) {

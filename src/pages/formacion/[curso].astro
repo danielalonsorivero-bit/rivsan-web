@@ -62,6 +62,17 @@ const courseLd = {
   })),
 };
 
+// Fecha corta y lugar de cada convocatoria para la credencial de la ventana de inscripción
+const ticketConv = Object.fromEntries(
+  convocatorias.map((c) => [c.id, { fecha: `${rangoCorto(c.inicio, c.fin)} ${c.inicio.getUTCFullYear()}`, lugar: c.lugar }]),
+);
+const ticketRef = `RIV-${curso.id
+  .split('-')
+  .filter((w) => w.length > 2 || /\d/.test(w))
+  .map((w) => (/\d/.test(w) ? w : w[0]))
+  .join('')
+  .toUpperCase()}`;
+
 const ficha = [
   { k: 'Duración', v: data.duracion },
   { k: 'Plazas', v: `${data.asistentes} por convocatoria` },
@@ -168,15 +179,47 @@ const ficha = [
     )
   }
 
-  <dialog class="request-dialog" data-request-dialog aria-labelledby="request-title">
-    <div class="dialog-head">
-      <div>
-        <p class="eyebrow">Solicitud de información</p>
-        <h2 id="request-title" class="h-md">{data.titulo}</h2>
+  <dialog class="request-dialog" data-request-dialog data-conv={JSON.stringify(ticketConv)} aria-labelledby="request-title">
+    <div class="enroll">
+      <!-- Ficha del curso, a modo de credencial: se actualiza con la convocatoria elegida -->
+      <aside class="ticket">
+        <Image src={data.imagen} alt="" class="ticket-bg" widths={[600]} sizes="400px" />
+        <div class="ticket-body">
+          <p class="ticket-eyebrow data">Ficha de inscripción · {cat.label}</p>
+          <h2 id="request-title" class="ticket-title">{data.titulo}</h2>
+          <div class="ticket-conv">
+            <span class="data">Convocatoria</span>
+            <strong data-ticket-date>—</strong>
+            <span data-ticket-place></span>
+          </div>
+          <dl class="ticket-data">
+            {
+              ficha.slice(0, 3).map((f) => (
+                <div>
+                  <dt class="data">{f.k}</dt>
+                  <dd>{f.v}</dd>
+                </div>
+              ))
+            }
+          </dl>
+          <p class="ticket-ref data">REF · {ticketRef}</p>
+        </div>
+      </aside>
+
+      <div class="enroll-form">
+        <div class="enroll-head">
+          <p class="eyebrow">Solicitud de plaza</p>
+          <button type="button" class="close" data-close-request aria-label="Cerrar">✕</button>
+        </div>
+        <RequestForm
+          curso={{ titulo: data.titulo, id: curso.id }}
+          convocatorias={opciones}
+          aDemanda={data.aDemanda}
+          variant="ficha"
+          submitLabel="Solicitar plaza"
+        />
       </div>
-      <button type="button" class="close" data-close-request aria-label="Cerrar">✕</button>
     </div>
-    <RequestForm curso={{ titulo: data.titulo, id: curso.id }} convocatorias={opciones} aDemanda={data.aDemanda} />
   </dialog>
 </BaseLayout>
 
@@ -184,10 +227,22 @@ const ficha = [
   const dialog = document.querySelector<HTMLDialogElement>('[data-request-dialog]')!;
   const select = dialog.querySelector<HTMLSelectElement>('select[name="convocatoria"]')!;
 
+  // La credencial de la izquierda refleja la convocatoria elegida («fecha · lugar»)
+  const ticketDate = dialog.querySelector('[data-ticket-date]')!;
+  const ticketPlace = dialog.querySelector('[data-ticket-place]')!;
+  const conv: Record<string, { fecha: string; lugar: string }> = JSON.parse(dialog.dataset.conv || '{}');
+  const syncTicket = () => {
+    const c = conv[select.value];
+    ticketDate.textContent = c ? c.fecha : 'A demanda';
+    ticketPlace.textContent = c ? c.lugar : 'En tus instalaciones o en otra fecha';
+  };
+  select.addEventListener('change', syncTicket);
+
   const open = (convocatoria?: string | null) => {
     if (convocatoria && [...select.options].some((o) => o.value === convocatoria && !o.disabled)) {
       select.value = convocatoria;
     }
+    syncTicket();
     dialog.showModal();
     document.body.style.overflow = 'hidden';
   };
@@ -477,32 +532,190 @@ const ficha = [
     gap: 20px;
   }
 
-  /* Ventana modal de solicitud */
+  /* Ventana modal de solicitud: ficha horizontal (credencial + formulario) */
   .request-dialog {
-    width: min(720px, calc(100vw - 32px));
+    width: min(1120px, calc(100vw - 32px));
     max-height: calc(100dvh - 32px);
     padding: 0;
     background: var(--bg-2);
     color: var(--text);
     border: 1px solid rgba(247, 196, 0, 0.4);
-    overflow-y: auto;
+    overflow: hidden;
+  }
+
+  .request-dialog[open] {
+    animation: ficha-in 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  @keyframes ficha-in {
+    from {
+      opacity: 0;
+      transform: translateY(16px) scale(0.98);
+    }
   }
 
   .request-dialog::backdrop {
-    background: rgba(0, 0, 0, 0.75);
+    background: rgba(0, 0, 0, 0.8);
     backdrop-filter: blur(4px);
   }
 
-  .dialog-head {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 16px;
-    padding: 28px clamp(24px, 4vw, 48px) 0;
+  .enroll {
+    display: grid;
+    grid-template-columns: minmax(280px, 0.8fr) 2fr;
+    max-height: calc(100dvh - 34px);
   }
 
-  .dialog-head .eyebrow {
-    margin-bottom: 10px;
+  .ticket {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    display: flex;
+    align-items: flex-end;
+    border-right: 2px dashed rgba(247, 196, 0, 0.45);
+  }
+
+  /* Muescas de troquel en el borde perforado */
+  .ticket::before,
+  .ticket::after {
+    content: '';
+    position: absolute;
+    right: -13px;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #050505;
+    border: 1px solid rgba(247, 196, 0, 0.4);
+    z-index: 2;
+  }
+
+  .ticket::before {
+    top: -13px;
+  }
+
+  .ticket::after {
+    bottom: -13px;
+  }
+
+  .ticket-bg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: -2;
+    filter: grayscale(0.6) contrast(1.1);
+  }
+
+  .ticket-body {
+    position: relative;
+    width: 100%;
+    padding: 28px;
+    display: grid;
+    gap: 18px;
+  }
+
+  .ticket-body::before {
+    content: '';
+    position: absolute;
+    inset: -60% 0 0;
+    z-index: -1;
+    background:
+      linear-gradient(0deg, rgba(11, 11, 11, 0.97) 55%, rgba(11, 11, 11, 0.4)),
+      repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.03) 0 1px, transparent 1px 3px);
+  }
+
+  .ticket-eyebrow {
+    margin: 0;
+    font-size: 0.7rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--yellow);
+  }
+
+  .ticket-title {
+    font-size: clamp(1.9rem, 2.6vw, 2.5rem);
+  }
+
+  .ticket-conv {
+    display: grid;
+    gap: 2px;
+    padding: 14px 16px;
+    border: 1px solid rgba(247, 196, 0, 0.45);
+    background: rgba(247, 196, 0, 0.06);
+  }
+
+  .ticket-conv .data {
+    font-size: 0.68rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+
+  .ticket-conv strong {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: 1.6rem;
+    line-height: 1.05;
+    color: var(--yellow);
+    text-transform: uppercase;
+  }
+
+  .ticket-conv span:last-child {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+  }
+
+  .ticket-data {
+    margin: 0;
+    display: grid;
+    gap: 8px;
+  }
+
+  .ticket-data div {
+    display: grid;
+    grid-template-columns: 88px 1fr;
+    gap: 12px;
+    font-size: 0.875rem;
+  }
+
+  .ticket-data dt {
+    font-size: 0.68rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    padding-top: 2px;
+  }
+
+  .ticket-data dd {
+    margin: 0;
+    color: var(--text);
+  }
+
+  .ticket-ref {
+    margin: 0;
+    white-space: nowrap;
+    padding-top: 12px;
+    border-top: 1px solid var(--line);
+    font-size: 0.68rem;
+    letter-spacing: 0.16em;
+    color: var(--text-dim);
+  }
+
+  .enroll-form {
+    padding: 24px clamp(24px, 3vw, 40px) 28px;
+    overflow-y: auto;
+  }
+
+  .enroll-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+
+  .enroll-head .eyebrow {
+    margin: 0;
   }
 
   .close {
@@ -520,6 +733,48 @@ const ficha = [
   .close:hover {
     border-color: var(--yellow);
     color: var(--yellow);
+  }
+
+  /* En pantallas estrechas la credencial pasa arriba, compacta, y la ficha hace scroll */
+  @media (max-width: 860px) {
+    .request-dialog {
+      overflow-y: auto;
+    }
+
+    .enroll {
+      grid-template-columns: 1fr;
+      max-height: none;
+    }
+
+    .ticket {
+      border-right: 0;
+      border-bottom: 2px dashed rgba(247, 196, 0, 0.45);
+    }
+
+    .ticket::before,
+    .ticket::after {
+      display: none;
+    }
+
+    .ticket-body {
+      padding: 20px;
+      gap: 12px;
+    }
+
+    .ticket-data,
+    .ticket-ref {
+      display: none;
+    }
+
+    .enroll-form {
+      overflow: visible;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .request-dialog[open] {
+      animation: none;
+    }
   }
 
   .request-dialog :global(.form) {
