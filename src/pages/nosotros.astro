@@ -1,0 +1,455 @@
+---
+import { Image } from 'astro:assets';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Partner from '../components/home/Partner.astro';
+import DemoForm from '../components/DemoForm.astro';
+import { site } from '../data/site';
+
+import espana from '../assets/img/espana-noche.jpg';
+import sede from '../assets/img/relion-sede.jpg';
+import operadores from '../assets/img/relion-operadores.jpg';
+
+const pillars = [
+  {
+    title: 'Socio exclusivo en España',
+    text: 'Somos el único socio autorizado de RE-liON en España: licencias, equipos y soporte oficial del fabricante.',
+  },
+  {
+    title: 'Llave en mano',
+    text: 'Implantación, formación de instructores, asistencia técnica y mantenimiento preventivo local. Tú solo entrenas.',
+  },
+  {
+    title: 'Un solo interlocutor',
+    text: 'La misma persona desde la primera demostración hasta el soporte continuo. Presencial y en tu idioma.',
+  },
+  {
+    title: 'Formación integral',
+    text: 'Simulador, primeros auxilios tácticos y uso de la fuerza no letal: toda la preparación del agente con un proveedor.',
+  },
+];
+
+const steps = [
+  { n: '01', title: 'Demostración', text: 'Llevamos el sistema a tu jefatura y tus agentes lo prueban.' },
+  { n: '02', title: 'Propuesta a medida', text: 'Jornadas, renting o compra según agentes, espacio y presupuesto.' },
+  { n: '03', title: 'Implantación', text: 'Desplegamos y configuramos el equipo en tus instalaciones.' },
+  { n: '04', title: 'Instructores', text: 'Formamos a tus instructores para que sean autónomos.' },
+  { n: '05', title: 'Soporte', text: 'Mantenimiento preventivo, garantías y asistencia técnica local.' },
+];
+
+const alliances = [
+  {
+    name: 'RE-liON',
+    role: 'Tecnología de simulación',
+    text: 'Fabricante neerlandés del sistema de entrenamiento inmersivo. RIVSAN es su socio exclusivo en España.',
+    href: site.partner.url,
+  },
+  {
+    name: 'Iberotac',
+    role: 'Primeros auxilios tácticos',
+    text: 'Acuerdo de colaboración para impartir formación en atención sanitaria táctica a Policía Local y FCSE.',
+    href: '/formacion/#auxilios',
+  },
+];
+---
+
+<BaseLayout
+  title="Sobre RIVSAN"
+  description="RIVSAN es el socio exclusivo de RE-liON en España. Llevamos la simulación táctica más avanzada del mundo a las Fuerzas y Cuerpos de Seguridad, con servicio llave en mano y un único interlocutor."
+>
+  <section class="about-hero">
+    <div class="container content">
+      <p class="eyebrow">Sobre nosotros</p>
+      <h1 class="h-xl">Ayudamos a <span class="accent">los que nos protegen</span></h1>
+      <p class="lead">
+        Nacemos con una misión: llevar la tecnología de simulación táctica más avanzada del mundo a las Fuerzas y Cuerpos
+        de Seguridad de España.
+      </p>
+    </div>
+  </section>
+  <Image src={espana} alt="Mapa nocturno de la península ibérica con el logotipo de RIVSAN" class="map-band" widths={[800, 1536]} sizes="100vw" loading="eager" />
+
+  <!-- Qué nos diferencia -->
+  <section class="section">
+    <div class="container">
+      <div class="head reveal">
+        <p class="eyebrow">Qué nos diferencia</p>
+        <h2 class="h-lg">Tecnología de primer nivel, <span class="accent">servicio de proximidad</span></h2>
+      </div>
+      <div class="pillars">
+        {
+          pillars.map((p, i) => (
+            <article class="pillar reveal">
+              <span class="pillar-n">{String(i + 1).padStart(2, '0')}</span>
+              <h3>{p.title}</h3>
+              <p class="muted">{p.text}</p>
+            </article>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- Cómo trabajamos -->
+  <section class="section alt">
+    <div class="container">
+      <div class="head reveal">
+        <p class="eyebrow">Cómo trabajamos</p>
+        <h2 class="h-lg">De la primera demo <span class="accent">al soporte continuo</span></h2>
+      </div>
+      <ol class="journey reveal">
+        {
+          steps.map((s) => (
+            <li>
+              <span class="node" aria-hidden="true"></span>
+              <span class="journey-n">{s.n}</span>
+              <h3>{s.title}</h3>
+              <p>{s.text}</p>
+            </li>
+          ))
+        }
+      </ol>
+    </div>
+  </section>
+
+  <!-- RE-liON -->
+  <section class="relion">
+    <Image src={sede} alt="Sede de RE-liON en los Países Bajos" class="relion-banner" widths={[800, 1600, 2400]} sizes="100vw" />
+    <div class="container relion-intro">
+      <div class="relion-text reveal">
+        <p class="eyebrow">Nuestro partner</p>
+        <h2 class="h-lg">RE-liON: <span class="accent">supercognición</span> para quienes nos protegen</h2>
+        <p class="muted">
+          Fundada en 2005 en los Países Bajos, RE-liON es pionera mundial en la optimización del rendimiento humano para
+          fuerzas de seguridad y defensa. Desarrolló el primer sistema inmersivo sin cables del mundo y el primero
+          desplegable para escuadras completas.
+        </p>
+        <div class="relion-stats">
+          <div><strong>12</strong><span>kits por unidad desplegable</span></div>
+          <div><strong>95%</strong><span>disponibilidad del sistema</span></div>
+          <div><strong>+20</strong><span>años de experiencia</span></div>
+        </div>
+        <a href={site.partner.url} class="link-arrow" target="_blank" rel="noopener">
+          Visitar re-lion.com <span aria-hidden="true">↗</span>
+        </a>
+      </div>
+      <div class="relion-media hud reveal">
+        <Image src={operadores} alt="Dos operadores con visores de realidad virtual y fusiles simulados" widths={[500, 900]} sizes="(max-width: 960px) 100vw, 40vw" />
+      </div>
+    </div>
+  </section>
+
+  <Partner />
+
+  <!-- Alianzas -->
+  <section class="section alt">
+    <div class="container">
+      <div class="head reveal">
+        <p class="eyebrow">Alianzas</p>
+        <h2 class="h-lg">Trabajamos con <span class="accent">los mejores</span></h2>
+      </div>
+      <div class="alliances">
+        {
+          alliances.map((a) => (
+            <a href={a.href} class="alliance reveal" {...(a.href.startsWith('http') ? { target: '_blank', rel: 'noopener' } : {})}>
+              <span class="alliance-role">{a.role}</span>
+              <span class="alliance-name">{a.name}</span>
+              <p class="muted">{a.text}</p>
+              <span class="link-arrow">
+                {a.href.startsWith('http') ? 'Web oficial ↗' : 'Ver cursos →'}
+              </span>
+            </a>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <DemoForm />
+</BaseLayout>
+
+<style>
+  .about-hero {
+    padding: calc(var(--header-h) + clamp(56px, 8vw, 104px)) 0 clamp(40px, 5vw, 64px);
+    background:
+      radial-gradient(ellipse at 85% 0%, rgba(247, 196, 0, 0.1), transparent 55%),
+      var(--bg);
+  }
+
+  .map-band {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1536 / 407;
+    min-height: 200px;
+    object-fit: cover;
+    border-block: 1px solid var(--line);
+  }
+
+  .content h1 {
+    font-size: clamp(2.75rem, 6vw, 5.5rem);
+    max-width: 11em;
+    margin-bottom: 1.25rem;
+  }
+
+  .content .lead {
+    color: #d6d6d0;
+  }
+
+  .alt {
+    background: var(--bg-2);
+    border-block: 1px solid var(--line);
+  }
+
+  .head {
+    max-width: 780px;
+    margin-bottom: 48px;
+  }
+
+  /* Pilares */
+  .pillars {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+  }
+
+  .pillar {
+    padding: 28px 24px;
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+    border-top: 3px solid var(--yellow);
+  }
+
+  .pillar-n {
+    font-family: var(--font-display);
+    font-size: 3rem;
+    line-height: 1;
+    color: transparent;
+    -webkit-text-stroke: 1px var(--yellow);
+  }
+
+  .pillar h3 {
+    font-size: 1.9rem;
+    margin: 12px 0 10px;
+  }
+
+  .pillar p {
+    margin: 0;
+  }
+
+  /* Recorrido */
+  .journey {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    position: relative;
+  }
+
+  .journey::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 7px;
+    height: 2px;
+    background: linear-gradient(90deg, var(--yellow), rgba(247, 196, 0, 0.2));
+  }
+
+  .journey li {
+    position: relative;
+    padding: 36px 20px 0 0;
+  }
+
+  .node {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 16px;
+    height: 16px;
+    background: var(--bg-2);
+    border: 2px solid var(--yellow);
+    transform: rotate(45deg);
+  }
+
+  .journey-n {
+    font-family: var(--font-label);
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    color: var(--yellow);
+    font-size: 0.9rem;
+  }
+
+  .journey h3 {
+    font-size: 1.75rem;
+    margin: 6px 0 8px;
+  }
+
+  .journey p {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 0.975rem;
+  }
+
+  /* RE-liON */
+  .relion {
+    padding-bottom: var(--section-y);
+  }
+
+  .relion-banner {
+    width: 100%;
+    height: clamp(180px, 26vw, 360px);
+    object-fit: cover;
+    object-position: 50% 60%;
+    filter: grayscale(0.6) brightness(0.7);
+    mask-image: linear-gradient(180deg, #000 60%, transparent);
+  }
+
+  .relion-intro {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: clamp(32px, 6vw, 88px);
+    align-items: center;
+    margin-top: -60px;
+    position: relative;
+  }
+
+  .relion-text h2 {
+    margin-bottom: 1.25rem;
+  }
+
+  .relion-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    margin: 28px 0;
+    border-block: 1px solid var(--line);
+  }
+
+  .relion-stats div {
+    padding: 18px 16px 18px 0;
+    display: grid;
+    gap: 4px;
+  }
+
+  .relion-stats div + div {
+    padding-left: 16px;
+    border-left: 1px solid var(--line);
+  }
+
+  .relion-stats strong {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: 2.75rem;
+    line-height: 1;
+    color: var(--yellow);
+  }
+
+  .relion-stats span {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+  }
+
+  .relion-media img {
+    width: 100%;
+    aspect-ratio: 1;
+    object-fit: cover;
+  }
+
+  /* Alianzas */
+  .alliances {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+
+  .alliance {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: clamp(28px, 4vw, 44px);
+    background: var(--surface);
+    border: 1px solid var(--line);
+    text-decoration: none;
+    transition: border-color 0.25s;
+  }
+
+  .alliance:hover {
+    border-color: rgba(247, 196, 0, 0.5);
+  }
+
+  .alliance-role {
+    font-family: var(--font-label);
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    color: var(--yellow);
+  }
+
+  .alliance-name {
+    font-family: var(--font-display);
+    font-size: clamp(2.75rem, 5vw, 4rem);
+    line-height: 1;
+  }
+
+  .alliance p {
+    margin: 8px 0 16px;
+  }
+
+  @media (max-width: 1100px) {
+    .pillars {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .journey {
+      grid-template-columns: 1fr;
+      gap: 28px;
+      padding-left: 36px;
+    }
+
+    .journey::before {
+      left: 7px;
+      right: auto;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      height: auto;
+      background: linear-gradient(180deg, var(--yellow), rgba(247, 196, 0, 0.2));
+    }
+
+    .journey li {
+      padding: 0;
+    }
+
+    .node {
+      left: -36px;
+      top: 4px;
+    }
+  }
+
+  @media (max-width: 960px) {
+    .relion-intro,
+    .alliances {
+      grid-template-columns: 1fr;
+    }
+
+    .relion-intro {
+      margin-top: 0;
+    }
+  }
+
+  @media (max-width: 600px) {
+    .pillars {
+      grid-template-columns: 1fr;
+    }
+
+    .relion-stats {
+      grid-template-columns: 1fr;
+    }
+
+    .relion-stats div + div {
+      padding-left: 0;
+      border-left: 0;
+      border-top: 1px solid var(--line);
+    }
+  }
+</style>

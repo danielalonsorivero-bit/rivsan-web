@@ -25,5 +25,6 @@ export const nav: NavItem[] = [
   { label: 'Formación', href: '/formacion/' },
   { label: 'Normativa', href: '/normativa/' },
   { label: 'Contratación', href: '/#contratacion' },
+  { label: 'Nosotros', href: '/nosotros/' },
   { label: 'Tienda', href: '/#tienda', soon: true },
 ];

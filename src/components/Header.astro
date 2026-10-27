@@ -121,6 +121,7 @@ import { nav } from '../data/site';
     display: inline-flex;
     align-items: center;
     gap: 6px;
+    white-space: nowrap;
     padding-block: 6px;
     border-bottom: 2px solid transparent;
     transition: color 0.2s, border-color 0.2s;
@@ -143,6 +144,14 @@ import { nav } from '../data/site';
   .nav-cta {
     padding: 0.7em 1.2em;
     font-size: 0.875rem;
+    white-space: nowrap;
+  }
+
+  @media (max-width: 1380px) {
+    .nav,
+    .nav ul {
+      gap: 20px;
+    }
   }
 
   .menu-toggle {
@@ -197,7 +206,7 @@ import { nav } from '../data/site';
     transform: translateY(-7px) rotate(-45deg);
   }
 
-  @media (max-width: 1100px) {
+  @media (max-width: 1240px) {
     .menu-toggle {
       display: block;
     }
