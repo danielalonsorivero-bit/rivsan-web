@@ -1,6 +1,7 @@
 ---
 import { Image } from 'astro:assets';
 import hero from '../../assets/img/hero-binomio.jpg';
+import SignalFx from '../SignalFx.astro';
 
 // `count`: la cifra se anima desde 0 al aparecer (ver BaseLayout)
 const stats = [
@@ -21,7 +22,10 @@ const stats = [
     loading="eager"
     fetchpriority="high"
   />
+  <!-- Copia de la imagen para el desdoble de color en los cortes de señal (mismo archivo, ya en caché) -->
+  <Image src={hero} alt="" class="hero-bg hero-ghost" widths={[800, 1400, 2200]} sizes="100vw" loading="eager" aria-hidden="true" />
   <div class="hero-shade" aria-hidden="true"></div>
+  <SignalFx />
   <p class="hero-readout data" aria-hidden="true">
     <span><i></i> SIM ACTIVO</span>
     <span data-hero-clock>T+00:00.000</span>
@@ -99,6 +103,74 @@ const stats = [
     object-fit: cover;
     object-position: 60% 30%;
     z-index: -2;
+  }
+
+  /* Corte de señal: la imagen tiembla un instante y se desdobla en color cada --fx-cycle */
+  .hero {
+    --fx-cycle: 7s;
+  }
+
+  .hero-ghost {
+    opacity: 0;
+    mix-blend-mode: screen;
+    filter: sepia(1) saturate(6) hue-rotate(-50deg) brightness(0.7);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .hero-bg {
+      animation: jitter var(--fx-cycle) steps(1, end) infinite;
+    }
+
+    .hero-ghost {
+      animation: ghost var(--fx-cycle) steps(1, end) infinite;
+    }
+  }
+
+  @keyframes jitter {
+    0%,
+    86% {
+      transform: none;
+    }
+    87% {
+      transform: translate(-3px, 0) skewX(-0.6deg);
+    }
+    88% {
+      transform: translate(2px, 1px);
+    }
+    89% {
+      transform: translate(-1px, 0);
+    }
+    90%,
+    95% {
+      transform: none;
+    }
+    96% {
+      transform: translate(2px, 0);
+    }
+    97% {
+      transform: none;
+    }
+  }
+
+  @keyframes ghost {
+    0%,
+    86% {
+      opacity: 0;
+      transform: none;
+    }
+    87% {
+      opacity: 0.35;
+      transform: translate(6px, 0);
+    }
+    88% {
+      opacity: 0.25;
+      transform: translate(-4px, 1px);
+    }
+    89%,
+    100% {
+      opacity: 0;
+      transform: none;
+    }
   }
 
   .hero-shade {

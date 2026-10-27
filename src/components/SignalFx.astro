@@ -1,0 +1,90 @@
+---
+// Capa de «señal analógica» sobre una imagen o vídeo de fondo: líneas de barrido,
+// grano y una banda de interferencia que recorre la pantalla despacio.
+// Va dentro de un contenedor con position: relative, por encima del medio y por debajo del texto.
+// El temblor de la propia imagen lo define cada sección (ver Hero.astro), sincronizado con --fx-cycle.
+---
+
+<div class="signal-fx" aria-hidden="true">
+  <span class="grain"></span>
+  <span class="band"></span>
+</div>
+
+<style>
+  .signal-fx {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  /* Líneas de barrido */
+  .signal-fx::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.22) 0 1px, transparent 1px 3px);
+    opacity: 0.55;
+  }
+
+  /* Grano: ruido fractal en SVG, desplazado a saltos */
+  .grain {
+    position: absolute;
+    inset: -50%;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    opacity: 0.07;
+    animation: grain 0.6s steps(4) infinite;
+  }
+
+  @keyframes grain {
+    0% {
+      transform: translate(0, 0);
+    }
+    25% {
+      transform: translate(-6%, 4%);
+    }
+    50% {
+      transform: translate(5%, -3%);
+    }
+    75% {
+      transform: translate(-3%, -6%);
+    }
+  }
+
+  /* Banda de interferencia que baja despacio */
+  .band {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    height: 22%;
+    background: linear-gradient(
+      180deg,
+      transparent,
+      rgba(255, 255, 255, 0.035) 40%,
+      rgba(255, 255, 255, 0.07) 50%,
+      rgba(255, 255, 255, 0.035) 60%,
+      transparent
+    );
+    transform: translateY(-100%);
+    animation: band 9s linear infinite;
+  }
+
+  @keyframes band {
+    to {
+      transform: translateY(560%);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .grain,
+    .band {
+      animation: none;
+    }
+
+    .band {
+      display: none;
+    }
+  }
+</style>

@@ -6,6 +6,7 @@ import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import Crosshair from '../components/Crosshair.astro';
 import Gate from '../components/Gate.astro';
+import Sound from '../components/Sound.astro';
 import { site } from '../data/site';
 import { indexable, organizationLd } from '../data/seo';
 import defaultShare from '../assets/img/hero-binomio.jpg';
@@ -68,6 +69,7 @@ const shareUrl = new URL(share.src, Astro.site);
     </main>
     <Footer />
     <Crosshair />
+    <Sound />
 
     <script>
       // Aparición progresiva de bloques con .reveal
