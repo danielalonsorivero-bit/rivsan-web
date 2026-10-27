@@ -1,12 +1,15 @@
 ---
 import Logo from './Logo.astro';
 import { nav } from '../data/site';
+
+// La animación de entrada del logo solo se reproduce en la página de inicio
+const isHome = Astro.url.pathname === import.meta.env.BASE_URL || Astro.url.pathname === `${import.meta.env.BASE_URL}/`;
 ---
 
 <header class="site-header" data-header>
   <div class="container header-inner">
     <a href="/" class="brand">
-      <Logo intro />
+      <Logo intro={isHome} />
     </a>
 
     <nav class="nav" id="main-nav" aria-label="Principal">

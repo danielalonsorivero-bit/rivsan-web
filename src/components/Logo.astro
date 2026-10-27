@@ -2,8 +2,9 @@
 // Logotipo horizontal: símbolo + logotipo con la tipografía original, ambos extraídos como trazados
 // de logo/rivsan_logo_blanco.svg (versión vertical) y recolocados en horizontal.
 // Ojo: en el original las «I» son rectángulos (<rect>), no trazados.
-// `intro`: animación de entrada (se traza el símbolo, se enciende el punto y aparece el texto).
-// Solo la primera vez por sesión y nunca con «reducir movimiento».
+// `intro`: animación de entrada (se traza el símbolo, se enciende el punto y aparece el texto)
+// cada vez que se carga la página, también al volver con «atrás». Nunca con «reducir movimiento».
+// La cabecera solo la activa en la página de inicio.
 interface Props {
   variant?: 'light' | 'dark';
   showTagline?: boolean;
@@ -16,13 +17,21 @@ const { variant = 'light', showTagline = true, intro = false, class: className }
 {
   intro && (
     <script is:inline>
-      try {
-        if (!sessionStorage.getItem('rivsan-logo-intro') && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
-          sessionStorage.setItem('rivsan-logo-intro', '1');
-          document.documentElement.classList.add('logo-intro');
-          setTimeout(() => document.documentElement.classList.remove('logo-intro'), 2600);
-        }
-      } catch {}
+      (() => {
+        if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        const root = document.documentElement;
+        let timer;
+        const play = () => {
+          root.classList.remove('logo-intro');
+          void root.offsetWidth; // reinicia las animaciones CSS
+          root.classList.add('logo-intro');
+          clearTimeout(timer);
+          timer = setTimeout(() => root.classList.remove('logo-intro'), 2600);
+        };
+        play();
+        // Al volver con «atrás» el navegador puede restaurar la página sin recargarla
+        addEventListener('pageshow', (e) => e.persisted && play());
+      })();
     </script>
   )
 }
