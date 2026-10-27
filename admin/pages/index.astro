@@ -1,0 +1,516 @@
+---
+// Panel de administración local (solo `npm run dev`). Ver admin/integration.mjs.
+import '../../src/styles/global.css';
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Panel · RIVSAN</title>
+  </head>
+  <body>
+    <div class="adm">
+      <aside class="adm-side">
+        <a class="adm-brand" href="/admin/">RIVSAN <span>Panel</span></a>
+        <nav aria-label="Secciones del panel">
+          <a href="#/cursos" data-tab="cursos">Cursos</a>
+          <a href="#/empresa" data-tab="empresa">Datos de empresa</a>
+        </nav>
+        <p class="adm-note">Solo en tu ordenador. Los cambios se guardan en los archivos del proyecto: revísalos en la web local y publícalos con el siguiente <code>build</code>.</p>
+        <a class="adm-site" href="/" target="_blank" rel="noopener">Ver la web ↗</a>
+      </aside>
+
+      <main class="adm-main" id="main">
+        <!-- Lista de cursos -->
+        <section id="v-lista" hidden>
+          <header class="adm-head">
+            <h1>Cursos</h1>
+            <a class="btn btn-primary" href="#/cursos/nuevo">Nuevo curso</a>
+          </header>
+          <table class="adm-table">
+            <thead>
+              <tr><th>Curso</th><th>Categoría</th><th>Próximas fechas</th><th>Orden</th><th><span class="visually-hidden">Acciones</span></th></tr>
+            </thead>
+            <tbody id="lista-cursos"></tbody>
+          </table>
+        </section>
+
+        <!-- Editor de curso -->
+        <section id="v-curso" hidden>
+          <header class="adm-head">
+            <div>
+              <a class="adm-back" href="#/cursos">← Cursos</a>
+              <h1 id="curso-titulo">Curso</h1>
+            </div>
+            <div class="adm-actions">
+              <a class="btn btn-ghost" id="curso-ver" target="_blank" rel="noopener">Ver en la web ↗</a>
+              <button type="button" class="btn btn-danger" id="curso-borrar">Borrar</button>
+            </div>
+          </header>
+
+          <form id="f-curso" class="adm-form" novalidate>
+            <fieldset>
+              <legend>General</legend>
+              <div class="grid-2">
+                <label class="wide">Título<input name="titulo" required /></label>
+                <label>URL (identificador)
+                  <span class="prefix"><span>/formacion/</span><input name="slug" required pattern="[a-z0-9]+(-[a-z0-9]+)*" /></span>
+                </label>
+                <label>Categoría
+                  <select name="categoria" required>
+                    <option value="simulador">Simulador VR</option>
+                    <option value="auxilios">Primeros auxilios tácticos</option>
+                    <option value="fuerza">Uso de la fuerza no letal</option>
+                  </select>
+                </label>
+                <label class="wide">Resumen<textarea name="resumen" rows="2" required></textarea></label>
+              </div>
+            </fieldset>
+
+            <fieldset>
+              <legend>Imagen</legend>
+              <div class="img-row">
+                <img id="img-preview" alt="" />
+                <div class="img-fields">
+                  <label>Archivo<select name="imagen" id="img-select" required></select></label>
+                  <label class="upload">o sube una nueva<input type="file" id="img-upload" accept="image/jpeg,image/png,image/webp,image/avif" /></label>
+                  <label>Texto alternativo (describe la foto)<input name="imagenAlt" required /></label>
+                </div>
+              </div>
+            </fieldset>
+
+            <fieldset>
+              <legend>Ficha</legend>
+              <div class="grid-2">
+                <label>Duración<input name="duracion" required placeholder="12 h" /></label>
+                <label>Plazas por convocatoria<input name="asistentes" type="number" min="1" required /></label>
+                <label>Modalidad<input name="modalidad" required /></label>
+                <label>Dirigido a<input name="dirigidoA" required /></label>
+                <label class="wide">Acreditación<input name="acreditacion" required /></label>
+                <label>Orden en el catálogo<input name="orden" type="number" /></label>
+                <div class="checks">
+                  <label class="check"><input type="checkbox" name="aDemanda" /> Se imparte también a demanda</label>
+                  <label class="check"><input type="checkbox" name="ejemplo" /> Contenido de ejemplo (muestra aviso)</label>
+                </div>
+              </div>
+            </fieldset>
+
+            <fieldset>
+              <legend>Convocatorias</legend>
+              <p class="hint">Las fechas pasadas no se muestran en la web. Deja «plazas libres» vacío si no quieres indicarlo; 0 = completo.</p>
+              <table class="adm-table fechas">
+                <thead><tr><th>Inicio</th><th>Fin (opcional)</th><th>Lugar</th><th>Plazas libres</th><th><span class="visually-hidden">Quitar</span></th></tr></thead>
+                <tbody id="fechas"></tbody>
+              </table>
+              <button type="button" class="btn btn-ghost" id="add-fecha">+ Añadir convocatoria</button>
+            </fieldset>
+
+            <fieldset>
+              <legend>Contenido</legend>
+              <p class="hint">Markdown: <code>## Título</code> para apartados, <code>- </code> para listas, <code>**negrita**</code>.</p>
+              <textarea name="body" rows="18" class="mono"></textarea>
+            </fieldset>
+
+            <div class="adm-savebar">
+              <span id="curso-estado" role="status"></span>
+              <button type="submit" class="btn btn-primary">Guardar</button>
+            </div>
+          </form>
+        </section>
+
+        <!-- Datos de empresa -->
+        <section id="v-empresa" hidden>
+          <header class="adm-head"><h1>Datos de empresa</h1></header>
+          <form id="f-empresa" class="adm-form">
+            <fieldset>
+              <legend>Contacto</legend>
+              <div class="grid-2">
+                <label>Email<input name="email" type="email" /></label>
+                <label>Teléfono<input name="phone" /></label>
+                <label>Email de privacidad<input name="privacyEmail" type="email" /></label>
+              </div>
+            </fieldset>
+            <fieldset>
+              <legend>Datos fiscales y dirección</legend>
+              <div class="grid-2">
+                <label>Razón social<input name="legalName" /></label>
+                <label>CIF<input name="cif" /></label>
+                <label class="wide">Dirección<input name="street" /></label>
+                <label>Código postal<input name="postalCode" /></label>
+                <label>Ciudad<input name="city" /></label>
+                <label class="wide">Registro mercantil<input name="registry" /></label>
+              </div>
+            </fieldset>
+            <fieldset>
+              <legend>Textos generales</legend>
+              <div class="grid-2">
+                <label class="wide">Lema<input name="tagline" /></label>
+                <label class="wide">Descripción (buscadores y redes)<textarea name="description" rows="3"></textarea></label>
+              </div>
+            </fieldset>
+            <div class="adm-savebar">
+              <span id="empresa-estado" role="status"></span>
+              <button type="submit" class="btn btn-primary">Guardar</button>
+            </div>
+          </form>
+        </section>
+      </main>
+    </div>
+
+    <template id="tpl-fecha">
+      <tr>
+        <td><input type="date" data-k="inicio" required aria-label="Inicio" /></td>
+        <td><input type="date" data-k="fin" aria-label="Fin" /></td>
+        <td><input data-k="lugar" required aria-label="Lugar" /></td>
+        <td><input type="number" min="0" data-k="plazasLibres" aria-label="Plazas libres" /></td>
+        <td><button type="button" class="icon-btn" data-quitar aria-label="Quitar convocatoria">✕</button></td>
+      </tr>
+    </template>
+
+    <script>
+      type Fecha = { inicio: string; fin?: string; lugar: string; plazasLibres?: number | string };
+      type Curso = Record<string, any> & { slug: string; fechas: Fecha[] };
+
+      const $ = <T extends Element = HTMLElement>(s: string, el: ParentNode = document) => el.querySelector(s) as T;
+      const CATEGORIAS: Record<string, string> = { simulador: 'Simulador VR', auxilios: 'Primeros auxilios', fuerza: 'Fuerza no letal' };
+      const IMG_URL = (f: string) => `/src/assets/img/${encodeURIComponent(f)}`;
+
+      async function api<T = any>(path: string, opts: RequestInit = {}): Promise<T> {
+        const res = await fetch(`/admin/api/${path}/`, {
+          ...opts,
+          headers: { 'x-rivsan-admin': '1', 'Content-Type': 'application/json', ...opts.headers },
+        });
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.error ?? res.statusText);
+        return json;
+      }
+
+      const esc = (s: unknown) => String(s ?? '').replace(/[&<>"]/g, (c) => `&${{ '&': 'amp', '<': 'lt', '>': 'gt', '"': 'quot' }[c]};`);
+      const hoy = new Date().toISOString().slice(0, 10);
+      const slugify = (s: string) =>
+        s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+
+      function estado(el: HTMLElement, msg: string, tipo: 'ok' | 'err' | '' = '') {
+        el.textContent = msg;
+        el.dataset.tipo = tipo;
+        // Astro recarga la página al cambiar un curso: se guarda el aviso unos segundos para mostrarlo tras recargar.
+        if (tipo === 'ok') {
+          try {
+            sessionStorage.setItem('adm-aviso', JSON.stringify({ msg, t: Date.now() }));
+          } catch {}
+        }
+      }
+
+      function avisoPendiente() {
+        try {
+          const a = JSON.parse(sessionStorage.getItem('adm-aviso') ?? 'null');
+          sessionStorage.removeItem('adm-aviso');
+          const el = document.querySelector<HTMLElement>('section:not([hidden]) [role="status"]');
+          if (a && el && Date.now() - a.t < 5000) estado(el, a.msg, 'ok');
+        } catch {}
+      }
+
+      // ---------- Vistas ----------
+      const vistas = ['v-lista', 'v-curso', 'v-empresa'];
+      function mostrar(id: string, tab: string) {
+        for (const v of vistas) $(`#${v}`).hidden = v !== id;
+        document.querySelectorAll('[data-tab]').forEach((a) => a.toggleAttribute('aria-current', (a as HTMLElement).dataset.tab === tab));
+      }
+
+      async function router() {
+        const [, seccion, id] = location.hash.split('/');
+        try {
+          if (seccion === 'empresa') {
+            mostrar('v-empresa', 'empresa');
+            await cargarEmpresa();
+          } else if (seccion === 'cursos' && id) {
+            mostrar('v-curso', 'cursos');
+            await cargarCurso(id === 'nuevo' ? null : decodeURIComponent(id));
+          } else {
+            mostrar('v-lista', 'cursos');
+            await cargarLista();
+          }
+        } catch (e) {
+          alert((e as Error).message);
+        }
+        avisoPendiente();
+        $('#main').scrollTo?.(0, 0);
+      }
+
+      // ---------- Lista ----------
+      async function cargarLista() {
+        const cursos = await api<Curso[]>('cursos');
+        $('#lista-cursos').innerHTML = cursos
+          .map((c) => {
+            const futuras = c.fechas.filter((f) => (f.fin || f.inicio) >= hoy).sort((a, b) => a.inicio.localeCompare(b.inicio));
+            const fechas = futuras.length
+              ? futuras.map((f) => `${f.inicio.split('-').reverse().join('/')} · ${esc(f.lugar)}`).join('<br>')
+              : '<span class="muted">Sin fechas</span>';
+            return `<tr>
+              <td><a class="adm-link" href="#/cursos/${encodeURIComponent(c.slug)}">${esc(c.titulo)}</a>${c.ejemplo ? ' <span class="tag">Ejemplo</span>' : ''}</td>
+              <td>${esc(CATEGORIAS[c.categoria] ?? c.categoria)}</td>
+              <td class="small">${fechas}</td>
+              <td>${esc(c.orden ?? '')}</td>
+              <td><a class="adm-link" href="#/cursos/${encodeURIComponent(c.slug)}">Editar</a></td>
+            </tr>`;
+          })
+          .join('');
+      }
+
+      // ---------- Editor de curso ----------
+      const fCurso = $<HTMLFormElement>('#f-curso');
+      const imgSelect = $<HTMLSelectElement>('#img-select');
+      let slugActual: string | null = null;
+      let slugTocado = false;
+
+      async function cargarImagenes(seleccion?: string) {
+        const imgs = await api<string[]>('imagenes');
+        imgSelect.innerHTML = imgs.map((f) => `<option>${esc(f)}</option>`).join('');
+        if (seleccion) imgSelect.value = seleccion;
+        previewImg();
+      }
+      function previewImg() {
+        const img = $<HTMLImageElement>('#img-preview');
+        img.src = imgSelect.value ? IMG_URL(imgSelect.value) : '';
+      }
+
+      function filaFecha(f: Partial<Fecha> = {}) {
+        const tr = ($<HTMLTemplateElement>('#tpl-fecha').content.cloneNode(true) as DocumentFragment).firstElementChild!;
+        tr.querySelectorAll<HTMLInputElement>('[data-k]').forEach((i) => (i.value = String(f[i.dataset.k as keyof Fecha] ?? '')));
+        $('#fechas').append(tr);
+      }
+
+      async function cargarCurso(slug: string | null) {
+        slugActual = slug;
+        slugTocado = !!slug;
+        fCurso.reset();
+        $('#fechas').innerHTML = '';
+        estado($('#curso-estado'), '');
+        const c: Curso = slug
+          ? await api('cursos/' + encodeURIComponent(slug)).then((r) => ({ slug: r.slug, ...r.data, body: r.body }))
+          : { slug: '', categoria: 'simulador', fechas: [], asistentes: 20, modalidad: 'Presencial', aDemanda: true, orden: 100, body: '## Objetivos\n\n\n## Programa\n\n- ' };
+
+        const els = fCurso.elements as any;
+        for (const k of ['titulo', 'slug', 'categoria', 'resumen', 'imagenAlt', 'duracion', 'asistentes', 'modalidad', 'acreditacion', 'dirigidoA', 'orden', 'body']) {
+          if (els[k]) els[k].value = c[k] ?? '';
+        }
+        els.aDemanda.checked = c.aDemanda !== false;
+        els.ejemplo.checked = !!c.ejemplo;
+        [...c.fechas].sort((a, b) => a.inicio.localeCompare(b.inicio)).forEach(filaFecha);
+        await cargarImagenes(c.imagen);
+
+        $('#curso-titulo').textContent = slug ? c.titulo : 'Nuevo curso';
+        $('#curso-borrar').hidden = !slug;
+        const ver = $<HTMLAnchorElement>('#curso-ver');
+        ver.hidden = !slug;
+        if (slug) ver.href = `/formacion/${slug}/`;
+      }
+
+      (fCurso.elements as any).titulo.addEventListener('input', () => {
+        if (!slugTocado) (fCurso.elements as any).slug.value = slugify((fCurso.elements as any).titulo.value);
+      });
+      (fCurso.elements as any).slug.addEventListener('input', () => (slugTocado = true));
+      imgSelect.addEventListener('change', previewImg);
+      $('#add-fecha').addEventListener('click', () => filaFecha());
+      $('#fechas').addEventListener('click', (e) => {
+        const b = (e.target as HTMLElement).closest('[data-quitar]');
+        if (b) b.closest('tr')!.remove();
+      });
+
+      $<HTMLInputElement>('#img-upload').addEventListener('change', async (e) => {
+        const input = e.target as HTMLInputElement;
+        const file = input.files?.[0];
+        if (!file) return;
+        const base64 = await new Promise<string>((ok) => {
+          const r = new FileReader();
+          r.onload = () => ok(String(r.result).split(',')[1]);
+          r.readAsDataURL(file);
+        });
+        try {
+          const { nombre } = await api('imagenes', { method: 'POST', body: JSON.stringify({ nombre: file.name, base64 }) });
+          await cargarImagenes(nombre);
+          estado($('#curso-estado'), `Imagen «${nombre}» subida`, 'ok');
+        } catch (err) {
+          estado($('#curso-estado'), (err as Error).message, 'err');
+        }
+        input.value = '';
+      });
+
+      fCurso.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const st = $('#curso-estado');
+        if (!fCurso.checkValidity()) {
+          fCurso.reportValidity();
+          return;
+        }
+        const els = fCurso.elements as any;
+        const num = (v: string) => (v === '' ? undefined : Number(v));
+        const fechas = [...$('#fechas').querySelectorAll('tr')].map((tr) => {
+          const g = (k: string) => (tr.querySelector(`[data-k="${k}"]`) as HTMLInputElement).value.trim();
+          return { inicio: g('inicio'), fin: g('fin') || undefined, lugar: g('lugar'), plazasLibres: num(g('plazasLibres')) };
+        });
+        const data = {
+          titulo: els.titulo.value.trim(),
+          categoria: els.categoria.value,
+          resumen: els.resumen.value.trim(),
+          imagen: els.imagen.value,
+          imagenAlt: els.imagenAlt.value.trim(),
+          duracion: els.duracion.value.trim(),
+          asistentes: Number(els.asistentes.value),
+          modalidad: els.modalidad.value.trim(),
+          acreditacion: els.acreditacion.value.trim(),
+          dirigidoA: els.dirigidoA.value.trim(),
+          fechas,
+          aDemanda: els.aDemanda.checked ? undefined : false, // true es el valor por defecto
+          orden: num(els.orden.value),
+          ejemplo: els.ejemplo.checked || undefined,
+        };
+        const nuevoSlug = els.slug.value.trim();
+        try {
+          const { slug } = await api('cursos/' + encodeURIComponent(slugActual ?? nuevoSlug), {
+            method: 'PUT',
+            body: JSON.stringify({ data, body: els.body.value, nuevoSlug, crear: !slugActual }),
+          });
+          estado(st, 'Guardado ✓', 'ok');
+          if (slug !== slugActual) {
+            history.replaceState(null, '', `#/cursos/${encodeURIComponent(slug)}`);
+            await cargarCurso(slug);
+            estado(st, 'Guardado ✓', 'ok');
+          } else {
+            $('#curso-titulo').textContent = data.titulo;
+          }
+        } catch (err) {
+          estado(st, (err as Error).message, 'err');
+        }
+      });
+
+      $('#curso-borrar').addEventListener('click', async () => {
+        if (!slugActual || !confirm(`¿Borrar el curso «${(fCurso.elements as any).titulo.value}»? Se elimina su archivo .md.`)) return;
+        try {
+          await api('cursos/' + encodeURIComponent(slugActual), { method: 'DELETE' });
+          location.hash = '#/cursos';
+        } catch (err) {
+          estado($('#curso-estado'), (err as Error).message, 'err');
+        }
+      });
+
+      // ---------- Empresa ----------
+      const fEmpresa = $<HTMLFormElement>('#f-empresa');
+      async function cargarEmpresa() {
+        const d = await api<Record<string, string>>('empresa');
+        for (const [k, v] of Object.entries(d)) {
+          const el = fEmpresa.elements.namedItem(k) as HTMLInputElement | null;
+          if (el) el.value = v;
+        }
+        estado($('#empresa-estado'), '');
+      }
+      fEmpresa.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        if (!fEmpresa.reportValidity()) return;
+        try {
+          await api('empresa', { method: 'PUT', body: JSON.stringify(Object.fromEntries(new FormData(fEmpresa))) });
+          estado($('#empresa-estado'), 'Guardado ✓', 'ok');
+        } catch (err) {
+          estado($('#empresa-estado'), (err as Error).message, 'err');
+        }
+      });
+
+      window.addEventListener('hashchange', router);
+      router();
+    </script>
+
+    <style is:global>
+      body { background: var(--bg-2); }
+      .adm { display: grid; grid-template-columns: 240px 1fr; min-height: 100vh; }
+      .adm-side {
+        position: sticky; top: 0; height: 100vh; display: flex; flex-direction: column; gap: 24px;
+        padding: 28px 20px; background: var(--bg); border-right: 1px solid var(--line);
+      }
+      .adm-brand { font-family: var(--font-display); font-size: 28px; letter-spacing: 0.04em; color: var(--text); text-decoration: none; }
+      .adm-brand span { color: var(--yellow); }
+      .adm-side nav { display: flex; flex-direction: column; gap: 2px; }
+      .adm-side nav a {
+        padding: 10px 12px; border-radius: var(--radius); color: var(--text-muted); text-decoration: none;
+        font-family: var(--font-label); font-size: 17px; letter-spacing: 0.03em; text-transform: uppercase;
+      }
+      .adm-side nav a:hover { color: var(--text); background: var(--surface); }
+      .adm-side nav a[aria-current] { color: var(--ink); background: var(--yellow); }
+      .adm-note { margin-top: auto; font-size: 13px; color: var(--text-dim); line-height: 1.5; }
+      .adm-site { font-size: 14px; color: var(--yellow); }
+
+      .adm-main { padding: 32px clamp(16px, 4vw, 48px) 0; max-width: 1100px; width: 100%; }
+      .adm-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap; margin-bottom: 24px; }
+      .adm-head h1 { font-family: var(--font-display); font-weight: 400; font-size: 44px; line-height: 1; margin: 4px 0 0; letter-spacing: 0.02em; }
+      .adm-back { font-size: 14px; color: var(--text-muted); text-decoration: none; }
+      .adm-back:hover { color: var(--yellow); }
+      .adm-actions { display: flex; gap: 8px; }
+      .adm .btn { padding: 0.7em 1.2em; font-size: 0.9rem; }
+      [hidden] { display: none !important; }
+      .adm-link { color: var(--text); text-decoration: none; font-weight: 600; }
+      .adm-link:hover { color: var(--yellow); }
+
+      .adm-table { width: 100%; border-collapse: collapse; font-size: 15px; }
+      .adm-table th { text-align: left; font-family: var(--font-label); font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; font-size: 13px; color: var(--text-dim); padding: 8px 10px; border-bottom: 1px solid var(--line-strong); }
+      .adm-table td { padding: 12px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+      .adm-table .small { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
+      .muted { color: var(--text-dim); }
+      .tag { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; padding: 2px 6px; border: 1px solid var(--line-strong); border-radius: 3px; color: var(--text-muted); margin-left: 6px; }
+
+      .adm-form fieldset { border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg); padding: 20px; margin: 0 0 20px; }
+      .adm-form legend { padding: 0 8px; font-family: var(--font-label); font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--yellow); }
+      .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px 20px; }
+      .grid-2 .wide { grid-column: 1 / -1; }
+      .adm-form label { display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: var(--text-muted); }
+      .adm-form input:not([type='checkbox']):not([type='file']), .adm-form select, .adm-form textarea {
+        width: 100%; font: inherit; font-size: 15px; color: var(--text); background: var(--surface);
+        border: 1px solid var(--line-strong); border-radius: var(--radius); padding: 9px 11px;
+      }
+      .adm-form input:focus, .adm-form select:focus, .adm-form textarea:focus { outline: 2px solid var(--yellow); outline-offset: 0; border-color: transparent; }
+      .adm-form textarea { resize: vertical; line-height: 1.5; }
+      .adm-form .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 14px; }
+      .prefix { display: flex; align-items: stretch; }
+      .prefix > span { display: flex; align-items: center; padding: 0 10px; background: var(--surface-2); border: 1px solid var(--line-strong); border-right: 0; border-radius: var(--radius) 0 0 var(--radius); color: var(--text-dim); font-size: 14px; }
+      .prefix input { border-radius: 0 var(--radius) var(--radius) 0 !important; }
+      .checks { display: flex; flex-direction: column; gap: 10px; justify-content: flex-end; }
+      .adm-form .check { flex-direction: row; align-items: center; gap: 8px; font-size: 15px; color: var(--text); }
+      .check input { accent-color: var(--yellow); width: 18px; height: 18px; }
+      .hint { margin: 0 0 14px; font-size: 13px; color: var(--text-dim); }
+      .hint code, .adm-note code { color: var(--text-muted); }
+
+      .img-row { display: grid; grid-template-columns: 260px 1fr; gap: 20px; align-items: start; }
+      #img-preview { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: var(--radius); background: var(--surface); }
+      .img-fields { display: flex; flex-direction: column; gap: 14px; }
+      .upload input { font-size: 14px; color: var(--text-muted); }
+
+      .fechas { margin-bottom: 12px; }
+      .fechas td { padding: 6px 6px 6px 0; border: 0; }
+      .fechas td:nth-child(3) { width: 40%; }
+      .icon-btn { background: none; border: 1px solid var(--line-strong); color: var(--text-muted); border-radius: var(--radius); width: 38px; height: 38px; cursor: pointer; }
+      .icon-btn:hover { color: #ff6b5b; border-color: #ff6b5b; }
+
+      .btn-danger { background: transparent; border: 2px solid rgba(255, 107, 91, 0.5); color: #ff8a7d; }
+      .btn-danger:hover { background: rgba(255, 107, 91, 0.12); }
+
+      .adm-savebar {
+        position: sticky; bottom: 0; display: flex; justify-content: flex-end; align-items: center; gap: 16px;
+        padding: 16px 0 20px; margin-top: -4px; background: linear-gradient(transparent, var(--bg-2) 30%);
+      }
+      [role='status'][data-tipo='ok'] { color: #7bd88f; }
+      [role='status'][data-tipo='err'] { color: #ff8a7d; }
+
+      @media (max-width: 820px) {
+        .adm { grid-template-columns: 1fr; }
+        .adm-side { position: static; height: auto; flex-direction: row; flex-wrap: wrap; align-items: center; padding: 16px; }
+        .adm-side nav { flex-direction: row; }
+        .adm-note { display: none; }
+        .grid-2, .img-row { grid-template-columns: 1fr; }
+        .adm-table.fechas thead { display: none; }
+        .adm-table.fechas tr { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding-bottom: 12px; border-bottom: 1px solid var(--line); }
+        .fechas td:nth-child(3) { width: auto; }
+      }
+    </style>
+  </body>
+</html>

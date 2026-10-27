@@ -10,6 +10,18 @@ npm run dev      # http://localhost:4321
 npm run build    # genera dist/ para subir al alojamiento
 ```
 
+## Panel de administración
+
+Con `npm run dev` abierto, entra en **http://localhost:4321/admin/**. Desde ahí se puede:
+
+- Crear, editar y borrar **cursos**: ficha, imagen (o subir una nueva), convocatorias con plazas libres y el texto en Markdown.
+- Cambiar los **datos de empresa**: email, teléfono, dirección, datos fiscales, lema y descripción.
+
+El panel solo existe en tu ordenador: escribe directamente en los archivos del proyecto
+(`src/content/cursos/*.md`, `src/assets/img/` y `src/data/empresa.json`) y **no se incluye en `npm run build`**.
+Los cambios se ven al momento en la web local; para publicarlos hay que compilar y subir `dist/` como siempre
+(y, si usas git, hacer commit de los archivos cambiados). El código está en `admin/` y se activa en `astro.config.mjs`.
+
 ## Publicación
 
 - La web **no se indexa** en buscadores por defecto (`noindex` en las páginas y `Disallow: /` en `robots.txt`).
@@ -34,14 +46,15 @@ npm run build    # genera dist/ para subir al alojamiento
 - `src/components/Crosshair.astro`: cursor de punto de mira (solo con ratón; sin estela con «reducir movimiento»)
 - `src/components/home/`: secciones de la home
 - `src/components/`: cabecera, pie, logo y formulario de contacto
-- `src/data/site.ts`: datos de empresa y navegación
+- `src/data/site.ts`: datos de empresa y navegación (los editables, en `src/data/empresa.json`)
+- `admin/`: panel de administración local (solo `npm run dev`)
 - `src/styles/global.css`: colores, tipografías y utilidades
 - `src/assets/img/`: fotos (se optimizan a WebP al compilar)
 - `logo/`: logos originales en SVG/PDF
 
 ## Cursos
 
-Cada curso es un archivo Markdown en `src/content/cursos/`. El nombre del archivo da la URL
+Lo más cómodo es gestionarlos desde el panel (`/admin/`). Cada curso es un archivo Markdown en `src/content/cursos/`. El nombre del archivo da la URL
 (`control-y-arresto.md` → `/formacion/control-y-arresto/`). Para añadir uno, copia un archivo existente y cambia:
 
 - `titulo`, `resumen`, `categoria` (`simulador`, `auxilios` o `fuerza`)
@@ -56,7 +69,7 @@ así que hay que recompilar la web periódicamente (o al añadir fechas).
 
 ## Provisional
 
-- Teléfono, CIF, razón social, dirección, registro mercantil y email de privacidad en `src/data/site.ts` son **ficticios**.
+- Teléfono, CIF, razón social, dirección, registro mercantil y email de privacidad (`src/data/empresa.json`, editables desde el panel) son **ficticios**.
 - Los textos legales son un borrador: debe revisarlos un profesional y quitar el aviso de `LegalLayout.astro`. Si se añade analítica o la tienda usa cookies, hay que actualizar la política de cookies y poner un banner de consentimiento.
 - Los 6 cursos y sus fechas son de ejemplo (`ejemplo: true`).
 - Las fotos se sacaron del dossier comercial y del catálogo de RE-liON; habrá que sustituirlas.

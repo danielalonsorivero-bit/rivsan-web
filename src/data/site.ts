@@ -1,24 +1,18 @@
-// Datos generales de la empresa.
+import empresa from './empresa.json';
+
+// Datos generales de la empresa. Los editables (contacto, datos fiscales…) están en
+// empresa.json y se cambian desde el panel /admin/ (npm run dev).
 // OJO: teléfono, CIF y dirección son ficticios hasta tener los definitivos.
 export const site = {
   name: 'RIVSAN',
-  tagline: 'Formación Táctica Inmersiva',
-  description:
-    'Simulación y entrenamiento táctico inmersivo en realidad virtual para Fuerzas y Cuerpos de Seguridad. Socio exclusivo de RE-liON en España.',
+  ...empresa,
   url: 'https://rivsan.es',
-  email: 'info@rivsan.com',
-  phone: '+34 900 000 000',
-  phoneHref: '+34900000000',
-  legalName: 'RIVSAN Formación Táctica S.L.',
-  cif: 'B00000000',
-  street: 'Calle Ejemplo, 1',
-  postalCode: '41001',
-  city: 'Sevilla',
+  get phoneHref() {
+    return this.phone.replace(/[^\d+]/g, '');
+  },
   get address() {
     return `${this.street} · ${this.postalCode} ${this.city}`;
   },
-  registry: 'Registro Mercantil de Sevilla, Tomo 0000, Folio 00, Hoja SE-000000',
-  privacyEmail: 'privacidad@rivsan.com',
   domains: ['rivsan.es', 'rivsan.com'],
   partner: { name: 'RE-liON', url: 'https://re-lion.com/' },
 };
