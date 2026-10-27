@@ -1,0 +1,244 @@
+---
+import Logo from './Logo.astro';
+import { nav } from '../data/site';
+---
+
+<header class="site-header" data-header>
+  <div class="container header-inner">
+    <a href="/" class="brand" aria-label="RIVSAN, ir al inicio">
+      <Logo />
+    </a>
+
+    <nav class="nav" id="main-nav" aria-label="Principal">
+      <ul>
+        {
+          nav.map((item) => (
+            <li>
+              <a href={item.href}>
+                {item.label}
+                {item.soon && <span class="soon">Pronto</span>}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+      <a href="/#contacto" class="btn btn-primary nav-cta">Solicitar demo</a>
+    </nav>
+
+    <button class="menu-toggle" aria-controls="main-nav" aria-expanded="false" data-menu-toggle>
+      <span class="visually-hidden">Abrir menú</span>
+      <span class="bars" aria-hidden="true"></span>
+    </button>
+  </div>
+</header>
+
+<script>
+  const header = document.querySelector<HTMLElement>('[data-header]')!;
+  const toggle = document.querySelector<HTMLButtonElement>('[data-menu-toggle]')!;
+
+  const onScroll = () => header.classList.toggle('is-scrolled', window.scrollY > 24);
+  onScroll();
+  window.addEventListener('scroll', onScroll, { passive: true });
+
+  const setOpen = (open: boolean) => {
+    header.classList.toggle('is-open', open);
+    toggle.setAttribute('aria-expanded', String(open));
+    document.body.style.overflow = open ? 'hidden' : '';
+  };
+  toggle.addEventListener('click', () => setOpen(!header.classList.contains('is-open')));
+  header.querySelectorAll('.nav a').forEach((a) => a.addEventListener('click', () => setOpen(false)));
+</script>
+
+<style>
+  .site-header {
+    position: fixed;
+    inset: 0 0 auto;
+    z-index: 50;
+    height: var(--header-h);
+    transition: border-color 0.3s;
+    border-bottom: 1px solid transparent;
+  }
+
+  /* El fondo con blur va en un pseudo-elemento: un backdrop-filter en el propio
+     header convertiría al panel móvil (position: fixed) en hijo de su caja. */
+  .site-header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: rgba(11, 11, 11, 0.92);
+    backdrop-filter: blur(10px);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .site-header.is-scrolled,
+  .site-header.is-open {
+    border-bottom-color: var(--line);
+  }
+
+  .site-header.is-scrolled::before,
+  .site-header.is-open::before {
+    opacity: 1;
+  }
+
+  .header-inner {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+  }
+
+  .brand {
+    text-decoration: none;
+    font-size: 17px;
+    flex: none;
+  }
+
+  .nav {
+    display: flex;
+    align-items: center;
+    gap: 28px;
+  }
+
+  .nav ul {
+    display: flex;
+    gap: 26px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .nav ul a {
+    font-family: var(--font-label);
+    font-weight: 500;
+    font-size: 1rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: var(--text);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding-block: 6px;
+    border-bottom: 2px solid transparent;
+    transition: color 0.2s, border-color 0.2s;
+  }
+
+  .nav ul a:hover {
+    color: var(--yellow);
+    border-bottom-color: var(--yellow);
+  }
+
+  .soon {
+    font-size: 0.65rem;
+    letter-spacing: 0.08em;
+    padding: 2px 5px;
+    border: 1px solid var(--yellow);
+    color: var(--yellow);
+    border-radius: 2px;
+  }
+
+  .nav-cta {
+    padding: 0.7em 1.2em;
+    font-size: 0.875rem;
+  }
+
+  .menu-toggle {
+    display: none;
+    width: 44px;
+    height: 44px;
+    background: none;
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius);
+    cursor: pointer;
+    position: relative;
+  }
+
+  .bars,
+  .bars::before,
+  .bars::after {
+    position: absolute;
+    left: 11px;
+    width: 20px;
+    height: 2px;
+    background: #fff;
+    transition: transform 0.25s, opacity 0.25s;
+  }
+
+  .bars {
+    top: 21px;
+  }
+
+  .bars::before,
+  .bars::after {
+    content: '';
+    left: 0;
+  }
+
+  .bars::before {
+    top: -7px;
+  }
+
+  .bars::after {
+    top: 7px;
+  }
+
+  .is-open .bars {
+    background: transparent;
+  }
+
+  .is-open .bars::before {
+    transform: translateY(7px) rotate(45deg);
+  }
+
+  .is-open .bars::after {
+    transform: translateY(-7px) rotate(-45deg);
+  }
+
+  @media (max-width: 1100px) {
+    .menu-toggle {
+      display: block;
+    }
+
+    .nav {
+      position: fixed;
+      inset: var(--header-h) 0 0;
+      background: var(--bg);
+      flex-direction: column;
+      align-items: stretch;
+      justify-content: flex-start;
+      gap: 32px;
+      padding: 32px var(--gutter);
+      transform: translateX(100%);
+      visibility: hidden;
+      transition: transform 0.3s, visibility 0.3s;
+      overflow-y: auto;
+    }
+
+    .is-open .nav {
+      transform: none;
+      visibility: visible;
+    }
+
+    .nav ul {
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .nav ul a {
+      font-family: var(--font-display);
+      font-size: 2.25rem;
+      letter-spacing: 0.02em;
+      padding-block: 12px;
+      width: 100%;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .nav-cta {
+      font-size: 1rem;
+      padding: 1em;
+    }
+  }
+</style>

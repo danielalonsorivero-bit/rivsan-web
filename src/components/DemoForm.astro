@@ -1,0 +1,323 @@
+---
+import { Image } from 'astro:assets';
+import { site } from '../data/site';
+import photo from '../assets/img/agente-fusil.jpg';
+
+// Valores enlazados desde otras secciones con ?interes=<valor>#contacto
+const interests = [
+  { value: 'demo', label: 'Demostración operativa del simulador' },
+  { value: 'jornada', label: 'Jornada formativa con simulador' },
+  { value: 'renting', label: 'Renting anual del simulador' },
+  { value: 'compra', label: 'Compra llave en mano' },
+  { value: 'auxilios', label: 'Curso de primeros auxilios tácticos' },
+  { value: 'fuerza', label: 'Curso de uso de la fuerza no letal' },
+  { value: 'ahorro', label: 'Estudio de ahorro / justificación económica' },
+  { value: 'tienda', label: 'Tienda de material táctico' },
+  { value: 'otro', label: 'Otro' },
+];
+---
+
+<section class="section contact" id="contacto">
+  <div class="container grid">
+    <div class="aside reveal">
+      <p class="eyebrow">Contacto</p>
+      <h2 class="h-lg">Solicita una <span class="accent">demostración operativa</span></h2>
+      <p class="lead">
+        Vamos a tu jefatura o unidad, desplegamos el sistema y tus agentes lo prueban. Sin compromiso.
+      </p>
+      <div class="aside-media hud">
+        <Image src={photo} alt="Agente con visor de realidad virtual apuntando con un fusil simulado" widths={[400, 700]} sizes="(max-width: 960px) 100vw, 35vw" />
+      </div>
+      <ul class="direct">
+        <li><span>Email</span><a href={`mailto:${site.email}`}>{site.email}</a></li>
+        <li><span>Teléfono</span><a href={`tel:${site.phoneHref}`}>{site.phone}</a></li>
+      </ul>
+    </div>
+
+    <form class="form reveal" data-demo-form novalidate>
+      <div class="row">
+        <label>
+          <span>Nombre y apellidos *</span>
+          <input name="nombre" autocomplete="name" required />
+        </label>
+        <label>
+          <span>Cargo *</span>
+          <input name="cargo" placeholder="Ej. Intendente, Jefe de formación" required />
+        </label>
+      </div>
+
+      <label>
+        <span>Jefatura / Unidad *</span>
+        <input name="unidad" autocomplete="organization" placeholder="Ej. Policía Local de …" required />
+      </label>
+
+      <div class="row">
+        <label>
+          <span>Email profesional *</span>
+          <input name="email" type="email" autocomplete="email" required />
+        </label>
+        <label>
+          <span>Teléfono</span>
+          <input name="telefono" type="tel" autocomplete="tel" />
+        </label>
+      </div>
+
+      <label>
+        <span>¿Qué te interesa? *</span>
+        <select name="interes" required>
+          {interests.map((i) => <option value={i.value}>{i.label}</option>)}
+        </select>
+      </label>
+
+      <div class="row">
+        <label>
+          <span>Nº de agentes a formar</span>
+          <input name="agentes" type="number" min="1" inputmode="numeric" />
+        </label>
+        <label>
+          <span>Fecha preferente</span>
+          <input name="fecha" type="date" />
+        </label>
+      </div>
+
+      <label>
+        <span>Mensaje</span>
+        <textarea name="mensaje" rows="4" placeholder="Cuéntanos qué necesitas: espacio disponible, objetivos de formación…"></textarea>
+      </label>
+
+      <label class="check">
+        <input type="checkbox" name="privacidad" required />
+        <span>He leído y acepto la <a href="#">política de privacidad</a>. *</span>
+      </label>
+
+      <button type="submit" class="btn btn-primary">Enviar solicitud <span class="arrow">→</span></button>
+      <p class="status" role="status" aria-live="polite" data-status></p>
+    </form>
+  </div>
+</section>
+
+<script>
+  const form = document.querySelector<HTMLFormElement>('[data-demo-form]');
+  if (form) {
+    const select = form.querySelector<HTMLSelectElement>('select[name="interes"]')!;
+    const status = form.querySelector<HTMLElement>('[data-status]')!;
+
+    // Preselecciona el interés si viene en la URL (?interes=renting#contacto)
+    const preselect = () => {
+      const v = new URLSearchParams(location.search).get('interes');
+      if (v && [...select.options].some((o) => o.value === v)) select.value = v;
+    };
+    preselect();
+    // Los enlaces internos solo cambian query+hash: capturamos el clic para no recargar la página
+    document.querySelectorAll<HTMLAnchorElement>('a[href*="interes="]').forEach((a) =>
+      a.addEventListener('click', (e) => {
+        const url = new URL(a.href);
+        if (url.pathname !== location.pathname) return;
+        e.preventDefault();
+        history.replaceState(null, '', url.search + url.hash);
+        preselect();
+        document.getElementById('contacto')?.scrollIntoView({ behavior: 'smooth' });
+      }),
+    );
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      if (!form.checkValidity()) {
+        form.classList.add('was-validated');
+        status.textContent = 'Revisa los campos marcados.';
+        status.dataset.state = 'error';
+        form.querySelector<HTMLElement>(':invalid')?.focus();
+        return;
+      }
+      // TODO: conectar con el envío real cuando esté el alojamiento.
+      status.textContent = 'Gracias. Te contactaremos en menos de 48 horas laborables. (Maqueta: el formulario aún no envía.)';
+      status.dataset.state = 'ok';
+      form.reset();
+      form.classList.remove('was-validated');
+    });
+  }
+</script>
+
+<style>
+  .contact {
+    background: var(--bg-2);
+    border-top: 1px solid var(--line);
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: 0.9fr 1.1fr;
+    gap: clamp(40px, 6vw, 96px);
+    align-items: start;
+  }
+
+  .aside h2 {
+    margin-bottom: 1.25rem;
+  }
+
+  .aside-media {
+    margin: 32px 0;
+  }
+
+  .aside-media img {
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    object-fit: cover;
+    object-position: 50% 30%;
+  }
+
+  .direct {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 12px;
+  }
+
+  .direct li {
+    display: flex;
+    gap: 16px;
+    align-items: baseline;
+  }
+
+  .direct span {
+    font-family: var(--font-label);
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    color: var(--text-dim);
+    width: 80px;
+  }
+
+  .direct a {
+    font-size: 1.15rem;
+    text-decoration: none;
+  }
+
+  .direct a:hover {
+    color: var(--yellow);
+  }
+
+  .form {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    padding: clamp(24px, 4vw, 48px);
+    display: grid;
+    gap: 20px;
+  }
+
+  .row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+
+  label {
+    display: grid;
+    gap: 8px;
+  }
+
+  label > span {
+    font-family: var(--font-label);
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+  }
+
+  input,
+  select,
+  textarea {
+    width: 100%;
+    font: inherit;
+    font-size: 1rem;
+    color: var(--text);
+    background: var(--bg);
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius);
+    padding: 0.8em 0.9em;
+    transition: border-color 0.2s;
+    color-scheme: dark;
+  }
+
+  input::placeholder,
+  textarea::placeholder {
+    color: var(--text-dim);
+  }
+
+  input:focus,
+  select:focus,
+  textarea:focus {
+    outline: none;
+    border-color: var(--yellow);
+  }
+
+  .was-validated :invalid {
+    border-color: #e5484d;
+  }
+
+  .check {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+
+  .check input {
+    width: 20px;
+    height: 20px;
+    flex: none;
+    accent-color: var(--yellow);
+    margin-top: 2px;
+  }
+
+  .check span {
+    font-family: var(--font-body);
+    text-transform: none;
+    letter-spacing: 0;
+    font-size: 0.95rem;
+  }
+
+  .check a {
+    color: var(--yellow);
+  }
+
+  .form .btn {
+    justify-self: start;
+  }
+
+  .status {
+    margin: 0;
+    min-height: 1.5em;
+    font-size: 0.95rem;
+  }
+
+  .status[data-state='ok'] {
+    color: var(--yellow);
+  }
+
+  .status[data-state='error'] {
+    color: #ff6b6b;
+  }
+
+  @media (max-width: 960px) {
+    .grid {
+      grid-template-columns: 1fr;
+    }
+
+    .aside-media {
+      display: none;
+    }
+  }
+
+  @media (max-width: 560px) {
+    .row {
+      grid-template-columns: 1fr;
+    }
+
+    .form .btn {
+      justify-self: stretch;
+    }
+  }
+</style>

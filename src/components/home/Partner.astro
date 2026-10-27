@@ -1,0 +1,221 @@
+---
+// Aval internacional de RE-liON.
+// PENDIENTE DE REVISAR: uso de logos/emblemas oficiales (de momento solo texto)
+// y fuente citable de las cifras de impacto.
+const milestones = [
+  { year: '2005', text: 'Fundación. Pioneros en optimización del rendimiento humano para seguridad y defensa.' },
+  { year: '2010', text: 'Primer sistema inmersivo sin cables del mundo para dos combatientes.' },
+  { year: '2017', text: 'Primer sistema desplegable para escuadras completas: 12 kits por unidad.' },
+];
+
+const clients = [
+  'Ministerio de Defensa · Países Bajos',
+  'Fuerzas Armadas · Alemania',
+  'Defensa · Dinamarca',
+  'Defensa · Finlandia',
+  'Policía Nacional · Países Bajos',
+  'Policía de Berlín',
+  'Agencia Europea de Defensa',
+  'Fuerzas Armadas · Singapur',
+];
+
+const metrics = [
+  { value: '75%', label: 'menos daños colaterales (fuego amigo y civiles)' },
+  { value: '25%', label: 'menos desperdicio de munición' },
+  { value: '30%', label: 'más rapidez en la neutralización de objetivos' },
+];
+---
+
+<section class="section partner" id="partner">
+  <div class="container">
+    <div class="grid">
+      <div class="reveal">
+        <p class="eyebrow">Aval internacional</p>
+        <h2 class="h-lg">Tecnología <span class="accent">RE-liON</span>, probada en operaciones reales</h2>
+        <p class="lead">
+          RIVSAN es el socio exclusivo en España de RE-liON, referencia mundial en entrenamiento inmersivo para fuerzas de
+          seguridad y defensa.
+        </p>
+      </div>
+
+      <ol class="timeline reveal">
+        {
+          milestones.map((m) => (
+            <li>
+              <span class="year">{m.year}</span>
+              <p>{m.text}</p>
+            </li>
+          ))
+        }
+      </ol>
+    </div>
+
+    <div class="clients reveal">
+      <p class="clients-title">Han confiado en RE-liON</p>
+      <ul>
+        {clients.map((c) => <li>{c}</li>)}
+      </ul>
+    </div>
+
+    <div class="metrics reveal">
+      {
+        metrics.map((m) => (
+          <div class="metric">
+            <span class="metric-value">{m.value}</span>
+            <span class="metric-label">{m.label}</span>
+          </div>
+        ))
+      }
+    </div>
+    <p class="footnote">Resultados de una prueba comparativa de RE-liON frente a entrenamiento tradicional.</p>
+  </div>
+</section>
+
+<style>
+  .grid {
+    display: grid;
+    grid-template-columns: 1.1fr 1fr;
+    gap: clamp(40px, 6vw, 96px);
+    align-items: start;
+  }
+
+  .grid h2 {
+    margin-bottom: 1.25rem;
+  }
+
+  .timeline {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-left: 2px solid var(--yellow);
+  }
+
+  .timeline li {
+    position: relative;
+    padding: 0 0 32px 32px;
+  }
+
+  .timeline li:last-child {
+    padding-bottom: 0;
+  }
+
+  .timeline li::before {
+    content: '';
+    position: absolute;
+    left: -7px;
+    top: 10px;
+    width: 12px;
+    height: 12px;
+    background: var(--bg);
+    border: 2px solid var(--yellow);
+  }
+
+  .year {
+    font-family: var(--font-display);
+    font-size: 2.25rem;
+    line-height: 1;
+    color: var(--yellow);
+  }
+
+  .timeline p {
+    margin: 4px 0 0;
+    color: var(--text-muted);
+  }
+
+  .clients {
+    margin-top: 80px;
+    padding-block: 32px;
+    border-block: 1px solid var(--line);
+  }
+
+  .clients-title {
+    font-family: var(--font-label);
+    font-weight: 600;
+    font-size: 0.85rem;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 20px;
+  }
+
+  .clients ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px 24px;
+  }
+
+  .clients li {
+    font-family: var(--font-label);
+    font-weight: 500;
+    font-size: 1.05rem;
+    letter-spacing: 0.04em;
+    color: var(--text);
+    padding-left: 14px;
+    border-left: 2px solid var(--line-strong);
+  }
+
+  .metrics {
+    margin-top: 72px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    background: var(--yellow);
+    color: var(--ink);
+  }
+
+  .metric {
+    padding: clamp(28px, 4vw, 48px);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .metric + .metric {
+    border-left: 1px solid rgba(35, 31, 32, 0.2);
+  }
+
+  .metric-value {
+    font-family: var(--font-display);
+    font-size: clamp(4rem, 8vw, 6.5rem);
+    line-height: 0.85;
+  }
+
+  .metric-label {
+    font-weight: 600;
+    font-size: 1.05rem;
+    max-width: 24ch;
+  }
+
+  .footnote {
+    margin-top: 12px;
+    font-size: 0.8rem;
+    color: var(--text-dim);
+  }
+
+  @media (max-width: 960px) {
+    .grid {
+      grid-template-columns: 1fr;
+    }
+
+    .clients ul {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  @media (max-width: 680px) {
+    .metrics {
+      grid-template-columns: 1fr;
+    }
+
+    .metric + .metric {
+      border-left: 0;
+      border-top: 1px solid rgba(35, 31, 32, 0.2);
+    }
+
+    .clients ul {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

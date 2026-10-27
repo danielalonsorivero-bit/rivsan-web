@@ -1,0 +1,41 @@
+---
+// Tienda en preparación: de momento solo capta interesados vía formulario.
+---
+
+<section class="shop" id="tienda">
+  <div class="container inner reveal">
+    <div>
+      <p class="eyebrow">Próximamente</p>
+      <h2 class="h-md">Tienda de material táctico para policía</h2>
+      <p>Equipamiento seleccionado por instructores, pensado para el servicio diario.</p>
+    </div>
+    <a href="/?interes=tienda#contacto" class="btn btn-ghost">Quiero que me aviséis</a>
+  </div>
+</section>
+
+<style>
+  .shop {
+    background:
+      repeating-linear-gradient(135deg, rgba(247, 196, 0, 0.06) 0 2px, transparent 2px 14px),
+      var(--bg-2);
+    border-block: 1px solid var(--line);
+    padding-block: 56px;
+  }
+
+  .inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 32px;
+    flex-wrap: wrap;
+  }
+
+  .inner h2 {
+    margin-bottom: 8px;
+  }
+
+  .inner p:last-child {
+    margin: 0;
+    color: var(--text-muted);
+  }
+</style>

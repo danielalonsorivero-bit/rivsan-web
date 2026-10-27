@@ -1,0 +1,182 @@
+---
+import { Image } from 'astro:assets';
+import cqb from '../../assets/img/mod-cqb.jpg';
+import tiro from '../../assets/img/mod-tiro.jpg';
+import counterDrone from '../../assets/img/mod-counterdrone.jpg';
+import drones from '../../assets/img/mod-drones.jpg';
+import isr from '../../assets/img/mod-isr.jpg';
+
+const modules = [
+  {
+    code: '01',
+    title: 'Táctica y agilidad cognitiva (CQB)',
+    text: 'Entradas en inmuebles, perímetros, túneles, verbalización, desescalada y uso progresivo de la fuerza.',
+    image: cqb,
+    alt: 'Operador con visor de realidad virtual en posición de tiro en penumbra',
+  },
+  {
+    code: '02',
+    title: 'Tiro táctico e identificación de amenazas',
+    text: 'Tiro en seco, memoria muscular, transiciones, desenfunde e identificación positiva a 360° para prevenir el fuego amigo.',
+    image: tiro,
+    alt: 'Fusil simulado con sensores en manos de un operador',
+  },
+  {
+    code: '03',
+    title: 'Counter-Drone',
+    text: 'Respuesta inmediata con escopeta ante UAV y drones FPV. Desarrollado junto a UKRSOF.',
+    image: counterDrone,
+    alt: 'Escopeta apuntando a un dron en el cielo',
+  },
+  {
+    code: '04',
+    title: 'Pilotaje de drones',
+    text: 'Formación acelerada de operadores UAS sin desgaste de material ni riesgo para el equipo.',
+    image: drones,
+    alt: 'Drones profesionales en sus maletas de transporte',
+  },
+  {
+    code: '05',
+    title: 'Planificación inmersiva e ISR',
+    text: 'Gemelos digitales en 3D con drones o LiDAR en 5-10 minutos para ensayar la misión antes de ejecutarla.',
+    image: isr,
+    alt: 'Tablet con un modelo 3D de una zona urbana generado a partir de un dron',
+  },
+];
+---
+
+<section class="section modules" id="modulos">
+  <div class="container">
+    <div class="head reveal">
+      <div>
+        <p class="eyebrow">Módulos de entrenamiento</p>
+        <h2 class="h-lg">Una plataforma, <span class="accent">múltiples misiones</span></h2>
+      </div>
+      <p class="lead">
+        Del tiro básico a la planificación de operaciones: el mismo equipo cubre todo el ciclo de preparación del agente.
+      </p>
+    </div>
+
+    <div class="cards">
+      {
+        modules.map((m, i) => (
+          <article class:list={['card', 'reveal', { 'card--wide': i < 2 }]}>
+            <Image src={m.image} alt={m.alt} widths={[480, 800]} sizes="(max-width: 820px) 100vw, 40vw" />
+            <div class="card-body">
+              <span class="code">{m.code}</span>
+              <h3>{m.title}</h3>
+              <p>{m.text}</p>
+            </div>
+          </article>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<style>
+  .head {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 40px;
+    align-items: end;
+    margin-bottom: 56px;
+  }
+
+  .head .lead {
+    margin: 0;
+  }
+
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 16px;
+  }
+
+  .card {
+    grid-column: span 2;
+    position: relative;
+    min-height: 420px;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    display: flex;
+    align-items: flex-end;
+    isolation: isolate;
+  }
+
+  .card--wide {
+    grid-column: span 3;
+  }
+
+  .card img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: -2;
+    filter: grayscale(0.4) contrast(1.05);
+    transition: transform 0.6s ease, filter 0.6s ease;
+  }
+
+  .card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: linear-gradient(0deg, rgba(8, 8, 8, 0.96) 15%, rgba(8, 8, 8, 0.35) 65%, rgba(8, 8, 8, 0.15));
+  }
+
+  .card:hover img {
+    transform: scale(1.04);
+    filter: grayscale(0) contrast(1.05);
+  }
+
+  .card-body {
+    padding: 28px;
+  }
+
+  .code {
+    font-family: var(--font-label);
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    color: var(--yellow);
+    font-size: 0.9rem;
+  }
+
+  .card h3 {
+    font-size: clamp(1.75rem, 2.4vw, 2.25rem);
+    margin: 6px 0 10px;
+  }
+
+  .card p {
+    margin: 0;
+    color: #cfcfc9;
+    font-size: 0.975rem;
+  }
+
+  @media (max-width: 960px) {
+    .head {
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+
+    .card,
+    .card--wide {
+      grid-column: span 3;
+    }
+
+    .card:last-child {
+      grid-column: span 6;
+    }
+  }
+
+  @media (max-width: 680px) {
+    .card,
+    .card--wide,
+    .card:last-child {
+      grid-column: span 6;
+      min-height: 360px;
+    }
+  }
+</style>

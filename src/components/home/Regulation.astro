@@ -1,0 +1,195 @@
+---
+import { Image } from 'astro:assets';
+import galeria from '../../assets/img/galeria-tradicional.jpg';
+
+const laws = [
+  {
+    ref: 'Ley 6/2023',
+    text: 'Establece la formación continua obligatoria para las Policías Locales de Andalucía y regula los centros y actividades formativas.',
+  },
+  {
+    ref: 'Decreto 8/2026',
+    text: 'BOJA de 3 de febrero de 2026, en vigor desde el 23 de febrero. Regula el ingreso, la formación, la promoción y la convocatoria unificada.',
+  },
+];
+
+// Costes del modelo tradicional (no son precios de RIVSAN).
+const costs = [
+  { item: 'Alquiler de galería de tiro externa', value: '+18.000 €/año' },
+  { item: 'Munición real', value: 'hasta 0,50 €/cartucho' },
+  { item: 'Blancos, dietas, desplazamientos y servicios sanitarios', value: '+3.000 €/año' },
+  { item: 'Horas fuera de servicio', value: 'Incalculable' },
+];
+---
+
+<section class="section regulation" id="normativa">
+  <div class="container grid">
+    <div class="reveal">
+      <p class="eyebrow">Marco normativo</p>
+      <h2 class="h-lg">La formación <span class="accent">ya no es opcional</span></h2>
+      <p class="lead">
+        La normativa andaluza convierte la formación continua de las Policías Locales en una obligación. RIVSAN te ayuda a
+        cumplirla con un modelo más frecuente, medible y económico.
+      </p>
+
+      <div class="laws">
+        {
+          laws.map((l) => (
+            <article class="law">
+              <h3>{l.ref}</h3>
+              <p>{l.text}</p>
+            </article>
+          ))
+        }
+      </div>
+    </div>
+
+    <div class="cost-card reveal">
+      <div class="cost-media">
+        <Image
+          src={galeria}
+          alt="Agentes de Policía Local practicando tiro en una galería tradicional"
+          widths={[400, 700]}
+          sizes="(max-width: 960px) 100vw, 30vw"
+        />
+      </div>
+      <div class="cost-body">
+        <p class="eyebrow">El coste de seguir igual</p>
+        <dl>
+          {
+            costs.map((c) => (
+              <div>
+                <dt>{c.item}</dt>
+                <dd>{c.value}</dd>
+              </div>
+            ))
+          }
+        </dl>
+        <div class="total">
+          <span>Coste estimado</span>
+          <strong>+21.500 €/año</strong>
+        </div>
+        <a href="/?interes=ahorro#contacto" class="link-arrow">Calcula tu ahorro con nosotros <span aria-hidden="true">→</span></a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: clamp(40px, 6vw, 96px);
+    align-items: center;
+  }
+
+  .grid h2 {
+    margin-bottom: 1.25rem;
+  }
+
+  .laws {
+    margin-top: 40px;
+    display: grid;
+    gap: 16px;
+  }
+
+  .law {
+    padding: 20px 24px;
+    border-left: 3px solid var(--yellow);
+    background: var(--bg-2);
+  }
+
+  .law h3 {
+    font-size: 1.75rem;
+    color: var(--yellow);
+    margin-bottom: 6px;
+  }
+
+  .law p {
+    margin: 0;
+    color: var(--text-muted);
+  }
+
+  .cost-card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+  }
+
+  .cost-media img {
+    width: 100%;
+    aspect-ratio: 16 / 7;
+    object-fit: cover;
+    object-position: 50% 35%;
+    filter: grayscale(0.6);
+  }
+
+  .cost-body {
+    padding: 32px;
+  }
+
+  dl {
+    margin: 0;
+    display: grid;
+    gap: 14px;
+  }
+
+  dl div {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 16px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  dt {
+    font-size: 0.95rem;
+    color: var(--text-muted);
+  }
+
+  dd {
+    margin: 0;
+    white-space: nowrap;
+    font-family: var(--font-label);
+    font-weight: 600;
+    font-size: 1.15rem;
+    letter-spacing: 0.04em;
+    color: #ff6b6b;
+  }
+
+  .total {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+    margin: 20px 0 24px;
+  }
+
+  .total span {
+    font-family: var(--font-label);
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+  }
+
+  .total strong {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: 2.5rem;
+    line-height: 1;
+    color: #ff6b6b;
+  }
+
+  @media (max-width: 960px) {
+    .grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 600px) {
+    .cost-body {
+      padding: 24px;
+    }
+  }
+</style>

@@ -1,0 +1,191 @@
+---
+// Modalidades de contratación. Sin precios: todo se cierra por presupuesto.
+const plans = [
+  {
+    name: 'Jornadas formativas',
+    summary: 'Entrena sin invertir en equipo. Nosotros lo llevamos todo.',
+    points: [
+      'Hasta 20 agentes por jornada, en binomios',
+      '40 minutos de entrenamiento por agente',
+      'Instructores y equipo completo desplegado',
+      'Perfecta como demostración operativa',
+    ],
+    interest: 'jornada',
+  },
+  {
+    name: 'Renting anual',
+    summary: 'El sistema en tu jefatura todo el año, con cuota fija.',
+    points: [
+      'Onboarding de instructores',
+      'Licencias de software anuales',
+      'Mantenimiento y sustitución en garantía',
+      'Servicio postventa local',
+    ],
+    interest: 'renting',
+    featured: true,
+  },
+  {
+    name: 'Compra llave en mano',
+    summary: 'Equipo en propiedad y licencia permanente.',
+    points: [
+      'Implantación presencial',
+      'Formación técnica de instructores',
+      'Tramitación de garantías',
+      'Soporte del socio exclusivo en España',
+    ],
+    interest: 'compra',
+  },
+];
+---
+
+<section class="section plans" id="contratacion">
+  <div class="container">
+    <div class="head reveal">
+      <p class="eyebrow">Modalidades de contratación</p>
+      <h2 class="h-lg">Elige cómo <span class="accent">quieres entrenar</span></h2>
+      <p class="lead">Cada jefatura es distinta. Preparamos una propuesta a medida de tus agentes, espacio y presupuesto.</p>
+    </div>
+
+    <div class="grid">
+      {
+        plans.map((p) => (
+          <article class:list={['plan', 'reveal', { 'plan--featured hud': p.featured }]}>
+            {p.featured && <span class="badge">Más solicitado</span>}
+            <h3 class="h-md">{p.name}</h3>
+            <p class="summary">{p.summary}</p>
+            <ul>
+              {p.points.map((pt) => <li>{pt}</li>)}
+            </ul>
+            <a
+              href={`/?interes=${p.interest}#contacto`}
+              class:list={['btn', p.featured ? 'btn-primary' : 'btn-ghost']}
+            >
+              Solicitar presupuesto
+            </a>
+          </article>
+        ))
+      }
+    </div>
+
+    <p class="promise reveal">
+      <strong>Compromiso RIVSAN:</strong> un único interlocutor presencial en España, desde la primera demostración hasta
+      la asistencia postventa.
+    </p>
+  </div>
+</section>
+
+<style>
+  .head {
+    text-align: center;
+    max-width: 760px;
+    margin: 0 auto 56px;
+  }
+
+  .head .eyebrow::after {
+    content: '';
+    width: 28px;
+    height: 2px;
+    background: currentColor;
+  }
+
+  .head h2 {
+    margin-bottom: 1.25rem;
+  }
+
+  .head .lead {
+    margin-inline: auto;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    align-items: stretch;
+  }
+
+  .plan {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    padding: 36px 32px;
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+  }
+
+  .plan--featured {
+    background: var(--surface);
+    border-color: rgba(247, 196, 0, 0.45);
+  }
+
+  .badge {
+    position: absolute;
+    top: -13px;
+    right: 24px;
+    background: var(--yellow);
+    color: var(--ink);
+    font-family: var(--font-label);
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    padding: 4px 10px;
+  }
+
+  .plan h3 {
+    margin-bottom: 10px;
+  }
+
+  .summary {
+    color: var(--text-muted);
+    min-height: 3.2em;
+  }
+
+  .plan ul {
+    list-style: none;
+    margin: 8px 0 32px;
+    padding: 20px 0 0;
+    border-top: 1px solid var(--line);
+    display: grid;
+    gap: 12px;
+  }
+
+  .plan li {
+    padding-left: 28px;
+    position: relative;
+  }
+
+  .plan li::before {
+    content: '✓';
+    position: absolute;
+    left: 0;
+    color: var(--yellow);
+    font-weight: 600;
+  }
+
+  .plan .btn {
+    margin-top: auto;
+  }
+
+  .promise {
+    margin: 40px auto 0;
+    text-align: center;
+    color: var(--text-muted);
+    max-width: 64ch;
+  }
+
+  .promise strong {
+    color: var(--yellow);
+  }
+
+  @media (max-width: 960px) {
+    .grid {
+      grid-template-columns: 1fr;
+      max-width: 520px;
+      margin-inline: auto;
+    }
+
+    .summary {
+      min-height: 0;
+    }
+  }
+</style>

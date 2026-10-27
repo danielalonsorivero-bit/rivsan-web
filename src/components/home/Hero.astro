@@ -1,0 +1,169 @@
+---
+import { Image } from 'astro:assets';
+import hero from '../../assets/img/hero-binomio.jpg';
+
+const stats = [
+  { value: '<60', unit: 'min', label: 'Despliegue en la propia jefatura' },
+  { value: '12', unit: 'agentes', label: 'Simultáneos en el mismo escenario' },
+  { value: '0', unit: 'obras', label: 'Sin cableado ni sensores fijos' },
+  { value: '1:1', unit: '', label: 'Movimiento y armas de peso real' },
+];
+---
+
+<section class="hero">
+  <Image
+    src={hero}
+    alt="Dos agentes con visores de realidad virtual avanzan en binomio empuñando armas simuladas"
+    class="hero-bg"
+    widths={[800, 1400, 2200]}
+    sizes="100vw"
+    loading="eager"
+    fetchpriority="high"
+  />
+  <div class="hero-shade" aria-hidden="true"></div>
+
+  <div class="container hero-content">
+    <p class="eyebrow">Ayudamos a los que nos protegen</p>
+    <h1 class="h-xl">
+      Formación táctica <span class="accent">inmersiva y móvil</span> para Fuerzas y Cuerpos de Seguridad
+    </h1>
+    <p class="lead">
+      Sin obras. Desplegable en la propia Jefatura en menos de 60 minutos, con armas y automatismos de peso real.
+    </p>
+    <div class="hero-actions">
+      <a href="#contacto" class="btn btn-primary">Solicitar demostración operativa <span class="arrow">→</span></a>
+      <a href="#simulador" class="btn btn-ghost">Conocer el simulador</a>
+    </div>
+  </div>
+
+  <div class="container">
+    <ul class="hero-stats">
+      {
+        stats.map((s) => (
+          <li>
+            <span class="stat-value">
+              {s.value}
+              {s.unit && <small>{s.unit}</small>}
+            </span>
+            <span class="stat-label">{s.label}</span>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</section>
+
+<style>
+  .hero {
+    position: relative;
+    min-height: 100svh;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding-top: calc(var(--header-h) + 48px);
+    overflow: hidden;
+    isolation: isolate;
+  }
+
+  .hero-bg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 60% 30%;
+    z-index: -2;
+  }
+
+  .hero-shade {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background:
+      linear-gradient(90deg, rgba(11, 11, 11, 0.92) 0%, rgba(11, 11, 11, 0.55) 55%, rgba(11, 11, 11, 0.2) 100%),
+      linear-gradient(0deg, var(--bg) 0%, transparent 40%);
+  }
+
+  .hero-content {
+    max-width: var(--max);
+  }
+
+  .hero-content h1 {
+    font-size: clamp(2.75rem, 5.4vw, 5.25rem);
+    max-width: 11.5em;
+    margin-bottom: 1.5rem;
+  }
+
+  .hero-content .lead {
+    color: #d6d6d0;
+    max-width: 52ch;
+  }
+
+  .hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-top: 2rem;
+  }
+
+  .hero-stats {
+    list-style: none;
+    padding: 0;
+    margin: clamp(48px, 8vh, 96px) 0 0;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    border-top: 1px solid var(--line-strong);
+  }
+
+  .hero-stats li {
+    padding: 28px 24px 40px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .hero-stats li + li {
+    padding-left: 24px;
+    border-left: 1px solid var(--line);
+  }
+
+  .stat-value {
+    font-family: var(--font-display);
+    font-size: clamp(2.5rem, 4vw, 3.5rem);
+    line-height: 1;
+    color: var(--yellow);
+  }
+
+  .stat-value small {
+    font-size: 0.45em;
+    margin-left: 0.25em;
+    color: var(--text);
+    letter-spacing: 0.05em;
+  }
+
+  .stat-label {
+    font-size: 0.95rem;
+    color: var(--text-muted);
+  }
+
+  @media (max-width: 820px) {
+    .hero-stats {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .hero-stats li,
+    .hero-stats li + li {
+      padding: 20px 16px 20px 0;
+      border-left: 0;
+    }
+
+    .hero-stats li:nth-child(even) {
+      padding-left: 16px;
+      border-left: 1px solid var(--line);
+    }
+
+    .hero-stats li:nth-child(n + 3) {
+      border-top: 1px solid var(--line);
+    }
+  }
+</style>

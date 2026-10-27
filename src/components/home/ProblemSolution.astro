@@ -1,0 +1,173 @@
+---
+const traditional = [
+  'Salas fijas con obras, cableado y sensores anclados.',
+  'Réplicas de plástico que alteran el tacto y rompen los automatismos.',
+  'Simulación limitada a binomios o a vídeo pasivo.',
+  'Costes logísticos recurrentes: galería, munición, dietas, desplazamientos.',
+  'Baja frecuencia de entrenamiento y horas fuera de servicio.',
+];
+
+const rivsan = [
+  'Cero infraestructura permanente: un aula o un garaje se convierten en zona táctica.',
+  'Armas con el peso, equilibrio y tacto de las de dotación.',
+  'Hasta 12 agentes en un entorno compartido.',
+  'Tecnología 100% inalámbrica, operativa en menos de 60 minutos.',
+  'Entrenamiento bajo fisiología real de estrés: pulsaciones, fatiga, visión de túnel.',
+];
+---
+
+<section class="section problem" id="solucion">
+  <div class="container">
+    <div class="intro reveal">
+      <p class="eyebrow">El problema</p>
+      <h2 class="h-lg">Lo tradicional <span class="accent">ya no basta</span></h2>
+      <p class="lead">
+        La realidad operativa exige coordinación, presión y decisiones en tiempo real. Los sistemas tradicionales siguen
+        anclados a salas fijas y a un coste que se repite cada año.
+      </p>
+    </div>
+
+    <div class="compare">
+      <article class="col col-old reveal">
+        <header>
+          <span class="tag">Modelo tradicional</span>
+          <p class="cost"><strong>+21.500 €</strong> / año en costes logísticos estimados</p>
+        </header>
+        <ul>
+          {traditional.map((t) => <li>{t}</li>)}
+        </ul>
+      </article>
+
+      <article class="col col-new hud reveal">
+        <header>
+          <span class="tag">Modelo RIVSAN · RE-liON</span>
+          <p class="cost"><strong>Mobile Training Team</strong> desplegado en tu jefatura</p>
+        </header>
+        <ul>
+          {rivsan.map((t) => <li>{t}</li>)}
+        </ul>
+      </article>
+    </div>
+
+    <blockquote class="quote reveal">
+      «Mejor fallar 100 veces en el simulador que una sola vez en la calle.»
+    </blockquote>
+  </div>
+</section>
+
+<style>
+  .intro {
+    max-width: 760px;
+    margin-bottom: 56px;
+  }
+
+  .intro h2 {
+    margin-bottom: 1.25rem;
+  }
+
+  .compare {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+
+  .col {
+    padding: clamp(28px, 4vw, 48px);
+    border: 1px solid var(--line);
+    background: var(--bg-2);
+  }
+
+  .col-new {
+    background: linear-gradient(180deg, rgba(247, 196, 0, 0.08), rgba(247, 196, 0, 0) 60%), var(--surface);
+    border-color: rgba(247, 196, 0, 0.35);
+  }
+
+  .col header {
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 20px;
+    margin-bottom: 24px;
+  }
+
+  .tag {
+    font-family: var(--font-label);
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    font-size: 0.875rem;
+    color: var(--text-muted);
+  }
+
+  .col-new .tag {
+    color: var(--yellow);
+  }
+
+  .cost {
+    margin: 10px 0 0;
+    color: var(--text-muted);
+  }
+
+  .cost strong {
+    display: block;
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: 2.5rem;
+    line-height: 1;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+
+  .col-old .cost strong {
+    color: #e5484d;
+  }
+
+  .col ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 14px;
+  }
+
+  .col li {
+    position: relative;
+    padding-left: 32px;
+  }
+
+  .col li::before {
+    position: absolute;
+    left: 0;
+    top: 0.05em;
+    font-weight: 600;
+  }
+
+  .col-old li {
+    color: var(--text-muted);
+  }
+
+  .col-old li::before {
+    content: '✕';
+    color: #e5484d;
+  }
+
+  .col-new li::before {
+    content: '✓';
+    color: var(--yellow);
+  }
+
+  .quote {
+    margin: 64px 0 0;
+    padding: 0 0 0 24px;
+    border-left: 4px solid var(--yellow);
+    font-family: var(--font-display);
+    font-size: clamp(1.75rem, 3.4vw, 2.75rem);
+    line-height: 1.05;
+    text-transform: uppercase;
+    max-width: 22ch;
+  }
+
+  @media (max-width: 820px) {
+    .compare {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
