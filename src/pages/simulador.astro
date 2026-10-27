@@ -151,7 +151,8 @@ const modules = [
 
 <BaseLayout
   title="Simulador VR"
-  description="Simulador táctico inmersivo RE-liON: sistema móvil e inalámbrico para hasta 12 agentes, armas de peso real, módulos de entrenamiento y análisis After-Action Review."
+  description="Simulador táctico RE-liON: sistema móvil e inalámbrico para hasta 12 agentes, armas de peso real, módulos de entrenamiento y After-Action Review."
+  image={heroImg}
 >
   <!-- Hero -->
   <section class="sim-hero">
@@ -169,7 +170,7 @@ const modules = [
         </div>
       </div>
       <div class="hero-media hud">
-        <Image src={heroImg} alt="Kit de operador RE-liON: visor de realidad virtual sobre su bolsa de transporte" widths={[600, 1100]} sizes="(max-width: 960px) 100vw, 50vw" loading="eager" />
+        <Image src={heroImg} alt="Kit de operador RE-liON: visor de realidad virtual sobre su bolsa de transporte" widths={[600, 1100]} sizes="(max-width: 960px) 100vw, 50vw" loading="eager" fetchpriority="high" />
       </div>
     </div>
     <div class="container">

@@ -53,8 +53,9 @@ const alliances = [
 ---
 
 <BaseLayout
-  title="Sobre RIVSAN"
-  description="RIVSAN es el socio exclusivo de RE-liON en España. Llevamos la simulación táctica más avanzada del mundo a las Fuerzas y Cuerpos de Seguridad, con servicio llave en mano y un único interlocutor."
+  title="Sobre nosotros"
+  description="Socio exclusivo de RE-liON en España: simulación táctica avanzada para Fuerzas y Cuerpos de Seguridad, llave en mano y con un único interlocutor."
+  image={operadores}
 >
   <section class="about-hero">
     <div class="container content">
@@ -66,7 +67,7 @@ const alliances = [
       </p>
     </div>
   </section>
-  <Image src={espana} alt="Mapa nocturno de la península ibérica con el logotipo de RIVSAN" class="map-band" widths={[800, 1536]} sizes="100vw" loading="eager" />
+  <Image src={espana} alt="Mapa nocturno de la península ibérica con el logotipo de RIVSAN" class="map-band" widths={[800, 1536]} sizes="100vw" loading="eager" fetchpriority="high" />
 
   <!-- Qué nos diferencia -->
   <section class="section">

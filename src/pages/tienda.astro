@@ -25,6 +25,7 @@ const perks = [
 <BaseLayout
   title="Tienda táctica"
   description="Próximamente: tienda de material táctico para policía seleccionado por instructores. Regístrate y te avisamos de la apertura."
+  image={kit}
 >
   <section class="shop-hero">
     <div class="container hero-grid">
@@ -38,7 +39,7 @@ const perks = [
         <a href="#registro" class="btn btn-primary">Avisadme de la apertura <span class="arrow">→</span></a>
       </div>
       <div class="hero-media hud">
-        <Image src={kit} alt="Bolsa de equipo táctico con visor y material de entrenamiento" widths={[500, 900]} sizes="(max-width: 960px) 100vw, 40vw" loading="eager" />
+        <Image src={kit} alt="Bolsa de equipo táctico con visor y material de entrenamiento" widths={[500, 900]} sizes="(max-width: 960px) 100vw, 40vw" loading="eager" fetchpriority="high" />
         <span class="stamp" aria-hidden="true">Próximamente</span>
       </div>
     </div>

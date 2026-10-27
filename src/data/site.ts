@@ -11,7 +11,12 @@ export const site = {
   phoneHref: '+34900000000',
   legalName: 'RIVSAN Formación Táctica S.L.',
   cif: 'B00000000',
-  address: 'Calle Ejemplo, 1 · 41001 Sevilla',
+  street: 'Calle Ejemplo, 1',
+  postalCode: '41001',
+  city: 'Sevilla',
+  get address() {
+    return `${this.street} · ${this.postalCode} ${this.city}`;
+  },
   registry: 'Registro Mercantil de Sevilla, Tomo 0000, Folio 00, Hoja SE-000000',
   privacyEmail: 'privacidad@rivsan.com',
   domains: ['rivsan.es', 'rivsan.com'],

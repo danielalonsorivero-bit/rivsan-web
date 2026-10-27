@@ -33,7 +33,8 @@ const fields = [
 
 <BaseLayout
   title="Normativa y ahorro"
-  description="Ley 6/2023 y Decreto 8/2026: la formación continua de las Policías Locales de Andalucía es obligatoria. Calcula cuánto cuesta tu modelo actual y cuánto puedes ahorrar."
+  description="Ley 6/2023 y Decreto 8/2026: la formación continua de la Policía Local de Andalucía es obligatoria. Calcula cuánto puedes ahorrar."
+  image={galeria}
 >
   <section class="page-hero">
     <div class="container hero-grid">
@@ -50,7 +51,7 @@ const fields = [
         </div>
       </div>
       <div class="hero-media hud">
-        <Image src={galeria} alt="Agentes de Policía Local practicando tiro en una galería tradicional" widths={[500, 900]} sizes="(max-width: 960px) 100vw, 40vw" loading="eager" />
+        <Image src={galeria} alt="Agentes de Policía Local practicando tiro en una galería tradicional" widths={[500, 900]} sizes="(max-width: 960px) 100vw, 40vw" loading="eager" fetchpriority="high" />
       </div>
     </div>
   </section>

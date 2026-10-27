@@ -10,6 +10,18 @@ npm run dev      # http://localhost:4321
 npm run build    # genera dist/ para subir al alojamiento
 ```
 
+## Publicación
+
+- La web **no se indexa** en buscadores por defecto (`noindex` en las páginas y `Disallow: /` en `robots.txt`).
+  Para publicarla de verdad, compilar con la variable `PUBLIC_INDEXABLE=true`:
+  ```bash
+  PUBLIC_INDEXABLE=true npm run build
+  ```
+  Así se quita el `noindex`, `robots.txt` permite el rastreo y apunta al sitemap.
+- El sitemap se genera solo (`sitemap-index.xml`). El dominio canónico es `https://rivsan.es`
+  (`astro.config.mjs`); en el alojamiento, `rivsan.com` debe redirigir con un 301 a `rivsan.es`.
+- Datos estructurados (schema.org): organización en todas las páginas y `Course` con sus convocatorias en cada curso.
+
 ## Estructura
 
 - `src/pages/index.astro`: página de inicio
@@ -51,4 +63,3 @@ así que hay que recompilar la web periódicamente (o al añadir fechas).
 - Los formularios (contacto, cursos y registro de la tienda) aún no envían ni guardan nada (falta el backend del alojamiento).
 - Las categorías de la tienda son orientativas.
 - Pendiente de revisar: uso de logos oficiales de clientes de RE-liON, fuente de las cifras de impacto (75 %, 25 %, 30 %) y la falta de referencias en España.
-- `robots: noindex` activado en `BaseLayout.astro` hasta publicar.

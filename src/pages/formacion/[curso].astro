@@ -40,6 +40,28 @@ const opciones = convocatorias.map((c) => {
   };
 });
 
+// Datos estructurados del curso (schema.org Course) para buscadores
+const courseLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Course',
+  name: data.titulo,
+  description: data.resumen,
+  inLanguage: 'es',
+  url: new URL(`/formacion/${curso.id}/`, Astro.site).href,
+  provider: { '@id': `${Astro.site?.origin}/#organizacion` },
+  hasCourseInstance: convocatorias.map((c) => ({
+    '@type': 'CourseInstance',
+    courseMode: 'onsite',
+    startDate: c.inicio.toISOString().slice(0, 10),
+    ...(c.fin && { endDate: c.fin.toISOString().slice(0, 10) }),
+    location: {
+      '@type': 'Place',
+      name: c.lugar,
+      address: { '@type': 'PostalAddress', addressLocality: c.lugar, addressCountry: 'ES' },
+    },
+  })),
+};
+
 const ficha = [
   { k: 'Duración', v: data.duracion },
   { k: 'Plazas', v: `${data.asistentes} por convocatoria` },
@@ -49,9 +71,9 @@ const ficha = [
 ];
 ---
 
-<BaseLayout title={data.titulo} description={data.resumen}>
+<BaseLayout title={data.titulo} description={data.resumen} image={data.imagen} jsonLd={courseLd}>
   <section class="course-hero">
-    <Image src={data.imagen} alt={data.imagenAlt} class="bg" widths={[800, 1600]} sizes="100vw" loading="eager" />
+    <Image src={data.imagen} alt={data.imagenAlt} class="bg" widths={[800, 1600]} sizes="100vw" loading="eager" fetchpriority="high" />
     <div class="shade" aria-hidden="true"></div>
     <div class="container content">
       <nav class="crumbs" aria-label="Ruta">
