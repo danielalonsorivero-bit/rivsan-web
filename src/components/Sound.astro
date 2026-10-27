@@ -1,13 +1,15 @@
 ---
-// Sonidos de interfaz muy leves, sintetizados con Web Audio (sin archivos):
+// Sonidos de interfaz leves, sintetizados con Web Audio (sin archivos):
 // un «bip» al pasar el ratón por un elemento interactivo y un «clic» al pulsar.
-// Solo con ratón. El navegador no deja sonar nada hasta el primer clic o tecla del usuario.
+// Solo con ratón. Los navegadores no dejan sonar una página hasta que el usuario hace clic o
+// pulsa una tecla en ella (pasar el ratón o hacer scroll no cuenta). El audio se prepara al cargar
+// por si el navegador ya lo permite; si no, el interruptor lo indica y se activa con el primer clic.
 // Se puede apagar con el interruptor fijo (la elección se recuerda en el navegador).
 ---
 
 <button type="button" class="sound-toggle data" aria-pressed="true" data-sound-toggle hidden>
   <span class="bars" aria-hidden="true"><i></i><i></i><i></i></span>
-  <span>Sonido</span>
+  <span data-sound-label>Sonido</span>
 </button>
 
 <script>
@@ -32,7 +34,8 @@
       if (ctx) return;
       ctx = new AudioContext();
       master = ctx.createGain();
-      master.gain.value = 0.6;
+      master.gain.value = 1;
+      ctx.addEventListener('statechange', render);
       master.connect(ctx.destination);
       // 20 ms de ruido blanco para el clic
       noise = ctx.createBuffer(1, Math.round(ctx.sampleRate * 0.02), ctx.sampleRate);
@@ -46,11 +49,12 @@
       const t = ctx.currentTime;
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(2200, t);
-      osc.frequency.exponentialRampToValueAtTime(1800, t + 0.04);
+      // Onda triangular: sus armónicos se oyen mejor en altavoces pequeños de portátil
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(2000, t);
+      osc.frequency.exponentialRampToValueAtTime(1600, t + 0.04);
       gain.gain.setValueAtTime(0, t);
-      gain.gain.linearRampToValueAtTime(0.03, t + 0.004);
+      gain.gain.linearRampToValueAtTime(0.16, t + 0.004);
       gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.05);
       osc.connect(gain).connect(master);
       osc.start(t);
@@ -66,18 +70,23 @@
       const gain = ctx.createGain();
       src.buffer = noise;
       filter.type = 'highpass';
-      filter.frequency.value = 2500;
-      gain.gain.setValueAtTime(0.09, t);
-      gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.018);
+      filter.frequency.value = 1800;
+      gain.gain.setValueAtTime(0.45, t);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.022);
       src.connect(filter).connect(gain).connect(master);
       src.start(t);
     };
 
-    const render = () => {
+    const label = toggle.querySelector('[data-sound-label]')!;
+    function render() {
+      // Encendido pero bloqueado por el navegador hasta el primer clic
+      const waiting = on && ctx?.state !== 'running';
       toggle.setAttribute('aria-pressed', String(on));
       toggle.setAttribute('aria-label', on ? 'Desactivar sonidos de la interfaz' : 'Activar sonidos de la interfaz');
       toggle.classList.toggle('is-off', !on);
-    };
+      toggle.classList.toggle('is-waiting', waiting);
+      label.textContent = waiting ? 'Sonido · clic para activar' : 'Sonido';
+    }
 
     // El primer gesto del usuario desbloquea el audio
     const unlock = () => {
@@ -86,6 +95,8 @@
     };
     addEventListener('pointerdown', unlock, { capture: true });
     addEventListener('keydown', unlock, { capture: true });
+    // Se intenta arrancar ya: algunos navegadores lo permiten si el usuario interactuó antes con la web
+    unlock();
 
     document.addEventListener('pointerover', (e) => {
       if (e.pointerType !== 'mouse') return;
@@ -186,6 +197,16 @@
 
   .bars i {
     transform-origin: bottom;
+  }
+
+  .sound-toggle.is-waiting {
+    color: var(--text);
+    border-color: rgba(247, 196, 0, 0.6);
+  }
+
+  .is-waiting .bars i {
+    animation: none;
+    height: 30%;
   }
 
   .is-off .bars i {

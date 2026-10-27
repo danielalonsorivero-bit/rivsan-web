@@ -6,3 +6,6 @@ dist/
 .env.*
 # Documentación fuente (PDFs pesados, no se versionan)
 doc/
+
+# Documentos de entrega al cliente (no van al repositorio público)
+entregables/
