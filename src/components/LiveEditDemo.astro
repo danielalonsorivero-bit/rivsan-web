@@ -1,6 +1,9 @@
 ---
-// Demostración interactiva de Live Edit: el instructor activa factores de estrés
-// sobre el escenario mientras los agentes están dentro. Datos y escena ilustrativos.
+// Demostración interactiva de Live Edit. Misión del ejercicio: el binomio avanza por la calle,
+// localiza al sospechoso y lo controla. El instructor añade factores de estrés mientras tanto, y
+// cada uno cambia el ejercicio: la oscuridad y el humo reducen la visión y frenan el avance, el civil
+// obliga a esperar si cruza la línea de tiro, el vehículo fuerza un rodeo y las comunicaciones
+// degradadas desincronizan al agente B. Datos y escena ilustrativos.
 
 const factors = [
   { id: 'noche', label: 'Oscuridad', weight: 25 },
@@ -14,12 +17,12 @@ const factors = [
 <div class="live" data-live>
   <div class="screen hud">
     <div class="screen-bar data" aria-hidden="true">
-      <span><i class="dot"></i> LIVE EDIT · ESCENARIO 03</span>
+      <span><i class="dot"></i> LIVE EDIT · MISIÓN: LOCALIZAR Y CONTROLAR AL SOSPECHOSO</span>
       <span class="comms">COMMS <b data-live-comms>▮▮▮▮</b></span>
     </div>
 
     <svg viewBox="0 0 600 340" role="img" aria-labelledby="live-title">
-      <title id="live-title">Vista cenital de una calle con dos agentes y un sospechoso; el instructor añade factores de estrés</title>
+      <title id="live-title">Vista cenital de una calle: dos agentes avanzan en binomio hasta controlar a un sospechoso mientras el instructor añade factores de estrés</title>
       <defs>
         <pattern id="live-grid" width="20" height="20" patternUnits="userSpaceOnUse">
           <path d="M20 0H0V20" fill="none" stroke="currentColor" stroke-opacity="0.07" />
@@ -30,8 +33,8 @@ const factors = [
         </radialGradient>
         <mask id="live-dark">
           <rect width="600" height="340" fill="#fff" />
-          <circle data-torch="a" r="70" fill="url(#live-torch)" />
-          <circle data-torch="b" r="70" fill="url(#live-torch)" />
+          <circle data-torch="a" r="80" fill="url(#live-torch)" />
+          <circle data-torch="b" r="80" fill="url(#live-torch)" />
         </mask>
         <filter id="live-blur"><feGaussianBlur stdDeviation="14" /></filter>
       </defs>
@@ -41,46 +44,57 @@ const factors = [
       <g class="blocks">
         <rect x="20" y="20" width="220" height="110" />
         <rect x="360" y="20" width="220" height="110" />
-        <rect x="20" y="220" width="220" height="100" />
-        <rect x="360" y="220" width="220" height="100" />
+        <rect x="20" y="230" width="220" height="90" />
+        <rect x="360" y="230" width="220" height="90" />
       </g>
       <text x="40" y="44" class="label">PORTAL 12</text>
       <text x="380" y="44" class="label">LOCAL COMERCIAL</text>
+      <text x="40" y="254" class="label">SALIDA</text>
 
-      <!-- Obstáculo: vehículo atravesado -->
+      <!-- Ruta prevista del binomio -->
+      <path class="route" data-route d="" />
+
+      <!-- Obstáculo: vehículo atravesado en mitad de la calle -->
       <g class="layer" data-layer="obstaculo">
-        <rect x="270" y="150" width="60" height="34" rx="4" class="car" />
-        <text x="300" y="171" text-anchor="middle" class="label">VEHÍCULO</text>
+        <rect x="262" y="138" width="56" height="62" rx="5" class="car" />
+        <text x="290" y="173" text-anchor="middle" class="label">VEHÍCULO</text>
       </g>
 
-      <!-- Civil -->
-      <g class="layer" data-layer="civil" transform="translate(470 175)">
-        <circle r="9" class="civil" />
-        <text y="-16" text-anchor="middle" class="label">CIVIL</text>
+      <!-- Sospechoso: oculto con poca visibilidad hasta que un agente lo tiene cerca -->
+      <g class="suspect" data-suspect transform="translate(470 172)">
+        <circle r="9" class="suspect-dot" />
+        <circle r="17" class="suspect-ring" />
+        <text y="-22" text-anchor="middle" class="label" data-suspect-label>SOSPECHOSO</text>
       </g>
 
-      <!-- Sospechoso -->
-      <g transform="translate(420 160)">
-        <circle r="9" class="suspect" />
-        <text y="-16" text-anchor="middle" class="label">SOSPECHOSO</text>
+      <!-- Civil: cruza la calle y puede quedar en la línea de tiro -->
+      <g class="layer civil" data-layer="civil" data-civil>
+        <circle r="8" class="civil-dot" />
+        <text y="-14" text-anchor="middle" class="label">CIVIL</text>
       </g>
 
       <!-- Agentes -->
       <path class="cone" data-cone="a" />
       <path class="cone" data-cone="b" />
       <g class="agent" data-agent="a"><circle r="9" /><text y="4" text-anchor="middle">A</text></g>
-      <g class="agent" data-agent="b"><circle r="9" /><text y="4" text-anchor="middle">B</text></g>
+      <g class="agent" data-agent="b"><circle r="9" /><text y="4" text-anchor="middle">B</text><text y="-15" text-anchor="middle" class="agent-warn" data-b-warn>SIN ENLACE</text></g>
 
       <!-- Humo -->
       <g class="layer smoke" data-layer="humo" filter="url(#live-blur)">
-        <circle cx="330" cy="150" r="60" />
-        <circle cx="380" cy="190" r="50" />
-        <circle cx="290" cy="200" r="45" />
+        <circle cx="330" cy="160" r="62" />
+        <circle cx="380" cy="200" r="52" />
+        <circle cx="290" cy="205" r="46" />
       </g>
 
       <!-- Oscuridad: todo negro salvo las linternas de los agentes -->
       <rect class="layer dark" data-layer="noche" width="600" height="340" mask="url(#live-dark)" />
     </svg>
+
+    <ul class="readout data">
+      <li><span>Fase</span><strong data-live-phase>Aproximación</strong></li>
+      <li><span>Tiempo</span><strong data-live-time>0,0 s</strong></li>
+      <li><span>Último control</span><strong data-live-last>—</strong></li>
+    </ul>
 
     <div class="stress data">
       <span>Estrés del escenario</span>
@@ -99,91 +113,236 @@ const factors = [
       ))
     }
   </div>
-  <p class="note">Simulación ilustrativa. Activa factores como lo haría el instructor desde su tablet.</p>
+  <p class="note">Simulación ilustrativa. Activa factores como lo haría el instructor desde su tablet y compara el tiempo hasta el control.</p>
+  <p class="visually-hidden" aria-live="polite" data-live-sr></p>
 </div>
 
 <script>
+  type Pt = { x: number; y: number };
+
+  const SUSPECT: Pt = { x: 470, y: 172 };
+  const SPEED = 62; // px/s en condiciones normales
+  const SMOKE = { x: 335, y: 180, r: 95 };
+  const CONTROL_S = 1.6; // duración de la fase de control
+  const RESET_S = 1.2;
+
+  // Rutas del binomio: recta por la calle o rodeando el vehículo por abajo
+  const RUTAS: Record<'recta' | 'rodeo', Record<'a' | 'b', Pt[]>> = {
+    recta: {
+      a: [{ x: 60, y: 165 }, { x: 430, y: 165 }],
+      b: [{ x: 40, y: 192 }, { x: 420, y: 192 }],
+    },
+    rodeo: {
+      a: [{ x: 60, y: 165 }, { x: 236, y: 165 }, { x: 256, y: 212 }, { x: 326, y: 212 }, { x: 346, y: 165 }, { x: 430, y: 165 }],
+      b: [{ x: 40, y: 192 }, { x: 232, y: 192 }, { x: 250, y: 220 }, { x: 332, y: 220 }, { x: 350, y: 192 }, { x: 420, y: 192 }],
+    },
+  };
+
+  const len = (pts: Pt[]) => pts.slice(1).reduce((s, p, i) => s + Math.hypot(p.x - pts[i].x, p.y - pts[i].y), 0);
+  function along(pts: Pt[], d: number): Pt & { a: number } {
+    for (let i = 1; i < pts.length; i++) {
+      const p = pts[i - 1];
+      const n = pts[i];
+      const seg = Math.hypot(n.x - p.x, n.y - p.y);
+      if (d <= seg || i === pts.length - 1) {
+        const k = Math.max(0, Math.min(1, d / seg));
+        return { x: p.x + (n.x - p.x) * k, y: p.y + (n.y - p.y) * k, a: (Math.atan2(n.y - p.y, n.x - p.x) * 180) / Math.PI };
+      }
+      d -= seg;
+    }
+    return { ...pts[0], a: 0 };
+  }
+
+  const cone = (x: number, y: number, a: number, l: number, half: number) => {
+    const r = (d: number) => (d * Math.PI) / 180;
+    const p = (d: number) => `${(x + l * Math.cos(r(d))).toFixed(1)} ${(y + l * Math.sin(r(d))).toFixed(1)}`;
+    return `M${x} ${y}L${p(a - half)}A${l} ${l} 0 0 1 ${p(a + half)}Z`;
+  };
+  const seg = (s: number) => `${s.toFixed(1).replace('.', ',')} s`;
+
   document.querySelectorAll<HTMLElement>('[data-live]').forEach((root) => {
     const $ = <T extends Element>(sel: string) => root.querySelector<T>(sel)!;
     const buttons = [...root.querySelectorAll<HTMLButtonElement>('[data-factor]')];
     const bar = $<HTMLElement>('[data-live-bar]');
     const level = $('[data-live-level]');
     const comms = $('[data-live-comms]');
-    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
-
+    const phaseOut = $('[data-live-phase]');
+    const timeOut = $('[data-live-time]');
+    const lastOut = $('[data-live-last]');
+    const sr = $('[data-live-sr]');
+    const route = $<SVGPathElement>('[data-route]');
+    const suspect = $<SVGGElement>('[data-suspect]');
+    const suspectLabel = $('[data-suspect-label]');
+    const civil = $<SVGGElement>('[data-civil]');
+    const bWarn = $<SVGTextElement>('[data-b-warn]');
     const agents = { a: $<SVGGElement>('[data-agent="a"]'), b: $<SVGGElement>('[data-agent="b"]') };
     const cones = { a: $<SVGPathElement>('[data-cone="a"]'), b: $<SVGPathElement>('[data-cone="b"]') };
     const torches = { a: $<SVGCircleElement>('[data-torch="a"]'), b: $<SVGCircleElement>('[data-torch="b"]') };
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     const active = new Set<string>();
+    const has = (f: string) => active.has(f);
 
-    const update = () => {
+    // Estado del ejercicio
+    let fase: 'aproximacion' | 'espera' | 'control' | 'reinicio' = 'aproximacion';
+    let dA = 0;
+    let dB = 0;
+    let t = 0; // tiempo del intento
+    let faseT = 0;
+    let civilT = 0;
+    let visto = false;
+
+    const rutas = () => RUTAS[has('obstaculo') ? 'rodeo' : 'recta'];
+
+    function reiniciar() {
+      fase = 'aproximacion';
+      dA = dB = t = faseT = 0;
+      visto = false;
+    }
+
+    function updatePanel() {
       buttons.forEach((b) => {
-        const on = active.has(b.dataset.factor!);
+        const on = has(b.dataset.factor!);
         b.setAttribute('aria-pressed', String(on));
         root.querySelector(`[data-layer="${b.dataset.factor}"]`)?.classList.toggle('is-on', on);
       });
-      const stress = buttons.filter((b) => active.has(b.dataset.factor!)).reduce((s, b) => s + Number(b.dataset.weight), 0);
+      const stress = buttons.filter((b) => has(b.dataset.factor!)).reduce((s, b) => s + Number(b.dataset.weight), 0);
       bar.style.width = `${Math.max(6, stress)}%`;
       bar.classList.toggle('is-high', stress >= 60);
       level.textContent = `Nivel ${1 + Math.min(4, Math.floor(stress / 20))}`;
-      root.classList.toggle('is-comms', active.has('comms'));
-    };
+      root.classList.toggle('is-comms', has('comms'));
+      bWarn.style.opacity = has('comms') ? '1' : '0';
+      const r = rutas().a;
+      route.setAttribute('d', 'M' + r.map((p) => `${p.x} ${p.y}`).join('L'));
+    }
 
     buttons.forEach((b) =>
       b.addEventListener('click', () => {
         const id = b.dataset.factor!;
-        active.has(id) ? active.delete(id) : active.add(id);
-        update();
+        has(id) ? active.delete(id) : active.add(id);
+        // Cambiar el escenario a mitad de intento obliga a recalcular la ruta: el intento sigue
+        if (id === 'obstaculo') {
+          const ra = rutas().a;
+          dA = Math.min(dA, len(ra));
+          dB = Math.min(dB, len(rutas().b));
+        }
+        updatePanel();
       }),
     );
 
-    // Los agentes avanzan en binomio por la calle, de ida y vuelta
-    const cone = (x: number, y: number, a: number, len: number, half: number) => {
-      const r = (d: number) => (d * Math.PI) / 180;
-      const p = (d: number) => `${(x + len * Math.cos(r(d))).toFixed(1)} ${(y + len * Math.sin(r(d))).toFixed(1)}`;
-      return `M${x} ${y}L${p(a - half)}A${len} ${len} 0 0 1 ${p(a + half)}Z`;
+    // Posición del civil: cruza la calle de arriba abajo en bucle, a la altura de x = 395
+    const civilPos = (): Pt => {
+      const k = (civilT % 6) / 6; // 6 s por cruce
+      return { x: 395, y: 132 + k * 96 };
     };
 
-    const place = (t: number) => {
-      const k = (Math.sin(t / 2600) + 1) / 2; // 0..1
-      const pos = {
-        a: { x: 70 + k * 150, y: 160, a: -5 + Math.sin(t / 900) * 18 },
-        b: { x: 50 + k * 150, y: 195, a: 10 + Math.sin(t / 1100 + 1) * 22 },
-      };
-      const dark = active.has('noche');
-      const smoke = active.has('humo');
-      const len = dark ? 110 : smoke ? 130 : 180;
+    function step(dt: number) {
+      const r = rutas();
+      const LA = len(r.a);
+      const LB = len(r.b);
+      const pa = along(r.a, dA);
+      const enHumo = has('humo') && Math.hypot(pa.x - SMOKE.x, pa.y - SMOKE.y) < SMOKE.r;
+      const factor = (has('noche') ? 0.72 : 1) * (enHumo ? 0.6 : 1);
+      if (has('civil')) civilT += dt;
+
+      // ¿El civil está en la línea de tiro (entre el agente A y el sospechoso)?
+      const c = civilPos();
+      const civilEnLinea = has('civil') && c.x > pa.x && c.x < SUSPECT.x && Math.abs(c.y - (pa.y + SUSPECT.y) / 2) < 26;
+
+      t += fase === 'aproximacion' || fase === 'espera' ? dt : 0;
+      faseT += dt;
+
+      if (fase === 'aproximacion' || fase === 'espera') {
+        if (civilEnLinea && dA > LA * 0.55) {
+          fase = 'espera';
+        } else {
+          fase = 'aproximacion';
+          dA = Math.min(LA, dA + SPEED * factor * dt);
+          // B sigue a A por proporción de ruta. Sin enlace reacciona tarde y avanza más lento;
+          // cuando A llega, B termina de cerrar hasta su posición.
+          const retraso = has('comms') ? 0.2 : 0.02;
+          const objetivoB = dA >= LA - 0.5 ? LB : Math.max(0, dA / LA - retraso) * LB;
+          const vB = SPEED * factor * (has('comms') ? 0.75 : 1.15);
+          dB = Math.min(LB, Math.max(dB, Math.min(objetivoB, dB + vB * dt)));
+        }
+        if (visto && dA >= LA - 0.5 && dB >= LB - 0.5) {
+          fase = 'control';
+          faseT = 0;
+          lastOut.textContent = seg(t);
+          sr.textContent = `Sospechoso controlado en ${seg(t)}`;
+        }
+      } else if (fase === 'control' && faseT > CONTROL_S) {
+        fase = 'reinicio';
+        faseT = 0;
+      } else if (fase === 'reinicio' && faseT > RESET_S) {
+        reiniciar();
+      }
+      render(civilEnLinea);
+    }
+
+    function render(civilEnLinea = false) {
+      const r = rutas();
+      const pos = { a: along(r.a, dA), b: along(r.b, Math.max(0, dB)) };
+      const dark = has('noche');
+      const smoke = has('humo');
+      const alcance = dark && smoke ? 80 : dark ? 105 : smoke ? 120 : 400;
+      const largo = dark ? 110 : smoke ? 130 : 180;
+
       for (const id of ['a', 'b'] as const) {
         const p = pos[id];
+        // Al final de la ruta, los agentes encaran al sospechoso
+        const cerca = Math.hypot(SUSPECT.x - p.x, SUSPECT.y - p.y) < 90;
+        const ang = cerca ? (Math.atan2(SUSPECT.y - p.y, SUSPECT.x - p.x) * 180) / Math.PI : p.a;
         agents[id].setAttribute('transform', `translate(${p.x.toFixed(1)} ${p.y.toFixed(1)})`);
-        cones[id].setAttribute('d', cone(p.x, p.y, p.a, len, dark ? 22 : 30));
-        torches[id].setAttribute('cx', (p.x + 40).toFixed(1));
-        torches[id].setAttribute('cy', p.y.toFixed(1));
+        cones[id].setAttribute('d', cone(p.x, p.y, ang, largo, dark ? 22 : 30));
+        torches[id].setAttribute('cx', (p.x + 45 * Math.cos((ang * Math.PI) / 180)).toFixed(1));
+        torches[id].setAttribute('cy', (p.y + 45 * Math.sin((ang * Math.PI) / 180)).toFixed(1));
       }
-    };
+
+      const dist = Math.min(...(['a', 'b'] as const).map((id) => Math.hypot(SUSPECT.x - pos[id].x, SUSPECT.y - pos[id].y)));
+      if (dist < alcance) visto = true;
+      suspect.classList.toggle('is-hidden', !visto);
+      suspect.classList.toggle('is-controlled', fase === 'control' || fase === 'reinicio');
+      suspectLabel.textContent = fase === 'control' || fase === 'reinicio' ? 'CONTROLADO' : visto ? 'SOSPECHOSO' : '?';
+
+      const c = civilPos();
+      civil.setAttribute('transform', `translate(${c.x} ${c.y.toFixed(1)})`);
+      civil.classList.toggle('is-danger', civilEnLinea);
+
+      phaseOut.textContent =
+        fase === 'espera'
+          ? 'Civil en línea de tiro: esperar'
+          : fase === 'control' || fase === 'reinicio'
+            ? 'Sospechoso controlado'
+            : !visto
+              ? 'Buscando al sospechoso'
+              : 'Aproximación';
+      root.classList.toggle('is-wait', fase === 'espera');
+      timeOut.textContent = seg(t);
+    }
 
     // Indicador de comunicaciones: oscila cuando están degradadas
     const signal = ['▮▯▯▯', '▮▮▯▯', '▯▯▯▯', '▮▯▯▯'];
     let running = false;
-    const loop = (t: number) => {
+    let last = 0;
+    const loop = (now: number) => {
       if (!running) return;
-      place(t);
-      comms.textContent = active.has('comms') ? signal[Math.floor(t / 300) % signal.length] : '▮▮▮▮';
+      step(Math.min(0.05, (now - last) / 1000));
+      last = now;
+      comms.textContent = has('comms') ? signal[Math.floor(now / 300) % signal.length] : '▮▮▮▮';
       requestAnimationFrame(loop);
     };
 
-    if (reduced) {
-      place(0);
-    } else {
+    updatePanel();
+    render();
+    if (!reduced) {
       // Solo se anima mientras está en pantalla
       new IntersectionObserver(([e]) => {
         running = e.isIntersecting;
+        last = performance.now();
         if (running) requestAnimationFrame(loop);
       }).observe(root);
     }
-    place(0);
-    update();
   });
 </script>
 
@@ -258,16 +417,94 @@ const factors = [
     stroke-width: 2;
   }
 
-  .civil {
+  .route {
+    fill: none;
+    stroke: rgba(247, 196, 0, 0.35);
+    stroke-width: 1.5;
+    stroke-dasharray: 4 6;
+  }
+
+  .suspect-dot {
+    fill: none;
+    stroke: #ff5a5f;
+    stroke-width: 2;
+  }
+
+  .suspect-ring {
+    fill: none;
+    stroke: #ff5a5f;
+    stroke-opacity: 0.35;
+    stroke-dasharray: 3 4;
+  }
+
+  .suspect {
+    transition: opacity 0.3s;
+  }
+
+  .suspect.is-hidden .suspect-dot,
+  .suspect.is-hidden .suspect-ring {
+    stroke-opacity: 0.2;
+  }
+
+  .suspect.is-controlled .suspect-dot,
+  .suspect.is-controlled .suspect-ring {
+    stroke: #7ed99a;
+    stroke-opacity: 1;
+  }
+
+  .civil-dot {
     fill: none;
     stroke: #fff;
     stroke-width: 2;
   }
 
-  .suspect {
-    fill: none;
-    stroke: #ff5a5f;
-    stroke-width: 2;
+  .civil.is-danger .civil-dot {
+    stroke: var(--yellow);
+    stroke-width: 3;
+  }
+
+  .agent-warn {
+    font-family: var(--font-data);
+    font-size: 8px;
+    letter-spacing: 0.1em;
+    fill: #ff5a5f;
+    opacity: 0;
+  }
+
+  .readout {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: 1.6fr 1fr 1fr;
+    border-top: 1px solid var(--line);
+  }
+
+  .readout li {
+    padding: 10px 16px;
+    display: grid;
+    gap: 2px;
+  }
+
+  .readout li + li {
+    border-left: 1px solid var(--line);
+  }
+
+  .readout span {
+    font-size: 0.6875rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+
+  .readout strong {
+    font-weight: 500;
+    font-size: 0.95rem;
+    color: var(--yellow);
+  }
+
+  .is-wait .readout li:first-child strong {
+    color: #ff5a5f;
   }
 
   .cone {

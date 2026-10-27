@@ -54,7 +54,7 @@ const levels = [
         <span>Conducta del sujeto</span>
         <span>Respuesta del agente</span>
       </div>
-      <!-- El nivel más grave arriba: cada fila une conducta y respuesta -->
+      <!-- De menos a más grave, en orden de lectura: cada fila une conducta y respuesta -->
       <ol class="rows">
         {
           levels.map((l, i) => (
@@ -169,7 +169,7 @@ const levels = [
     margin: 0;
     padding: 0;
     display: flex;
-    flex-direction: column-reverse;
+    flex-direction: column;
     gap: 6px;
   }
 

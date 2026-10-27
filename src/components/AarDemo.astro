@@ -8,7 +8,7 @@ const events = [
   { t: 0, label: 'Inicio' },
   { t: 2.6, label: 'Entrada' },
   { t: 3.2, label: 'Amenaza' },
-  { t: 3.81, label: 'Disparo' },
+  { t: 3.81, label: 'Doble disparo' },
   { t: 5.4, label: 'Sala asegurada' },
 ];
 ---
@@ -44,7 +44,10 @@ const events = [
       <path class="cone cone-a" data-cone="a" />
 
       <!-- Trayectoria de disparo -->
-      <line class="shot" data-shot x1="0" y1="0" x2="0" y2="0" />
+      <line class="shot" data-shot="0" x1="0" y1="0" x2="0" y2="0" />
+      <line class="shot" data-shot="1" x1="0" y1="0" x2="0" y2="0" />
+      <circle class="muzzle" data-muzzle r="7" />
+      <g class="hit" data-hit transform="translate(500 90)"><circle r="14" /></g>
 
       <!-- Amenaza -->
       <g class="threat" data-threat transform="translate(500 90)">
@@ -66,7 +69,7 @@ const events = [
     <ul class="metrics data">
       <li><span>Reacción A</span><strong data-aar-reaction>—</strong></li>
       <li><span>Cono A</span><strong data-aar-cone>0°</strong></li>
-      <li><span>Impactos</span><strong data-aar-hits>0 / 0</strong></li>
+      <li><span>Impactos / disparos</span><strong data-aar-hits>0 / 0</strong></li>
       <li><span>Fuego amigo</span><strong>0</strong></li>
     </ul>
   </div>
@@ -113,9 +116,11 @@ const events = [
       { t: 8, x: 330, y: 90, a: -60 },
     ],
   };
-  const THREAT = { x: 500, y: 90, appears: 3.2, down: 3.95 };
-  const SHOT = { t: 3.81, until: 4.25 };
-  const REACTION_MS = Math.round((SHOT.t - 3.4) * 1000);
+  const THREAT = { x: 500, y: 90, appears: 3.2, down: 4.1 };
+  // Doble disparo (técnica de «doble tap»): dos impactos separados 0,18 s
+  const SHOTS = [3.81, 3.99];
+  const TRACER = 0.12; // segundos que se ve cada trazo
+  const REACTION_MS = Math.round((SHOTS[0] - 3.4) * 1000);
   const CONE = { half: 30, len: 170 };
 
   const lerp = (a: number, b: number, k: number) => a + (b - a) * k;
@@ -160,7 +165,9 @@ const events = [
     const coneOut = $('[data-aar-cone]');
     const hits = $('[data-aar-hits]');
     const threat = $<SVGGElement>('[data-threat]');
-    const shot = $<SVGLineElement>('[data-shot]');
+    const shots = [...root.querySelectorAll<SVGLineElement>('[data-shot]')];
+    const muzzle = $<SVGCircleElement>('[data-muzzle]');
+    const hit = $<SVGGElement>('[data-hit]');
     const marks = [...root.querySelectorAll<HTMLElement>('.marks li')];
     const agents = { a: $<SVGGElement>('[data-agent="a"]'), b: $<SVGGElement>('[data-agent="b"]') };
     const cones = { a: $<SVGPathElement>('[data-cone="a"]'), b: $<SVGPathElement>('[data-cone="b"]') };
@@ -180,17 +187,32 @@ const events = [
       const a = at(PATHS.a, t);
       threat.classList.toggle('is-visible', t >= THREAT.appears);
       threat.classList.toggle('is-down', t >= THREAT.down);
-      const firing = t >= SHOT.t && t < SHOT.until;
-      shot.classList.toggle('is-visible', firing);
-      if (firing) {
-        shot.setAttribute('x1', a.x.toFixed(1));
-        shot.setAttribute('y1', a.y.toFixed(1));
-        shot.setAttribute('x2', String(THREAT.x));
-        shot.setAttribute('y2', String(THREAT.y));
+      // Cada disparo: trazo, destello en la boca del arma e impacto en el blanco
+      let flash = false;
+      SHOTS.forEach((st, i) => {
+        const on = t >= st && t < st + TRACER;
+        flash ||= on;
+        const line = shots[i];
+        line.classList.toggle('is-visible', on);
+        if (on) {
+          // El segundo trazo sale ligeramente desplazado (retroceso del arma)
+          const dy = i * 3;
+          line.setAttribute('x1', a.x.toFixed(1));
+          line.setAttribute('y1', (a.y + dy).toFixed(1));
+          line.setAttribute('x2', String(THREAT.x - i * 2));
+          line.setAttribute('y2', String(THREAT.y + dy));
+        }
+      });
+      muzzle.classList.toggle('is-visible', flash);
+      hit.classList.toggle('is-visible', flash);
+      if (flash) {
+        muzzle.setAttribute('cx', a.x.toFixed(1));
+        muzzle.setAttribute('cy', a.y.toFixed(1));
       }
+      const fired = SHOTS.filter((st) => t >= st).length;
       clock.textContent = fmt(t);
-      reaction.textContent = t >= SHOT.t ? `${REACTION_MS} ms` : '—';
-      hits.textContent = t >= SHOT.t ? '2 / 2' : '0 / 0';
+      reaction.textContent = fired ? `${REACTION_MS} ms` : '—';
+      hits.textContent = `${fired} / ${fired}`;
       marks.forEach((m) => m.classList.toggle('is-past', t >= Number(m.dataset.t)));
       range.value = String(Math.round(t * 1000));
       range.style.setProperty('--p', `${(t / duration) * 100}%`);
@@ -366,6 +388,30 @@ const events = [
   }
 
   .threat.is-down .threat-x {
+    opacity: 1;
+  }
+
+  .muzzle {
+    fill: #fff;
+    opacity: 0;
+    filter: drop-shadow(0 0 6px var(--yellow));
+  }
+
+  .muzzle.is-visible {
+    opacity: 0.9;
+  }
+
+  .hit circle {
+    fill: none;
+    stroke: #fff;
+    stroke-width: 2;
+  }
+
+  .hit {
+    opacity: 0;
+  }
+
+  .hit.is-visible {
     opacity: 1;
   }
 

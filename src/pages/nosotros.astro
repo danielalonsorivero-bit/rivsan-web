@@ -344,7 +344,8 @@ const alliances = [
     color: var(--yellow);
   }
 
-  .relion-stats span {
+  /* Solo la etiqueta: la cifra lleva dentro un <span data-count> que debe heredar del <strong> */
+  .relion-stats div > span {
     font-size: 0.9rem;
     color: var(--text-muted);
   }

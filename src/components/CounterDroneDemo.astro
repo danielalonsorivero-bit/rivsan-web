@@ -1,11 +1,16 @@
 ---
-// Mini ejercicio de counter-drone: radar con drones FPV y comerciales que se acercan al operador.
-// Se neutralizan con clic (o tecla Espacio / botón «Disparar») cuando entran en el alcance eficaz.
+// Ejercicio de counter-drone en radar. Entrena lo que importa en el módulo real:
+// - Identificar antes de disparar: los contactos aparecen como desconocidos y se clasifican al cruzar
+//   el anillo de identificación. Algunos son drones propios: dispararles es fuego amigo.
+// - Gestionar la munición: escopeta de 5 cartuchos con recarga (tecla R o botón).
+// - Disparar en el alcance eficaz: fuera de él, el disparo es un fallo.
+// Al terminar, una evaluación tipo instructor (apto / no apto) y la comparación con el intento anterior.
 // Ejercicio ilustrativo; no reproduce el módulo real.
-const DURATION = 20; // segundos
+const DURATION = 30; // segundos
+const AMMO = 5;
 ---
 
-<div class="cd" data-cd data-duration={DURATION}>
+<div class="cd" data-cd data-duration={DURATION} data-ammo={AMMO}>
   <div class="screen hud">
     <div class="screen-bar data" aria-hidden="true">
       <span><i class="dot"></i> COUNTER-DRONE · RADAR</span>
@@ -14,7 +19,7 @@ const DURATION = 20; // segundos
 
     <div class="stage">
       <svg viewBox="0 0 400 400" data-cd-svg role="img" aria-labelledby="cd-title">
-        <title id="cd-title">Radar circular con el operador en el centro; los drones se acercan desde los bordes</title>
+        <title id="cd-title">Radar circular con el operador en el centro; los contactos se acercan desde los bordes</title>
         <defs>
           <linearGradient id="cd-sweep" x1="0" y1="0" x2="1" y2="0">
             <stop offset="0" stop-color="#7ed99a" stop-opacity="0" />
@@ -23,10 +28,11 @@ const DURATION = 20; // segundos
         </defs>
         <g class="rings">
           <circle cx="200" cy="200" r="190" />
-          <circle cx="200" cy="200" r="130" />
+          <circle cx="200" cy="200" r="135" class="id-ring" />
           <circle cx="200" cy="200" r="70" class="range" />
           <path d="M200 10V390M10 200H390" />
         </g>
+        <text x="206" y="61" class="label label--id">IDENTIFICACIÓN</text>
         <text x="206" y="126" class="label">ALCANCE EFICAZ</text>
         <g class="sweep">
           <path d="M200 200L390 200A190 190 0 0 0 334.4 65.6Z" fill="url(#cd-sweep)" />
@@ -38,10 +44,15 @@ const DURATION = 20; // segundos
       </svg>
 
       <div class="overlay" data-cd-overlay>
-        <p class="data overlay-title" data-cd-title>Ejercicio de 20 segundos</p>
-        <p class="overlay-text" data-cd-summary>
-          Neutraliza los drones cuando entren en el círculo amarillo. Disparar fuera de alcance cuenta como fallo.
-        </p>
+        <p class="data overlay-title" data-cd-title>Ejercicio de {DURATION} segundos</p>
+        <div class="overlay-text" data-cd-summary>
+          <p>Los contactos entran como <b>desconocidos</b>. Al cruzar el anillo exterior se identifican:</p>
+          <ul class="legend-list">
+            <li><i class="lg lg--hostil"></i> Hostil (FPV o UAV): neutralízalo dentro del círculo amarillo.</li>
+            <li><i class="lg lg--propio"></i> Propio: no dispares.</li>
+          </ul>
+          <p>Tienes {AMMO} cartuchos. Recarga con <kbd>R</kbd>.</p>
+        </div>
         <button type="button" class="btn btn-primary" data-cd-start>Iniciar ejercicio</button>
       </div>
     </div>
@@ -49,25 +60,41 @@ const DURATION = 20; // segundos
     <ul class="metrics data">
       <li><span>Neutralizados</span><strong data-cd-hits>0</strong></li>
       <li><span>Reacción media</span><strong data-cd-reaction>—</strong></li>
-      <li><span>Fallos</span><strong data-cd-miss>0</strong></li>
-      <li><span>Impactos recibidos</span><strong data-cd-taken>0</strong></li>
+      <li><span>Munición</span><strong class="ammo" data-cd-ammo></strong></li>
+      <li><span>Fuego amigo</span><strong data-cd-ff>0</strong></li>
     </ul>
   </div>
 
   <div class="controls">
-    <button type="button" class="fire" data-cd-fire disabled>Disparar al más cercano <kbd>Espacio</kbd></button>
-    <p class="note">Ejercicio ilustrativo. Haz clic sobre cada dron o usa el botón.</p>
+    <button type="button" class="fire" data-cd-fire disabled>Disparar al hostil más cercano <kbd>Espacio</kbd></button>
+    <button type="button" class="fire" data-cd-reload disabled>Recargar <kbd>R</kbd></button>
+    <p class="note">Ejercicio ilustrativo. Haz clic sobre cada contacto o usa el teclado.</p>
   </div>
   <p class="visually-hidden" aria-live="polite" data-cd-live></p>
 </div>
 
 <script>
-  type Drone = { el: SVGGElement; angle: number; r: number; speed: number; inRangeAt: number | null; done: boolean };
+  type Kind = 'fpv' | 'uav' | 'propio';
+  type Drone = {
+    el: SVGGElement;
+    kind: Kind;
+    angle: number;
+    r: number;
+    speed: number;
+    weave: number; // FPV: amplitud del zigzag · propios: tiempo en órbita
+    seed: number;
+    identified: boolean;
+    inRangeAt: number | null;
+    done: boolean;
+  };
 
   const C = 200;
   const RANGE = 70;
+  const ID_R = 135;
   const SPAWN_R = 190;
+  const RELOAD_S = 1.3;
   const NS = 'http://www.w3.org/2000/svg';
+  const KEY = 'rivsan-cd-ultimo';
 
   document.querySelectorAll<HTMLElement>('[data-cd]').forEach((root) => {
     const $ = <T extends Element>(sel: string) => root.querySelector<T>(sel)!;
@@ -75,48 +102,88 @@ const DURATION = 20; // segundos
     const layer = $<SVGGElement>('[data-cd-drones]');
     const overlay = $<HTMLElement>('[data-cd-overlay]');
     const title = $('[data-cd-title]');
-    const summary = $('[data-cd-summary]');
+    const summary = $<HTMLElement>('[data-cd-summary]');
     const start = $<HTMLButtonElement>('[data-cd-start]');
     const fire = $<HTMLButtonElement>('[data-cd-fire]');
+    const reloadBtn = $<HTMLButtonElement>('[data-cd-reload]');
     const timeOut = $('[data-cd-time]');
     const out = {
       hits: $('[data-cd-hits]'),
       reaction: $('[data-cd-reaction]'),
-      miss: $('[data-cd-miss]'),
-      taken: $('[data-cd-taken]'),
+      ammo: $('[data-cd-ammo]'),
+      ff: $('[data-cd-ff]'),
     };
     const live = $('[data-cd-live]');
     const duration = Number(root.dataset.duration);
+    const AMMO = Number(root.dataset.ammo);
 
     let drones: Drone[] = [];
     let running = false;
     let elapsed = 0;
     let last = 0;
     let nextSpawn = 0;
-    let stats = { hits: 0, miss: 0, taken: 0, reactions: [] as number[] };
+    let ammo = AMMO;
+    let reloadUntil = 0;
+    let stats = { hits: 0, miss: 0, taken: 0, ff: 0, hostiles: 0, reactions: [] as number[] };
 
-    const pos = (d: Drone) => ({ x: C + d.r * Math.cos(d.angle), y: C + d.r * Math.sin(d.angle) });
+    const pos = (d: Drone) => {
+      // Los FPV hacen zigzag lateral: más difíciles de seguir
+      const a = d.angle + (d.kind === 'fpv' ? Math.sin(elapsed * 4 + d.seed) * d.weave : 0);
+      return { x: C + d.r * Math.cos(a), y: C + d.r * Math.sin(a) };
+    };
 
     const spawn = () => {
-      const fpv = Math.random() < 0.45;
+      const roll = Math.random();
+      // La proporción de FPV y la velocidad crecen con el tiempo
+      const prog = elapsed / duration;
+      const kind: Kind = roll < 0.22 ? 'propio' : roll < 0.22 + 0.3 + prog * 0.25 ? 'fpv' : 'uav';
       const el = document.createElementNS(NS, 'g');
-      el.setAttribute('class', `drone ${fpv ? 'drone--fpv' : ''}`);
-      el.innerHTML = `<circle r="7"/><path d="M-11 -11l5 5M11 -11l-5 5M-11 11l5 -5M11 11l-5 -5"/><text y="-13" text-anchor="middle">${fpv ? 'FPV' : 'UAV'}</text>`;
+      el.setAttribute('class', 'drone is-unknown');
+      el.innerHTML = '<circle r="7"/><path d="M-11 -11l5 5M11 -11l-5 5M-11 11l5 -5M11 11l-5 -5"/><text y="-13" text-anchor="middle">?</text>';
       layer.appendChild(el);
-      drones.push({ el, angle: Math.random() * Math.PI * 2, r: SPAWN_R, speed: fpv ? 46 : 26, inRangeAt: null, done: false });
+      const base = kind === 'fpv' ? 44 : kind === 'uav' ? 26 : 30;
+      drones.push({
+        el,
+        kind,
+        angle: Math.random() * Math.PI * 2,
+        r: SPAWN_R,
+        speed: base * (1 + prog * 0.5),
+        weave: kind === 'fpv' ? 0.18 : 0,
+        seed: Math.random() * 10,
+        identified: false,
+        inRangeAt: null,
+        done: false,
+      });
+      if (kind !== 'propio') stats.hostiles++;
+    };
+
+    const identify = (d: Drone) => {
+      d.identified = true;
+      d.el.classList.remove('is-unknown');
+      d.el.classList.add(d.kind === 'propio' ? 'drone--propio' : 'drone--hostil');
+      d.el.querySelector('text')!.textContent = d.kind === 'propio' ? 'PROPIO' : d.kind.toUpperCase();
+    };
+
+    const reloading = () => reloadUntil > 0 && elapsed < reloadUntil;
+
+    const renderAmmo = () => {
+      out.ammo.innerHTML = reloading()
+        ? '<span class="reloading">Recargando…</span>'
+        : Array.from({ length: AMMO }, (_, i) => `<i class="${i < ammo ? 'full' : ''}"></i>`).join('');
     };
 
     const render = () => {
       for (const d of drones) {
         const p = pos(d);
         d.el.setAttribute('transform', `translate(${p.x.toFixed(1)} ${p.y.toFixed(1)})`);
-        d.el.classList.toggle('is-in-range', d.r <= RANGE && !d.done);
+        d.el.classList.toggle('is-in-range', d.r <= RANGE && !d.done && d.kind !== 'propio' && d.identified);
       }
       const avg = stats.reactions.length ? Math.round(stats.reactions.reduce((a, b) => a + b, 0) / stats.reactions.length) : null;
-      out.hits.textContent = String(stats.hits);
+      out.hits.textContent = `${stats.hits}`;
       out.reaction.textContent = avg === null ? '—' : `${avg} ms`;
-      out.miss.textContent = String(stats.miss);
-      out.taken.textContent = String(stats.taken);
+      out.ff.textContent = String(stats.ff);
+      out.ff.classList.toggle('is-bad', stats.ff > 0);
+      renderAmmo();
       timeOut.textContent = `${Math.max(0, duration - elapsed).toFixed(1)} s`;
     };
 
@@ -126,32 +193,72 @@ const DURATION = 20; // segundos
       setTimeout(() => d.el.remove(), 600);
     };
 
+    const reload = () => {
+      if (!running || reloading() || ammo === AMMO) return;
+      reloadUntil = elapsed + RELOAD_S;
+      live.textContent = 'Recargando';
+      render();
+    };
+
     const shoot = (d: Drone | undefined) => {
-      if (!running) return;
-      if (!d || d.r > RANGE) {
+      if (!running || reloading()) return;
+      if (ammo === 0) {
+        live.textContent = 'Sin munición: recarga';
+        return;
+      }
+      ammo--;
+      root.classList.add('is-shot');
+      setTimeout(() => root.classList.remove('is-shot'), 90);
+      if (d && d.kind === 'propio' && d.r <= RANGE) {
+        stats.ff++;
+        remove(d, 'is-down');
+        live.textContent = 'Fuego amigo: era un dron propio';
+      } else if (!d || d.r > RANGE) {
         stats.miss++;
         live.textContent = 'Fuera de alcance';
       } else {
         stats.hits++;
         stats.reactions.push(Math.round(elapsed * 1000 - (d.inRangeAt ?? elapsed * 1000)));
         remove(d, 'is-down');
-        live.textContent = 'Dron neutralizado';
+        live.textContent = 'Hostil neutralizado';
       }
+      if (ammo === 0) reloadUntil = elapsed + RELOAD_S; // recarga automática al vaciar
       render();
     };
 
     const finish = () => {
       running = false;
       root.classList.remove('is-running');
-      fire.disabled = true;
+      fire.disabled = reloadBtn.disabled = true;
       drones.forEach((d) => d.el.remove());
       drones = [];
       const avg = stats.reactions.length ? Math.round(stats.reactions.reduce((a, b) => a + b, 0) / stats.reactions.length) : null;
-      title.textContent = 'Ejercicio terminado';
-      summary.textContent = `${stats.hits} neutralizados, ${stats.miss} fallos y ${stats.taken} impactos recibidos${avg !== null ? `. Reacción media: ${avg} ms` : ''}. En el simulador, cada sesión queda registrada para comparar la evolución del operador.`;
+      const eficacia = stats.hostiles ? Math.round((stats.hits / stats.hostiles) * 100) : 0;
+      const apto = stats.ff === 0 && stats.taken <= 1 && eficacia >= 60;
+      let previo: { eficacia: number; avg: number | null } | null = null;
+      try {
+        previo = JSON.parse(sessionStorage.getItem(KEY) ?? 'null');
+        sessionStorage.setItem(KEY, JSON.stringify({ eficacia, avg }));
+      } catch {}
+      const comparacion = previo
+        ? `<p class="compare">Intento anterior: ${previo.eficacia} % de eficacia${previo.avg !== null ? ` · ${previo.avg} ms` : ''}. ${
+            eficacia > previo.eficacia ? 'Has mejorado.' : eficacia < previo.eficacia ? 'Has empeorado.' : 'Mismo resultado.'
+          }</p>`
+        : '';
+      title.textContent = 'Evaluación del ejercicio';
+      summary.innerHTML = `
+        <p class="verdict ${apto ? 'is-ok' : 'is-ko'}">${apto ? 'Apto' : 'No apto'}</p>
+        <ul class="report">
+          <li><span>Eficacia</span><strong>${eficacia} %</strong><em>${stats.hits} de ${stats.hostiles} hostiles</em></li>
+          <li><span>Reacción media</span><strong>${avg !== null ? `${avg} ms` : '—'}</strong><em>desde que entra en alcance</em></li>
+          <li><span>Fuego amigo</span><strong>${stats.ff}</strong><em>${stats.ff ? 'motivo de no apto' : 'correcto'}</em></li>
+          <li><span>Impactos recibidos</span><strong>${stats.taken}</strong><em>${stats.miss} disparos fallados</em></li>
+        </ul>
+        ${comparacion}
+        <p class="small">En el simulador, cada sesión queda registrada para seguir la evolución del operador.</p>`;
       start.textContent = 'Repetir';
       overlay.hidden = false;
-      live.textContent = summary.textContent;
+      live.textContent = `${apto ? 'Apto' : 'No apto'}. Eficacia ${eficacia} %, fuego amigo ${stats.ff}, impactos recibidos ${stats.taken}.`;
       start.focus();
     };
 
@@ -161,16 +268,34 @@ const DURATION = 20; // segundos
       last = now;
       elapsed += dt;
 
-      if (elapsed >= nextSpawn && elapsed < duration - 2) {
+      // Fin de la recarga
+      if (reloadUntil && elapsed >= reloadUntil) {
+        ammo = AMMO;
+        reloadUntil = 0;
+      }
+
+      if (elapsed >= nextSpawn && elapsed < duration - 3) {
         spawn();
-        nextSpawn = elapsed + 1.1 + Math.random() * 1.2;
+        const ritmo = 1 - (elapsed / duration) * 0.45; // cada vez más seguidos
+        nextSpawn = elapsed + (1.1 + Math.random() * 1.1) * ritmo;
       }
 
       for (const d of drones) {
         if (d.done) continue;
-        d.r -= d.speed * dt;
-        if (d.r <= RANGE && d.inRangeAt === null) d.inRangeAt = elapsed * 1000;
-        if (d.r <= 10) {
+        if (d.kind === 'propio') {
+          // Los propios vuelven hacia el operador y orbitan dentro del alcance: hay que no dispararles
+          if (d.r > 58) d.r -= d.speed * dt;
+          else {
+            d.angle += dt * 0.6;
+            d.weave += dt; // aquí cuenta el tiempo en órbita
+            if (d.weave > 4) remove(d, 'is-gone');
+          }
+        } else {
+          d.r -= d.speed * dt;
+        }
+        if (!d.identified && d.r <= ID_R) identify(d);
+        if (d.kind !== 'propio' && d.r <= RANGE && d.inRangeAt === null) d.inRangeAt = elapsed * 1000;
+        if (d.kind !== 'propio' && d.r <= 10) {
           stats.taken++;
           remove(d, 'is-hit');
           root.classList.add('is-flash');
@@ -185,20 +310,22 @@ const DURATION = 20; // segundos
     };
 
     start.addEventListener('click', () => {
-      stats = { hits: 0, miss: 0, taken: 0, reactions: [] };
+      stats = { hits: 0, miss: 0, taken: 0, ff: 0, hostiles: 0, reactions: [] };
       elapsed = 0;
-      nextSpawn = 0.3;
+      nextSpawn = 0.4;
+      ammo = AMMO;
+      reloadUntil = 0;
       overlay.hidden = true;
       running = true;
       root.classList.add('is-running');
-      fire.disabled = false;
+      fire.disabled = reloadBtn.disabled = false;
       fire.focus();
       last = performance.now();
       render();
       requestAnimationFrame(tick);
     });
 
-    // Clic en el radar: se dispara al dron más cercano al punto, si lo hay
+    // Clic en el radar: se dispara al contacto más cercano al punto (sea cual sea: hay que identificar)
     svg.addEventListener('pointerdown', (e) => {
       if (!running) return;
       const pt = new DOMPoint(e.clientX, e.clientY).matrixTransform(svg.getScreenCTM()!.inverse());
@@ -210,12 +337,17 @@ const DURATION = 20; // segundos
       shoot(target?.d);
     });
 
-    const nearest = () => drones.filter((d) => !d.done).sort((a, b) => a.r - b.r)[0];
+    // El botón y la tecla Espacio apuntan al hostil identificado más cercano
+    const nearest = () => drones.filter((d) => !d.done && d.identified && d.kind !== 'propio').sort((a, b) => a.r - b.r)[0];
     fire.addEventListener('click', () => shoot(nearest()));
+    reloadBtn.addEventListener('click', reload);
     root.addEventListener('keydown', (e) => {
-      if (running && e.code === 'Space' && e.target !== fire) {
+      if (!running) return;
+      if (e.code === 'Space' && e.target !== fire) {
         e.preventDefault();
         shoot(nearest());
+      } else if (e.key === 'r' || e.key === 'R') {
+        reload();
       }
     });
 
@@ -372,7 +504,7 @@ const DURATION = 20; // segundos
 
   .overlay-text {
     margin: 0;
-    max-width: 34ch;
+    max-width: 42ch;
     color: var(--text-muted);
   }
 
@@ -452,6 +584,151 @@ const DURATION = 20; // segundos
     margin: 0;
     font-size: 0.8125rem;
     color: var(--text-dim);
+  }
+
+  .rings .id-ring {
+    stroke: rgba(255, 255, 255, 0.3);
+    stroke-dasharray: 2 6;
+  }
+
+  .label--id {
+    fill: rgba(255, 255, 255, 0.5);
+  }
+
+  .stage :global(.drone.is-unknown circle),
+  .stage :global(.drone.is-unknown path) {
+    stroke: rgba(255, 255, 255, 0.45);
+  }
+
+  .stage :global(.drone--propio circle),
+  .stage :global(.drone--propio path) {
+    stroke: #7ed99a;
+  }
+
+  .stage :global(.drone--propio text) {
+    fill: #7ed99a;
+  }
+
+  .stage :global(.drone.is-gone) {
+    opacity: 0;
+  }
+
+  .is-shot .screen {
+    box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.35);
+  }
+
+  .ammo {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    min-height: 1.4em;
+  }
+
+  .ammo :global(i) {
+    width: 6px;
+    height: 14px;
+    border: 1px solid var(--yellow);
+    border-radius: 1px;
+  }
+
+  .ammo :global(i.full) {
+    background: var(--yellow);
+  }
+
+  .ammo :global(.reloading) {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+  }
+
+  .metrics strong.is-bad {
+    color: #ff5a5f;
+  }
+
+  .overlay-text :global(p) {
+    margin: 0 0 8px;
+  }
+
+  .legend-list {
+    list-style: none;
+    margin: 0 0 8px;
+    padding: 0;
+    display: grid;
+    gap: 4px;
+    text-align: left;
+    font-size: 0.875rem;
+  }
+
+  .lg {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    border: 2px solid;
+    margin-right: 6px;
+    vertical-align: -1px;
+  }
+
+  .lg--hostil {
+    border-color: #ff5a5f;
+  }
+
+  .lg--propio {
+    border-color: #7ed99a;
+  }
+
+  .overlay-text :global(.verdict) {
+    font-family: var(--font-display);
+    font-size: 2.5rem;
+    line-height: 1;
+    margin: 0 0 10px;
+    text-transform: uppercase;
+  }
+
+  .overlay-text :global(.verdict.is-ok) {
+    color: #7ed99a;
+  }
+
+  .overlay-text :global(.verdict.is-ko) {
+    color: #ff5a5f;
+  }
+
+  .overlay-text :global(.report) {
+    list-style: none;
+    margin: 0 0 10px;
+    padding: 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px 16px;
+    text-align: left;
+  }
+
+  .overlay-text :global(.report li) {
+    display: grid;
+  }
+
+  .overlay-text :global(.report span) {
+    font-family: var(--font-data);
+    font-size: 0.65rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+
+  .overlay-text :global(.report strong) {
+    font-family: var(--font-data);
+    font-weight: 500;
+    color: var(--yellow);
+  }
+
+  .overlay-text :global(.report em) {
+    font-style: normal;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+  }
+
+  .overlay-text :global(.compare),
+  .overlay-text :global(.small) {
+    font-size: 0.8rem;
   }
 
   @media (max-width: 640px) {

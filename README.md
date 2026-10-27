@@ -69,9 +69,9 @@ Para quitarlo de la versión final: borrar el enlace en `src/components/Footer.a
 - `src/pages/formacion/`: catálogo, calendario y fichas de cursos
 - `src/components/Crosshair.astro`: cursor de punto de mira en toda la web (solo con ratón; cursor normal en campos de texto y ventanas modales; sin estela con «reducir movimiento»)
 - `src/components/AarDemo.astro`: demo interactiva de la revisión posterior (vista cenital, línea de tiempo y métricas; datos ilustrativos), en la home y en `/simulador/#aar`
-- `src/components/LiveEditDemo.astro`: el instructor activa factores de estrés (oscuridad, humo, civil, obstáculo, comunicaciones) sobre el escenario; en `/simulador/#aar`
+- `src/components/LiveEditDemo.astro`: misión de aproximación y control de un sospechoso; los factores de estrés del instructor (oscuridad, humo, civil, obstáculo, comunicaciones) cambian la ruta, la visibilidad y el tiempo; en `/simulador/#aar`
 - `src/components/ForceDemo.astro`: esquema interactivo del uso progresivo de la fuerza con el curso que entrena cada nivel; en `/formacion/` y en los perfiles de Policía Local y FCSE
-- `src/components/CounterDroneDemo.astro`: mini ejercicio de 20 s en un radar (clic, Espacio o botón para disparar); en el perfil de Defensa
+- `src/components/CounterDroneDemo.astro`: ejercicio de 30 s en un radar con identificación (hostil / propio), munición y recarga, y evaluación apto / no apto; en el perfil de Defensa
 - Estilo: `--font-data` (IBM Plex Mono) para antetítulos y cifras; clase `.theme-light` para secciones en claro; las cifras con `data-count` se animan al aparecer
 - `src/components/home/`: secciones de la home
 - `src/components/`: cabecera, pie, logo y formulario de contacto

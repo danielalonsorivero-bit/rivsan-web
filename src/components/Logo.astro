@@ -2,18 +2,36 @@
 // Logotipo horizontal: símbolo + logotipo con la tipografía original, ambos extraídos como trazados
 // de logo/rivsan_logo_blanco.svg (versión vertical) y recolocados en horizontal.
 // Ojo: en el original las «I» son rectángulos (<rect>), no trazados.
+// `intro`: animación de entrada (se traza el símbolo, se enciende el punto y aparece el texto).
+// Solo la primera vez por sesión y nunca con «reducir movimiento».
 interface Props {
   variant?: 'light' | 'dark';
   showTagline?: boolean;
+  intro?: boolean;
   class?: string;
 }
-const { variant = 'light', showTagline = true, class: className } = Astro.props;
+const { variant = 'light', showTagline = true, intro = false, class: className } = Astro.props;
 ---
 
-<span class:list={['logo', `logo--${variant}`, className]}>
+{
+  intro && (
+    <script is:inline>
+      try {
+        if (!sessionStorage.getItem('rivsan-logo-intro') && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+          sessionStorage.setItem('rivsan-logo-intro', '1');
+          document.documentElement.classList.add('logo-intro');
+          setTimeout(() => document.documentElement.classList.remove('logo-intro'), 2600);
+        }
+      } catch {}
+    </script>
+  )
+}
+
+<span class:list={['logo', `logo--${variant}`, { 'logo--intro': intro }, className]}>
   <svg class="logo-mark" viewBox="-73 -7 94 91" aria-hidden="true">
     <path
       class="logo-shape"
+      pathLength="1"
       d="M0,76.649L11.533,69.862L0.777,63.688L-10.816,70.321L0,76.649ZM-66.485,65.594L-55.972,59.577L-55.964,45.917L-66.582,52.061L-66.485,65.594ZM-12.072,19.39L-12.119,8.185L-23.727,1.366L-23.853,12.699L-12.072,19.39ZM-11.994,40.808L-7.157,43.821L-7.169,53.492L13.978,65.746L13.903,51.99L-26.387,28.903L-37.198,35.078L-37.405,29.669L-28.688,24.743L-28.678,1.231L-40.455,8.078L-40.446,53.338L-29.442,59.925L-34.255,62.646L-42.913,57.563L-64.152,69.888L-52.567,76.625L-12.091,53.421L-11.994,40.808ZM-20.495,70.458L-4.031,60.9L-9.602,57.623L-52.56,82.36L-71.55,71.141L-71.466,49.247L-51.043,37.511L-51.054,56.53L-45.49,53.356L-45.483,5.291L-26.436,-5.711L-7.175,5.409L-7.178,27.857L-23.655,18.376L-23.85,24.665L18.798,49.198L18.931,71.175L0.058,82.349L-20.495,70.458Z"
     ></path>
     <path
@@ -107,5 +125,73 @@ const { variant = 'light', showTagline = true, class: className } = Astro.props;
 
   .logo-san {
     fill: #f7c407;
+  }
+
+  /* ---------- Animación de entrada ---------- */
+  :global(html.logo-intro) .logo--intro .logo-shape {
+    stroke: var(--yellow);
+    stroke-width: 1.2;
+    stroke-dasharray: 1;
+    animation:
+      logo-trace 1s cubic-bezier(0.6, 0, 0.3, 1) both,
+      logo-fill 0.5s 0.85s ease-out both;
+  }
+
+  :global(html.logo-intro) .logo--intro .logo-dot {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: logo-dot 0.6s 0.95s cubic-bezier(0.3, 1.6, 0.5, 1) both;
+  }
+
+  :global(html.logo-intro) .logo--intro .logo-type {
+    animation: logo-type 0.8s 0.55s cubic-bezier(0.7, 0, 0.2, 1) both;
+  }
+
+  @keyframes logo-trace {
+    from {
+      stroke-dashoffset: 1;
+      fill-opacity: 0;
+    }
+    to {
+      stroke-dashoffset: 0;
+      fill-opacity: 0;
+    }
+  }
+
+  @keyframes logo-fill {
+    from {
+      fill-opacity: 0;
+      stroke-opacity: 1;
+    }
+    to {
+      fill-opacity: 1;
+      stroke-opacity: 0;
+    }
+  }
+
+  @keyframes logo-dot {
+    0% {
+      transform: scale(0);
+      filter: drop-shadow(0 0 0 transparent);
+    }
+    60% {
+      transform: scale(1.6);
+      filter: drop-shadow(0 0 4px #f7c400);
+    }
+    100% {
+      transform: scale(1);
+      filter: drop-shadow(0 0 0 transparent);
+    }
+  }
+
+  @keyframes logo-type {
+    from {
+      clip-path: inset(0 100% 0 0);
+      opacity: 0.4;
+    }
+    to {
+      clip-path: inset(0 0 0 0);
+      opacity: 1;
+    }
   }
 </style>
