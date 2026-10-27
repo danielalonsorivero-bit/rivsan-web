@@ -13,6 +13,9 @@ npm run build    # genera dist/ para subir al alojamiento
 ## Estructura
 
 - `src/pages/index.astro`: página de inicio
+- `src/pages/simulador.astro`: página del simulador VR
+- `src/pages/formacion/`: catálogo, calendario y fichas de cursos
+- `src/components/Crosshair.astro`: cursor de punto de mira (solo con ratón; sin estela con «reducir movimiento»)
 - `src/components/home/`: secciones de la home
 - `src/components/`: cabecera, pie, logo y formulario de contacto
 - `src/data/site.ts`: datos de empresa y navegación

@@ -1,0 +1,903 @@
+---
+import { Image } from 'astro:assets';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import DemoForm from '../components/DemoForm.astro';
+
+import heroImg from '../assets/img/operator-kit.jpg';
+import operador from '../assets/img/operador-anotado.jpg';
+import armaA from '../assets/img/arma-clase-a.jpg';
+import armaB from '../assets/img/arma-clase-b.jpg';
+import armaC from '../assets/img/arma-clase-c.jpg';
+import solo from '../assets/img/setup-solo.jpg';
+import equipo from '../assets/img/equipo-4.jpg';
+import remoto from '../assets/img/setup-remoto.jpg';
+import liveEdit from '../assets/img/live-edit.jpg';
+import aar from '../assets/img/aar-pantalla.jpg';
+import modIdent from '../assets/img/mod-identificacion.jpg';
+import modTiro from '../assets/img/mod-tiro.jpg';
+import modCqb from '../assets/img/mod-cqb.jpg';
+import modDrone from '../assets/img/mod-counterdrone.jpg';
+import modPiloto from '../assets/img/mod-drones.jpg';
+import modIsr from '../assets/img/mod-isr.jpg';
+
+const specs = [
+  { value: '<60', unit: 'min', label: 'De la furgoneta a escenario operativo' },
+  { value: '12', unit: 'agentes', label: 'En el mismo escenario virtual' },
+  { value: '1–625', unit: 'm²', label: 'De un despacho a un pabellón' },
+  { value: '0', unit: 'cables', label: 'Ni sensores fijos ni obras' },
+];
+
+const steps = [
+  { n: '01', title: 'Despliega', text: 'Un aula, un garaje o un gimnasio. El equipo se monta en menos de una hora, sin tocar el edificio.' },
+  { n: '02', title: 'Equipa', text: 'Cada agente se coloca el visor y el kit SuitUp sobre un arma con el peso y tacto de la de dotación.' },
+  { n: '03', title: 'Entrena', text: 'Escenarios de dificultad creciente. El instructor añade estrés, obstáculos o personajes en tiempo real.' },
+  { n: '04', title: 'Evalúa', text: 'Revisión en 3D de cada intervención con métricas objetivas: tiempos, conos de visión y disparos.' },
+];
+
+const weapons = [
+  {
+    name: 'Clase A',
+    level: 'Entrenamiento básico',
+    text: 'Réplica impresa en 3D con elementos conductivos que detectan la posición del dedo en corredera y gatillo.',
+    note: 'Ligera, robusta y sin mantenimiento.',
+    image: armaA,
+    alt: 'Pistola de entrenamiento impresa en 3D en color verde',
+  },
+  {
+    name: 'Clase B',
+    level: 'Entrenamiento avanzado',
+    text: 'Plataforma airsoft modificada y totalmente funcional: selector de fuego, gatillo y cargador.',
+    note: 'Versión con gas (retroceso y recarga) solo en renting anual o compra.',
+    image: armaB,
+    alt: 'Kit con fusil y pistola de entrenamiento modificados y visor de realidad virtual',
+  },
+  {
+    name: 'Clase C',
+    level: 'Bajo demanda · trae tu arma',
+    text: 'Adaptamos el sistema sobre el arma real de dotación de la unidad.',
+    note: 'C1 airsoft con gas · C2 arma real con Mantis Blackbeard · C3 arma real con fogueo.',
+    image: armaC,
+    alt: 'Fusil real con el módulo de seguimiento acoplado',
+  },
+];
+
+const setups = [
+  {
+    title: 'Solo',
+    kit: 'Operator Kit',
+    text: 'En cualquier lugar y momento, sin supervisión. Ni siquiera necesita enchufe.',
+    image: solo,
+    alt: 'Un agente entrena solo con visor en una sala oscura',
+  },
+  {
+    title: 'Equipo 2–4 · local',
+    kit: 'Operator Kit',
+    text: 'Binomios o escuadras pequeñas compartiendo escenario en la misma sala.',
+    image: equipo,
+    alt: 'Cuatro operadores entrenan juntos en un aula',
+  },
+  {
+    title: 'Equipo 2+2 · remoto',
+    kit: 'Command Kit',
+    text: 'Conecta equipos en dos localizaciones, tanto en formación como en operaciones reales.',
+    image: remoto,
+    alt: 'Dos agentes entrenan en una nave conectados con otro equipo',
+  },
+];
+
+const compare = {
+  cols: ['Compact', 'Academy Essential', 'Academy Advanced'],
+  rows: [
+    { k: 'Espacio', v: ['1–100 m²', 'Hasta 100 m²', '100–625 m²'] },
+    { k: 'Equipos', v: ['1–4 Operator Kits', '4–12 kits de alumno', '4–12 kits de alumno'] },
+    { k: 'Instructor', v: ['Command Kit opcional (1 por cada 4 kits)', '1–3 kits de instructor', '1–3 kits de instructor'] },
+    { k: 'Personal extra', v: ['Ninguno', '1 técnico', '1 técnico'] },
+    { k: 'Montaje', v: ['5 minutos', 'Una hora', 'Un día'] },
+    { k: 'Dónde', v: ['En cualquier sitio, a demanda', 'Centro de formación', 'Centro de formación'] },
+  ],
+};
+
+const modules = [
+  {
+    id: 'identificacion',
+    title: 'Identificación positiva de amenazas',
+    text: 'Identificación rápida a 360° bajo presión. Afina el ciclo observar–orientar–decidir para reducir el riesgo de fuego amigo.',
+    req: ['1 Operator Kit', 'Desde 1 m²'],
+    image: modIdent,
+    alt: 'Operador con visor apuntando en penumbra',
+  },
+  {
+    id: 'tiro',
+    title: 'Campo de tiro',
+    text: 'Tiro en seco a demanda: posiciones de guardia, transiciones, recargas, desenfunde y reacciones inmediatas. Sin munición ni galería.',
+    req: ['1–4 Operator Kits', '2–25 m²'],
+    image: modTiro,
+    alt: 'Fusil de entrenamiento con sensores',
+  },
+  {
+    id: 'cqb',
+    title: 'Agilidad cognitiva (CQB)',
+    text: 'Entornos urbanos, túneles y trincheras. Entradas en inmuebles, despeje de estancias y presión a 360° en espacio confinado.',
+    req: ['1–4 Operator Kits', '25–100 m²'],
+    image: modCqb,
+    alt: 'Operador en posición de tiro dentro del simulador',
+  },
+  {
+    id: 'counter-drone',
+    title: 'Counter-Drone',
+    text: 'Respuesta con escopeta frente a pequeños UAV y drones FPV, con métricas automáticas de rendimiento. Co-desarrollado con UKRSOF.',
+    req: ['1–4 Operator Kits', '2–25 m²'],
+    image: modDrone,
+    alt: 'Escopeta apuntando a un dron',
+  },
+  {
+    id: 'pilotaje',
+    title: 'Pilotaje de drones',
+    text: 'Formación de pilotos UAS y FPV sin desgaste de material. Tareas automatizadas que descargan al instructor.',
+    req: ['1 Operator o Command Kit', '1 m² por operador'],
+    image: modPiloto,
+    alt: 'Drones profesionales en sus maletas',
+  },
+  {
+    id: 'planificacion',
+    title: 'Planificación inmersiva e ISR',
+    text: 'Gemelo digital en 3D de la zona con drones o el móvil (Scaniverse) para ensayar la misión antes de ejecutarla.',
+    req: ['1–4 Operator Kits', '1 m² por operador'],
+    image: modIsr,
+    alt: 'Modelo 3D de una zona urbana en una tablet',
+  },
+];
+---
+
+<BaseLayout
+  title="Simulador VR"
+  description="Simulador táctico inmersivo RE-liON: sistema móvil e inalámbrico para hasta 12 agentes, armas de peso real, módulos de entrenamiento y análisis After-Action Review."
+>
+  <!-- Hero -->
+  <section class="sim-hero">
+    <div class="container hero-grid">
+      <div class="hero-text">
+        <p class="eyebrow">Simulador VR · RE-liON</p>
+        <h1 class="h-xl">Tu jefatura, convertida en <span class="accent">zona táctica</span></h1>
+        <p class="lead">
+          Sistema de entrenamiento inmersivo, móvil e inalámbrico. Se despliega en tus instalaciones y entrena a toda la
+          unidad con el peso, el tacto y el estrés de una intervención real.
+        </p>
+        <div class="actions">
+          <a href="#contacto" class="btn btn-primary">Solicitar demostración <span class="arrow">→</span></a>
+          <a href="#modulos" class="btn btn-ghost">Ver módulos</a>
+        </div>
+      </div>
+      <div class="hero-media hud">
+        <Image src={heroImg} alt="Kit de operador RE-liON: visor de realidad virtual sobre su bolsa de transporte" widths={[600, 1100]} sizes="(max-width: 960px) 100vw, 50vw" loading="eager" />
+      </div>
+    </div>
+    <div class="container">
+      <ul class="specs">
+        {
+          specs.map((s) => (
+            <li>
+              <span class="spec-value">
+                {s.value}
+                <small>{s.unit}</small>
+              </span>
+              <span class="spec-label">{s.label}</span>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <!-- Cómo funciona -->
+  <section class="section">
+    <div class="container">
+      <div class="head reveal">
+        <p class="eyebrow">Cómo funciona</p>
+        <h2 class="h-lg">Cuatro pasos, <span class="accent">cero obras</span></h2>
+      </div>
+      <ol class="steps">
+        {
+          steps.map((s) => (
+            <li class="reveal">
+              <span class="step-n">{s.n}</span>
+              <h3>{s.title}</h3>
+              <p>{s.text}</p>
+            </li>
+          ))
+        }
+      </ol>
+    </div>
+  </section>
+
+  <!-- Equipo del operador -->
+  <section class="section alt">
+    <div class="container split">
+      <div class="split-media hud reveal">
+        <Image src={operador} alt="Operador equipado con visor de realidad virtual y fusil instrumentado" widths={[700, 1200]} sizes="(max-width: 960px) 100vw, 55vw" />
+      </div>
+      <div class="reveal">
+        <p class="eyebrow">Fidelidad real</p>
+        <h2 class="h-lg">Entrena igual <span class="accent">que actúas</span></h2>
+        <p class="muted">
+          Con el sistema SuitUp el agente usa un arma que reproduce la de dotación: mismo peso, equilibrio, tacto y
+          automatismos. El movimiento es 1:1, sin vicios de entrenamiento, y el cuerpo responde como en la calle:
+          pulsaciones, fatiga y visión de túnel.
+        </p>
+        <ul class="checks">
+          <li>Visor autónomo, sin cables ni ordenador a la espalda</li>
+          <li>Kit SuitUp sobre arma simulada de dotación</li>
+          <li>Seguimiento de posición sin sensores en la sala</li>
+          <li>Entorno 100% seguro: sin munición real</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- Sistemas de armas -->
+  <section class="section" id="armas">
+    <div class="container">
+      <div class="head reveal">
+        <p class="eyebrow">Sistemas de armas</p>
+        <h2 class="h-lg">Elige el arma según <span class="accent">tu entrenamiento</span></h2>
+        <p class="lead">Tres clases que cubren desde la formación básica hasta el uso del arma real de dotación.</p>
+      </div>
+      <div class="weapons">
+        {
+          weapons.map((w) => (
+            <article class="weapon reveal">
+              <div class="weapon-media">
+                <Image src={w.image} alt={w.alt} widths={[400, 700]} sizes="(max-width: 960px) 100vw, 33vw" />
+              </div>
+              <div class="weapon-body">
+                <span class="weapon-name">{w.name}</span>
+                <span class="weapon-level">{w.level}</span>
+                <p>{w.text}</p>
+                <p class="weapon-note">{w.note}</p>
+              </div>
+            </article>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- Configuraciones -->
+  <section class="section alt" id="configuraciones">
+    <div class="container">
+      <div class="head reveal">
+        <p class="eyebrow">Kits y configuraciones</p>
+        <h2 class="h-lg">Del agente individual <span class="accent">a la unidad completa</span></h2>
+      </div>
+      <div class="setups">
+        {
+          setups.map((s) => (
+            <article class="setup reveal">
+              <Image src={s.image} alt={s.alt} widths={[400, 700]} sizes="(max-width: 960px) 100vw, 33vw" />
+              <div class="setup-body">
+                <span class="setup-kit">{s.kit}</span>
+                <h3 class="h-md">{s.title}</h3>
+                <p class="muted">{s.text}</p>
+              </div>
+            </article>
+          ))
+        }
+      </div>
+
+      <div class="table-wrap reveal">
+        <table class="compare">
+          <caption>Configuraciones de la plataforma</caption>
+          <thead>
+            <tr>
+              <th scope="col"><span class="visually-hidden">Característica</span></th>
+              {compare.cols.map((c) => <th scope="col">{c}</th>)}
+            </tr>
+          </thead>
+          <tbody>
+            {
+              compare.rows.map((r) => (
+                <tr>
+                  <th scope="row">{r.k}</th>
+                  {r.v.map((v) => (
+                    <td>{v}</td>
+                  ))}
+                </tr>
+              ))
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- Control del instructor y AAR -->
+  <section class="section" id="aar">
+    <div class="container">
+      <div class="head reveal">
+        <p class="eyebrow">El instructor al mando</p>
+        <h2 class="h-lg">Ajusta en directo, <span class="accent">mide después</span></h2>
+      </div>
+      <div class="duo">
+        <article class="duo-card reveal">
+          <div class="duo-media hud">
+            <Image src={liveEdit} alt="Pantalla del instructor con la vista cenital del escenario y los agentes" widths={[600, 1000]} sizes="(max-width: 960px) 100vw, 50vw" />
+          </div>
+          <h3 class="h-md">Live Edit</h3>
+          <p class="muted">
+            Desde el Instructor Kit se modifica la complejidad del escenario mientras los agentes están dentro.
+          </p>
+          <ul class="checks">
+            <li>Personajes generados por ordenador para role-play</li>
+            <li>Obstáculos que aparecen sobre la marcha</li>
+            <li>Factores de estrés: visibilidad y comunicaciones degradadas</li>
+          </ul>
+        </article>
+        <article class="duo-card reveal">
+          <div class="duo-media hud">
+            <Image src={aar} alt="Agente revisando la reconstrucción 3D de su intervención" widths={[600, 1000]} sizes="(max-width: 960px) 100vw, 50vw" />
+          </div>
+          <h3 class="h-md">After-Action Review</h3>
+          <p class="muted">
+            Cada intervención queda grabada en 3D y se puede rebobinar desde cualquier ángulo. Una evaluación objetiva y
+            un respaldo técnico para la revisión operativa.
+          </p>
+          <ul class="checks">
+            <li>Tiempos de reacción en milisegundos</li>
+            <li>Cono de visión de cada agente</li>
+            <li>Trayectorias de disparo e impactos</li>
+          </ul>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- Módulos -->
+  <section class="section alt" id="modulos">
+    <div class="container">
+      <div class="head reveal">
+        <p class="eyebrow">Módulos de entrenamiento</p>
+        <h2 class="h-lg">Una plataforma, <span class="accent">seis misiones</span></h2>
+        <p class="lead">Cada módulo indica el equipo y el espacio mínimos que necesita.</p>
+      </div>
+      <div class="modules">
+        {
+          modules.map((m, i) => (
+            <article class="module reveal" id={m.id}>
+              <div class="module-media">
+                <Image src={m.image} alt={m.alt} widths={[360, 600]} sizes="(max-width: 700px) 100vw, 280px" />
+              </div>
+              <div class="module-body">
+                <span class="module-n">{String(i + 1).padStart(2, '0')}</span>
+                <h3>{m.title}</h3>
+                <p class="muted">{m.text}</p>
+              </div>
+              <ul class="module-req" aria-label="Requisitos mínimos">
+                {m.req.map((r) => (
+                  <li>{r}</li>
+                ))}
+              </ul>
+            </article>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- Contratación -->
+  <section class="band">
+    <div class="container band-inner reveal">
+      <div>
+        <h2 class="h-md">Jornadas, renting anual o compra</h2>
+        <p class="muted">Prueba el sistema en una jornada con nuestros instructores o tenlo todo el año en tu jefatura.</p>
+      </div>
+      <a href="/#contratacion" class="btn btn-ghost">Ver modalidades</a>
+    </div>
+  </section>
+
+  <DemoForm />
+</BaseLayout>
+
+<style>
+  /* Hero */
+  .sim-hero {
+    padding-top: calc(var(--header-h) + clamp(40px, 6vw, 88px));
+    background:
+      radial-gradient(ellipse at 80% 20%, rgba(247, 196, 0, 0.1), transparent 55%),
+      var(--bg);
+  }
+
+  .hero-grid {
+    display: grid;
+    grid-template-columns: 1.05fr 1fr;
+    gap: clamp(32px, 5vw, 72px);
+    align-items: center;
+  }
+
+  .hero-text h1 {
+    font-size: clamp(2.75rem, 5.6vw, 5.25rem);
+    margin-bottom: 1.25rem;
+  }
+
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-top: 2rem;
+  }
+
+  .hero-media img {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+  }
+
+  .specs {
+    list-style: none;
+    padding: 0;
+    margin: clamp(48px, 7vw, 88px) 0 0;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    border-block: 1px solid var(--line-strong);
+  }
+
+  .specs li {
+    padding: 28px 24px;
+    display: grid;
+    gap: 6px;
+  }
+
+  .specs li + li {
+    border-left: 1px solid var(--line);
+  }
+
+  .specs li:first-child {
+    padding-left: 0;
+  }
+
+  .spec-value {
+    font-family: var(--font-display);
+    font-size: clamp(2.5rem, 4vw, 3.5rem);
+    line-height: 1;
+    color: var(--yellow);
+  }
+
+  .spec-value small {
+    font-size: 0.45em;
+    margin-left: 0.25em;
+    color: var(--text);
+  }
+
+  .spec-label {
+    font-size: 0.95rem;
+    color: var(--text-muted);
+  }
+
+  /* Comunes */
+  .alt {
+    background: var(--bg-2);
+    border-block: 1px solid var(--line);
+  }
+
+  .head {
+    max-width: 780px;
+    margin-bottom: 56px;
+  }
+
+  .head h2 {
+    margin-bottom: 1rem;
+  }
+
+  .checks {
+    list-style: none;
+    margin: 20px 0 0;
+    padding: 20px 0 0;
+    border-top: 1px solid var(--line);
+    display: grid;
+    gap: 10px;
+  }
+
+  .checks li {
+    position: relative;
+    padding-left: 26px;
+  }
+
+  .checks li::before {
+    content: '✓';
+    position: absolute;
+    left: 0;
+    color: var(--yellow);
+    font-weight: 600;
+  }
+
+  /* Pasos */
+  .steps {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    counter-reset: none;
+  }
+
+  .steps li {
+    position: relative;
+    padding: 28px 24px 24px;
+    border-top: 3px solid var(--yellow);
+    background: var(--bg-2);
+  }
+
+  .step-n {
+    font-family: var(--font-display);
+    font-size: 3.5rem;
+    line-height: 1;
+    color: transparent;
+    -webkit-text-stroke: 1px var(--yellow);
+  }
+
+  .steps h3 {
+    font-size: 2rem;
+    margin: 12px 0 10px;
+  }
+
+  .steps p {
+    margin: 0;
+    color: var(--text-muted);
+  }
+
+  /* Split operador */
+  .split {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: clamp(32px, 6vw, 80px);
+    align-items: center;
+  }
+
+  .split h2 {
+    margin-bottom: 1.25rem;
+  }
+
+  .split-media img {
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    object-fit: cover;
+  }
+
+  /* Armas */
+  .weapons {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+
+  .weapon {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    display: flex;
+    flex-direction: column;
+  }
+
+  .weapon-media {
+    background: #e9e9e6;
+    border-bottom: 3px solid var(--yellow);
+  }
+
+  .weapon-media img {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+  }
+
+  .weapon-body {
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+  }
+
+  .weapon-name {
+    font-family: var(--font-display);
+    font-size: 2.5rem;
+    line-height: 1;
+    color: var(--yellow);
+  }
+
+  .weapon-level {
+    font-family: var(--font-label);
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    font-size: 0.875rem;
+    margin-bottom: 10px;
+  }
+
+  .weapon-body p {
+    margin: 0 0 12px;
+    color: var(--text-muted);
+  }
+
+  .weapon-note {
+    margin-top: auto !important;
+    padding-top: 12px;
+    border-top: 1px solid var(--line);
+    font-size: 0.9rem;
+    color: var(--text) !important;
+  }
+
+  /* Configuraciones */
+  .setups {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+
+  .setup {
+    border: 1px solid var(--line);
+    background: var(--surface);
+  }
+
+  .setup img {
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    object-fit: cover;
+    filter: grayscale(0.3);
+  }
+
+  .setup-body {
+    padding: 24px;
+  }
+
+  .setup-kit {
+    font-family: var(--font-label);
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    color: var(--yellow);
+  }
+
+  .setup h3 {
+    margin: 6px 0 10px;
+  }
+
+  .setup p {
+    margin: 0;
+  }
+
+  .table-wrap {
+    margin-top: 56px;
+    overflow-x: auto;
+  }
+
+  .compare {
+    width: 100%;
+    min-width: 640px;
+    border-collapse: collapse;
+    table-layout: fixed;
+    font-size: 0.975rem;
+  }
+
+  .compare caption {
+    text-align: left;
+    font-family: var(--font-label);
+    font-weight: 600;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    color: var(--yellow);
+    padding-bottom: 16px;
+  }
+
+  .compare th,
+  .compare td {
+    text-align: left;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--line);
+    vertical-align: top;
+  }
+
+  .compare thead th {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: 1.6rem;
+    letter-spacing: 0.02em;
+    border-bottom: 2px solid var(--yellow);
+  }
+
+  .compare tbody th {
+    font-family: var(--font-label);
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    width: 18%;
+  }
+
+  .compare tbody td:nth-child(2) {
+    color: var(--yellow);
+  }
+
+  /* Instructor */
+  .duo {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: clamp(24px, 4vw, 48px);
+  }
+
+  .duo-media {
+    margin-bottom: 24px;
+  }
+
+  .duo-media img {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+  }
+
+  .duo-card h3 {
+    margin-bottom: 10px;
+  }
+
+  /* Módulos */
+  .modules {
+    display: grid;
+    gap: 16px;
+  }
+
+  .module {
+    display: grid;
+    grid-template-columns: 240px 1fr 220px;
+    gap: 28px;
+    align-items: center;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    padding: 16px 28px 16px 16px;
+    scroll-margin-top: calc(var(--header-h) + 16px);
+    transition: border-color 0.25s;
+  }
+
+  .module:hover {
+    border-color: rgba(247, 196, 0, 0.45);
+  }
+
+  .module-media img {
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    object-fit: cover;
+    filter: grayscale(0.4);
+  }
+
+  .module-n {
+    font-family: var(--font-label);
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    color: var(--yellow);
+    font-size: 0.9rem;
+  }
+
+  .module h3 {
+    font-size: clamp(1.75rem, 2.4vw, 2.25rem);
+    margin: 4px 0 8px;
+  }
+
+  .module-body p {
+    margin: 0;
+  }
+
+  .module-req {
+    list-style: none;
+    margin: 0;
+    padding: 0 0 0 24px;
+    border-left: 1px solid var(--line);
+    display: grid;
+    gap: 8px;
+    font-family: var(--font-label);
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+  }
+
+  .module-req li::before {
+    content: '▸ ';
+    color: var(--yellow);
+  }
+
+  /* Banda contratación */
+  .band {
+    padding-block: 56px;
+    background:
+      repeating-linear-gradient(135deg, rgba(247, 196, 0, 0.06) 0 2px, transparent 2px 14px),
+      var(--bg);
+  }
+
+  .band-inner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 32px;
+    flex-wrap: wrap;
+  }
+
+  .band h2 {
+    margin-bottom: 8px;
+  }
+
+  .band p {
+    margin: 0;
+  }
+
+  @media (max-width: 1100px) {
+    .steps {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .module {
+      grid-template-columns: 200px 1fr;
+    }
+
+    .module-req {
+      grid-column: 2;
+      border-left: 0;
+      padding: 12px 0 0;
+      border-top: 1px solid var(--line);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 24px;
+    }
+  }
+
+  @media (max-width: 960px) {
+    .hero-grid,
+    .split,
+    .duo {
+      grid-template-columns: 1fr;
+    }
+
+    .weapons,
+    .setups {
+      grid-template-columns: 1fr;
+      max-width: 560px;
+    }
+
+    .specs {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .specs li,
+    .specs li:first-child {
+      padding: 20px 16px 20px 0;
+    }
+
+    .specs li + li {
+      border-left: 0;
+    }
+
+    .specs li:nth-child(even) {
+      padding-left: 16px;
+      border-left: 1px solid var(--line);
+    }
+
+    .specs li:nth-child(n + 3) {
+      border-top: 1px solid var(--line);
+    }
+  }
+
+  @media (max-width: 640px) {
+    .steps {
+      grid-template-columns: 1fr;
+    }
+
+    .module {
+      grid-template-columns: 1fr;
+      padding: 16px;
+      gap: 16px;
+    }
+
+    .module-req {
+      grid-column: 1;
+    }
+  }
+</style>

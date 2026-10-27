@@ -20,8 +20,8 @@ export type NavItem = { label: string; href: string; soon?: boolean };
 // Mientras solo existe la home, la navegación apunta a anclas.
 // Cuando existan las páginas, sustituir por sus rutas (/simulador, /formacion, ...).
 export const nav: NavItem[] = [
-  { label: 'Simulador VR', href: '/#simulador' },
-  { label: 'Módulos', href: '/#modulos' },
+  { label: 'Simulador VR', href: '/simulador/' },
+  { label: 'Módulos', href: '/simulador/#modulos' },
   { label: 'Formación', href: '/formacion/' },
   { label: 'Normativa', href: '/#normativa' },
   { label: 'Contratación', href: '/#contratacion' },

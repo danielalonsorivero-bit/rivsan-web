@@ -1,0 +1,290 @@
+---
+// Cursor de punto de mira con estela luminosa.
+// Solo se activa con ratón (pointer: fine + hover). Sin JS o en táctil se ve el cursor normal.
+// Con "reducir movimiento" se mantiene la mira pero sin estela ni animaciones.
+---
+
+<canvas class="xh-trail" aria-hidden="true" data-xh-trail></canvas>
+<div class="xh" aria-hidden="true" data-xh>
+  <span class="xh-arm xh-arm--t"></span>
+  <span class="xh-arm xh-arm--r"></span>
+  <span class="xh-arm xh-arm--b"></span>
+  <span class="xh-arm xh-arm--l"></span>
+  <span class="xh-ring"></span>
+  <span class="xh-dot"></span>
+</div>
+
+<script>
+  const fine = window.matchMedia('(hover: hover) and (pointer: fine)');
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+  // Elementos sobre los que la mira "fija el blanco"
+  const INTERACTIVE = 'a, button, select, summary, label, [role="button"], [data-open-request], input[type="checkbox"], input[type="radio"], input[type="submit"]';
+  // Campos donde se escribe: aquí se devuelve el cursor de texto normal
+  const TEXT_FIELD = 'input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]), textarea, [contenteditable="true"]';
+
+  const init = () => {
+    const root = document.documentElement;
+    const xh = document.querySelector<HTMLElement>('[data-xh]');
+    const canvas = document.querySelector<HTMLCanvasElement>('[data-xh-trail]');
+    if (!xh || !canvas) return;
+    const ctx = canvas.getContext('2d')!;
+
+    root.classList.add('has-xh');
+
+    let x = -100;
+    let y = -100;
+    let visible = false;
+    // Puntos recientes de la estela: posición y momento
+    const trail: { x: number; y: number; t: number }[] = [];
+    const TRAIL_MS = 180;
+    let raf = 0;
+
+    const resize = () => {
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      canvas.width = innerWidth * dpr;
+      canvas.height = innerHeight * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    };
+    resize();
+    addEventListener('resize', resize);
+
+    const draw = () => {
+      raf = 0;
+      xh.style.transform = `translate3d(${x}px, ${y}px, 0)`;
+
+      ctx.clearRect(0, 0, innerWidth, innerHeight);
+      const now = performance.now();
+      while (trail.length && now - trail[0].t > TRAIL_MS) trail.shift();
+
+      if (trail.length > 1 && !reduced.matches) {
+        ctx.lineCap = 'round';
+        ctx.globalCompositeOperation = 'lighter';
+        for (let i = 1; i < trail.length; i++) {
+          const a = trail[i - 1];
+          const b = trail[i];
+          const life = 1 - (now - b.t) / TRAIL_MS; // 1 = reciente, 0 = a punto de desaparecer
+          // Halo amarillo ancho + núcleo blanco fino, como una luz intensa en movimiento
+          ctx.strokeStyle = `rgba(247, 196, 0, ${0.22 * life})`;
+          ctx.lineWidth = 9 * life + 1;
+          ctx.beginPath();
+          ctx.moveTo(a.x, a.y);
+          ctx.lineTo(b.x, b.y);
+          ctx.stroke();
+          ctx.strokeStyle = `rgba(255, 250, 225, ${0.55 * life})`;
+          ctx.lineWidth = 2 * life + 0.5;
+          ctx.stroke();
+        }
+        ctx.globalCompositeOperation = 'source-over';
+      }
+
+      // Seguir animando mientras quede estela por desvanecer
+      if (trail.length > 1) raf = requestAnimationFrame(draw);
+    };
+
+    const schedule = () => {
+      if (!raf) raf = requestAnimationFrame(draw);
+    };
+
+    addEventListener(
+      'pointermove',
+      (e) => {
+        if (e.pointerType !== 'mouse') return;
+        x = e.clientX;
+        y = e.clientY;
+        if (!visible) {
+          visible = true;
+          xh.classList.add('is-visible');
+        }
+        trail.push({ x, y, t: performance.now() });
+        schedule();
+      },
+      { passive: true },
+    );
+
+    // Estado según lo que hay bajo el puntero
+    document.addEventListener('pointerover', (e) => {
+      const el = e.target as Element;
+      const text = el.closest?.(TEXT_FIELD);
+      const target = !text && el.closest?.(INTERACTIVE);
+      xh.classList.toggle('is-target', !!target);
+      xh.classList.toggle('is-text', !!text);
+    });
+
+    document.addEventListener('pointerdown', () => xh.classList.add('is-fire'));
+    document.addEventListener('pointerup', () => xh.classList.remove('is-fire'));
+
+    // El ratón sale de la ventana
+    document.addEventListener('mouseout', (e) => {
+      if (e.relatedTarget) return;
+      visible = false;
+      xh.classList.remove('is-visible');
+      trail.length = 0;
+      schedule();
+    });
+  };
+
+  if (fine.matches) init();
+</script>
+
+<style is:global>
+  /* Ocultar el cursor nativo solo cuando la mira está activa */
+  html.has-xh,
+  html.has-xh * {
+    cursor: none !important;
+  }
+
+  html.has-xh :is(input:not([type='checkbox']):not([type='radio']):not([type='submit']), textarea, [contenteditable='true']) {
+    cursor: text !important;
+  }
+</style>
+
+<style>
+  .xh-trail {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none;
+    z-index: 9998;
+  }
+
+  .xh {
+    --size: 30px;
+    --gap: 6px; /* hueco central */
+    --arm: 9px;
+    --thick: 2px;
+    --color: #fff;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 0;
+    height: 0;
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  .xh.is-visible {
+    opacity: 1;
+  }
+
+  .xh.is-text {
+    opacity: 0;
+  }
+
+  /* Los brazos y el punto se posicionan respecto al centro (0,0) */
+  .xh-arm,
+  .xh-dot,
+  .xh-ring {
+    position: absolute;
+    left: 0;
+    top: 0;
+    transition:
+      transform 0.18s cubic-bezier(0.2, 0.8, 0.2, 1),
+      background-color 0.18s,
+      border-color 0.18s,
+      opacity 0.18s;
+  }
+
+  .xh-arm {
+    background: var(--color);
+    /* contorno oscuro para que se vea sobre fondos claros */
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.55);
+  }
+
+  .xh-arm--t,
+  .xh-arm--b {
+    width: var(--thick);
+    height: var(--arm);
+    margin-left: calc(var(--thick) / -2);
+  }
+
+  .xh-arm--l,
+  .xh-arm--r {
+    width: var(--arm);
+    height: var(--thick);
+    margin-top: calc(var(--thick) / -2);
+  }
+
+  .xh-arm--t {
+    transform: translateY(calc(-1 * (var(--gap) + var(--arm))));
+  }
+
+  .xh-arm--b {
+    transform: translateY(var(--gap));
+  }
+
+  .xh-arm--l {
+    transform: translateX(calc(-1 * (var(--gap) + var(--arm))));
+  }
+
+  .xh-arm--r {
+    transform: translateX(var(--gap));
+  }
+
+  .xh-dot {
+    width: 4px;
+    height: 4px;
+    margin: -2px 0 0 -2px;
+    border-radius: 50%;
+    background: var(--yellow);
+    box-shadow: 0 0 6px 1px rgba(247, 196, 0, 0.8);
+    transform: scale(0);
+    opacity: 0;
+  }
+
+  .xh-ring {
+    width: var(--size);
+    height: var(--size);
+    margin: calc(var(--size) / -2) 0 0 calc(var(--size) / -2);
+    border: 1px solid rgba(247, 196, 0, 0.7);
+    border-radius: 50%;
+    transform: scale(1.6);
+    opacity: 0;
+  }
+
+  /* Sobre un elemento interactivo: la mira se cierra, se vuelve amarilla y aparece el punto */
+  .xh.is-target {
+    --color: var(--yellow);
+    --gap: 9px;
+    --arm: 6px;
+  }
+
+  .xh.is-target .xh-arm {
+    box-shadow: 0 0 6px rgba(247, 196, 0, 0.6);
+  }
+
+  .xh.is-target .xh-dot {
+    transform: scale(1);
+    opacity: 1;
+  }
+
+  .xh.is-target .xh-ring {
+    transform: scale(1);
+    opacity: 1;
+  }
+
+  /* Al hacer clic: pequeño "retroceso" */
+  .xh.is-fire .xh-ring {
+    transform: scale(0.75);
+  }
+
+  .xh.is-fire .xh-dot {
+    transform: scale(1.8);
+    opacity: 1;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .xh-arm,
+    .xh-dot,
+    .xh-ring {
+      transition: none;
+    }
+
+    .xh-trail {
+      display: none;
+    }
+  }
+</style>
