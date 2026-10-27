@@ -1,0 +1,517 @@
+---
+import { Image } from 'astro:assets';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { site } from '../data/site';
+import kit from '../assets/img/operator-kit.jpg';
+
+// Categorías previstas (orientativas hasta definir el catálogo).
+// `value` se envía en el registro de interesados.
+const categories = [
+  { value: 'intervencion', title: 'Equipo de intervención', text: 'Grilletes, defensas, guantes anticorte y material de control.' },
+  { value: 'cinturones', title: 'Cinturones y fundas', text: 'Cinturones de servicio, fundas de retención y portacargadores.' },
+  { value: 'iluminacion', title: 'Iluminación', text: 'Linternas tácticas y de servicio, frontales y accesorios.' },
+  { value: 'sanitario', title: 'Material sanitario táctico', text: 'Torniquetes, vendajes de emergencia y botiquines individuales (IFAK).' },
+  { value: 'vestuario', title: 'Vestuario y calzado', text: 'Ropa técnica, botas y prendas de alta visibilidad.' },
+  { value: 'entrenamiento', title: 'Material de entrenamiento', text: 'Réplicas inertes, dummies y accesorios para la práctica.' },
+];
+
+const perks = [
+  { title: 'Seleccionado por instructores', text: 'Solo material que usamos y probamos en nuestras formaciones.' },
+  { title: 'Pedidos para unidades', text: 'Compras para jefaturas y unidades con presupuesto y factura.' },
+  { title: 'Asesoramiento', text: 'Te ayudamos a elegir el equipo según el servicio que prestas.' },
+];
+---
+
+<BaseLayout
+  title="Tienda táctica"
+  description="Próximamente: tienda de material táctico para policía seleccionado por instructores. Regístrate y te avisamos de la apertura."
+>
+  <section class="shop-hero">
+    <div class="container hero-grid">
+      <div>
+        <p class="eyebrow">Tienda RIVSAN · Próximamente</p>
+        <h1 class="h-xl">Material táctico <span class="accent">para el servicio diario</span></h1>
+        <p class="lead">
+          Estamos preparando una tienda con equipamiento seleccionado por nuestros instructores para Policía Local y FCSE.
+          Déjanos tu email y serás de los primeros en saber cuándo abrimos.
+        </p>
+        <a href="#registro" class="btn btn-primary">Avisadme de la apertura <span class="arrow">→</span></a>
+      </div>
+      <div class="hero-media hud">
+        <Image src={kit} alt="Bolsa de equipo táctico con visor y material de entrenamiento" widths={[500, 900]} sizes="(max-width: 960px) 100vw, 40vw" loading="eager" />
+        <span class="stamp" aria-hidden="true">Próximamente</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="head reveal">
+        <p class="eyebrow">Qué encontrarás</p>
+        <h2 class="h-lg">Categorías <span class="accent">previstas</span></h2>
+        <p class="lead">Un avance de lo que estamos preparando. El catálogo definitivo puede variar.</p>
+      </div>
+      <div class="cats">
+        {
+          categories.map((c, i) => (
+            <article class="cat reveal">
+              <span class="cat-n">{String(i + 1).padStart(2, '0')}</span>
+              <h3>{c.title}</h3>
+              <p class="muted">{c.text}</p>
+            </article>
+          ))
+        }
+      </div>
+      <ul class="perks reveal">
+        {
+          perks.map((p) => (
+            <li>
+              <strong>{p.title}</strong>
+              <span>{p.text}</span>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <section class="section signup-section" id="registro">
+    <div class="container signup-grid">
+      <div class="reveal">
+        <p class="eyebrow">Registro de interesados</p>
+        <h2 class="h-lg">Sé el primero <span class="accent">en saberlo</span></h2>
+        <p class="lead">
+          Te enviaremos un único aviso cuando abra la tienda. Si nos dices qué te interesa, priorizaremos esas categorías.
+        </p>
+        <p class="muted small">Sin spam. Puedes darte de baja en cualquier momento.</p>
+      </div>
+
+      <form class="signup reveal" data-shop-signup novalidate>
+        <div class="row">
+          <label>
+            <span>Nombre *</span>
+            <input name="nombre" autocomplete="name" required />
+          </label>
+          <label>
+            <span>Email *</span>
+            <input name="email" type="email" autocomplete="email" required />
+          </label>
+        </div>
+
+        <fieldset class="choice">
+          <legend>Compras como *</legend>
+          <label class="pill-option">
+            <input type="radio" name="perfil" value="agente" required />
+            <span>Agente (a título personal)</span>
+          </label>
+          <label class="pill-option">
+            <input type="radio" name="perfil" value="unidad" />
+            <span>Jefatura / unidad</span>
+          </label>
+          <label class="pill-option">
+            <input type="radio" name="perfil" value="privada" />
+            <span>Seguridad privada</span>
+          </label>
+        </fieldset>
+
+        <label>
+          <span>Cuerpo o unidad</span>
+          <input name="unidad" autocomplete="organization" placeholder="Opcional" />
+        </label>
+
+        <fieldset class="choice">
+          <legend>¿Qué te interesa?</legend>
+          {
+            categories.map((c) => (
+              <label class="pill-option">
+                <input type="checkbox" name="categorias" value={c.value} />
+                <span>{c.title}</span>
+              </label>
+            ))
+          }
+        </fieldset>
+
+        <label class="check">
+          <input type="checkbox" name="aviso" required />
+          <span>Quiero recibir por email el aviso de apertura de la tienda. *</span>
+        </label>
+        <label class="check">
+          <input type="checkbox" name="privacidad" required />
+          <span>He leído y acepto la <a href="/legal/privacidad/" target="_blank">política de privacidad</a>. *</span>
+        </label>
+
+        <p class="gdpr">
+          <strong>Responsable:</strong> {site.legalName}. <strong>Finalidad:</strong> avisarte de la apertura de la
+          tienda. <strong>Legitimación:</strong> tu consentimiento. <strong>Destinatarios:</strong> no se ceden datos.
+          <strong>Derechos:</strong> acceso, rectificación, supresión y otros, en
+          <a href={`mailto:${site.privacyEmail}`}>{site.privacyEmail}</a>.
+        </p>
+
+        <button type="submit" class="btn btn-primary">Avisadme <span class="arrow">→</span></button>
+        <p class="status" role="status" aria-live="polite" data-status></p>
+      </form>
+    </div>
+  </section>
+</BaseLayout>
+
+<script>
+  const form = document.querySelector<HTMLFormElement>('[data-shop-signup]');
+  if (form) {
+    const status = form.querySelector<HTMLElement>('[data-status]')!;
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      if (!form.checkValidity()) {
+        form.classList.add('was-validated');
+        status.textContent = 'Revisa los campos marcados.';
+        status.dataset.state = 'error';
+        form.querySelector<HTMLElement>(':invalid')?.focus();
+        return;
+      }
+      // TODO: conectar con la lista de interesados cuando esté el alojamiento.
+      status.textContent = '¡Apuntado! Te avisaremos en cuanto abramos. (Maqueta: el registro aún no se guarda.)';
+      status.dataset.state = 'ok';
+      form.reset();
+      form.classList.remove('was-validated');
+    });
+  }
+</script>
+
+<style>
+  .shop-hero {
+    padding: calc(var(--header-h) + clamp(48px, 7vw, 96px)) 0 clamp(56px, 7vw, 96px);
+    background:
+      repeating-linear-gradient(135deg, rgba(247, 196, 0, 0.05) 0 2px, transparent 2px 16px),
+      var(--bg);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .hero-grid {
+    display: grid;
+    grid-template-columns: 1.15fr 1fr;
+    gap: clamp(32px, 5vw, 72px);
+    align-items: center;
+  }
+
+  .hero-grid h1 {
+    font-size: clamp(2.75rem, 5.6vw, 5.25rem);
+    margin-bottom: 1.25rem;
+  }
+
+  .hero-grid .btn {
+    margin-top: 1.5rem;
+  }
+
+  .hero-media {
+    position: relative;
+  }
+
+  .hero-media img {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    filter: grayscale(0.4);
+  }
+
+  .stamp {
+    position: absolute;
+    right: 24px;
+    bottom: 24px;
+    font-family: var(--font-display);
+    font-size: clamp(1.5rem, 3vw, 2.25rem);
+    letter-spacing: 0.06em;
+    color: var(--yellow);
+    border: 3px solid var(--yellow);
+    padding: 6px 16px 2px;
+    transform: rotate(-6deg);
+    background: rgba(11, 11, 11, 0.75);
+  }
+
+  .head {
+    max-width: 780px;
+    margin-bottom: 48px;
+  }
+
+  .head h2 {
+    margin-bottom: 1rem;
+  }
+
+  .cats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+
+  .cat {
+    padding: 28px 24px;
+    background: var(--bg-2);
+    border: 1px dashed var(--line-strong);
+    transition: border-color 0.25s;
+  }
+
+  .cat:hover {
+    border-color: rgba(247, 196, 0, 0.5);
+  }
+
+  .cat-n {
+    font-family: var(--font-label);
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    color: var(--yellow);
+    font-size: 0.9rem;
+  }
+
+  .cat h3 {
+    font-size: 1.9rem;
+    margin: 8px 0 10px;
+  }
+
+  .cat p {
+    margin: 0;
+  }
+
+  .perks {
+    list-style: none;
+    margin: 48px 0 0;
+    padding: 28px 0 0;
+    border-top: 1px solid var(--line);
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+  }
+
+  .perks li {
+    display: grid;
+    gap: 4px;
+    padding-left: 20px;
+    border-left: 3px solid var(--yellow);
+  }
+
+  .perks span {
+    color: var(--text-muted);
+    font-size: 0.975rem;
+  }
+
+  /* Registro */
+  .signup-section {
+    background: var(--bg-2);
+    border-top: 1px solid var(--line);
+  }
+
+  .signup-grid {
+    display: grid;
+    grid-template-columns: 0.85fr 1.15fr;
+    gap: clamp(40px, 6vw, 96px);
+    align-items: start;
+  }
+
+  .signup-grid h2 {
+    margin-bottom: 1.25rem;
+  }
+
+  .small {
+    font-size: 0.925rem;
+  }
+
+  .signup {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    padding: clamp(24px, 4vw, 44px);
+    display: grid;
+    gap: 22px;
+  }
+
+  .row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+
+  label {
+    display: grid;
+    gap: 8px;
+  }
+
+  label > span,
+  legend {
+    font-family: var(--font-label);
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+  }
+
+  input:not([type='checkbox']):not([type='radio']) {
+    width: 100%;
+    font: inherit;
+    font-size: 1rem;
+    color: var(--text);
+    background: var(--bg);
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius);
+    padding: 0.8em 0.9em;
+    color-scheme: dark;
+  }
+
+  input::placeholder {
+    color: var(--text-dim);
+  }
+
+  input:focus {
+    outline: none;
+    border-color: var(--yellow);
+  }
+
+  .was-validated input:invalid {
+    border-color: #e5484d;
+  }
+
+  .choice {
+    border: 0;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .choice legend {
+    margin-bottom: 10px;
+    padding: 0;
+  }
+
+  /* Opciones como píldoras seleccionables */
+  .pill-option {
+    display: inline-flex;
+    position: relative;
+  }
+
+  .pill-option input {
+    position: absolute;
+    opacity: 0;
+    inset: 0;
+    margin: 0;
+  }
+
+  .pill-option span {
+    font-family: var(--font-body);
+    font-weight: 500;
+    letter-spacing: 0;
+    text-transform: none;
+    font-size: 0.925rem;
+    color: var(--text);
+    padding: 0.5em 1em;
+    border: 1px solid var(--line-strong);
+    border-radius: 999px;
+    transition: background 0.2s, border-color 0.2s, color 0.2s;
+  }
+
+  .pill-option:hover span {
+    border-color: var(--yellow);
+  }
+
+  .pill-option input:checked + span {
+    background: var(--yellow);
+    border-color: var(--yellow);
+    color: var(--ink);
+  }
+
+  .pill-option input:focus-visible + span {
+    outline: 2px solid var(--yellow);
+    outline-offset: 2px;
+  }
+
+  .was-validated .choice:has(input:invalid) .pill-option span {
+    border-color: #e5484d;
+  }
+
+  .check {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+
+  .check input {
+    width: 20px;
+    height: 20px;
+    flex: none;
+    accent-color: var(--yellow);
+    margin-top: 2px;
+  }
+
+  .check span {
+    font-family: var(--font-body);
+    text-transform: none;
+    letter-spacing: 0;
+    font-size: 0.95rem;
+    color: var(--text);
+  }
+
+  .check a {
+    color: var(--yellow);
+  }
+
+  .was-validated .check input:invalid {
+    outline: 2px solid #e5484d;
+  }
+
+  .gdpr {
+    margin: -6px 0 0;
+    font-size: 0.8rem;
+    line-height: 1.5;
+    color: var(--text-dim);
+  }
+
+  .gdpr strong {
+    color: var(--text-muted);
+    font-weight: 600;
+  }
+
+  .gdpr a {
+    color: var(--text-muted);
+  }
+
+  .signup .btn {
+    justify-self: start;
+  }
+
+  .status {
+    margin: 0;
+    min-height: 1.5em;
+    font-size: 0.95rem;
+  }
+
+  .status[data-state='ok'] {
+    color: var(--yellow);
+  }
+
+  .status[data-state='error'] {
+    color: #ff6b6b;
+  }
+
+  @media (max-width: 960px) {
+    .hero-grid,
+    .signup-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .cats {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .perks {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 600px) {
+    .cats,
+    .row {
+      grid-template-columns: 1fr;
+    }
+
+    .signup .btn {
+      justify-self: stretch;
+    }
+  }
+</style>
