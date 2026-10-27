@@ -29,7 +29,7 @@ class HttpError extends Error {
 
 const isoDay = (v) => (v instanceof Date ? v.toISOString().slice(0, 10) : v);
 
-function parseCurso(texto) {
+export function parseCurso(texto) {
   const m = texto.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n?([\s\S]*)$/);
   if (!m) throw new HttpError(500, 'El archivo no tiene cabecera (frontmatter)');
   const data = yaml.load(m[1]) ?? {};

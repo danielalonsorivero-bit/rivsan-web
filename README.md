@@ -35,6 +35,14 @@ Cada push a `main` publica la web en **https://danielalonsorivero-bit.github.io/
 
 En local (`npm run dev` / `npm run build` sin variables) la web va en la raíz y sin contraseña.
 
+### Demo del panel
+
+`/panel-demo/` es el mismo panel en **modo demostración**, incluido en la web publicada y enlazado discretamente
+desde el pie («no incluido en la versión final»). Lleva los datos de la web incrustados al compilar y los cambios
+se guardan solo en el navegador (`sessionStorage`): no modifica nada. Pide la misma contraseña y no entra en el sitemap.
+Para quitarlo de la versión final: borrar el enlace en `src/components/Footer.astro` y la ruta `/panel-demo` en
+`admin/integration.mjs`.
+
 ## Publicación
 
 - La web **no se indexa** en buscadores por defecto (`noindex` en las páginas y `Disallow: /` en `robots.txt`).

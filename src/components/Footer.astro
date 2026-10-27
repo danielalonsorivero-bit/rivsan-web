@@ -63,6 +63,8 @@ const loose = [...nav.filter((i) => !i.children), ...footerExtra];
   <div class="container footer-bottom">
     <p>© {year} {site.legalName} · CIF {site.cif}</p>
     <ul>
+      <!-- Solo en la versión de muestra: no estará en la web final -->
+      <li class="demo-link"><a href="/panel-demo/">Demo del panel de gestión</a> <span>· no incluido en la versión final</span></li>
       <li><a href="/legal/aviso-legal/">Aviso legal</a></li>
       <li><a href="/legal/privacidad/">Privacidad</a></li>
       <li><a href="/legal/cookies/">Cookies</a></li>
@@ -163,6 +165,27 @@ const loose = [...nav.filter((i) => !i.children), ...footerExtra];
 
   .footer-bottom a {
     color: var(--text-dim);
+  }
+
+  /* Con ratón hay un interruptor de sonido fijo abajo a la izquierda: se deja hueco para que no tape la última línea */
+  @media (hover: hover) and (pointer: fine) {
+    .footer-bottom {
+      padding-bottom: 64px;
+    }
+  }
+
+  .demo-link {
+    font-family: var(--font-data);
+    font-size: 0.75rem;
+  }
+
+  .demo-link a {
+    color: var(--text-muted);
+    text-decoration-color: var(--yellow);
+  }
+
+  .demo-link span {
+    opacity: 0.7;
   }
 
   @media (max-width: 1080px) {

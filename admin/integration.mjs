@@ -1,6 +1,8 @@
 // Panel de administración local. Solo existe con `npm run dev`: añade la página /admin/
 // y una pequeña API que lee y escribe los ficheros de contenido del proyecto.
 // Nunca entra en `npm run build`, así que no se publica.
+// Aparte, /panel-demo/ (dev y build) es una demostración del mismo panel con datos simulados
+// en el navegador: no escribe nada y sirve para enseñarlo en la versión de muestra.
 import { createApi } from './api.mjs';
 
 export default function admin() {
@@ -8,6 +10,7 @@ export default function admin() {
     name: 'rivsan-admin',
     hooks: {
       'astro:config:setup': ({ command, config, injectRoute, updateConfig, logger }) => {
+        injectRoute({ pattern: '/panel-demo', entrypoint: new URL('./pages/demo.astro', import.meta.url) });
         if (command !== 'dev') return;
         const root = new URL('.', config.root);
         injectRoute({ pattern: '/admin', entrypoint: new URL('./pages/index.astro', import.meta.url) });

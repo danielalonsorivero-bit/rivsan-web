@@ -1,6 +1,30 @@
 ---
 // Panel de administración local (solo `npm run dev`). Ver admin/integration.mjs.
+// Con `demo` (página /panel-demo/) funciona sin servidor: los datos de la web se incrustan al
+// compilar y los cambios se guardan solo en el navegador (sessionStorage), sin tocar archivos.
 import '../../src/styles/global.css';
+import { getImage } from 'astro:assets';
+import Gate from '../../src/components/Gate.astro';
+import empresa from '../../src/data/empresa.json';
+import { parseCurso } from '../api.mjs';
+
+interface Props {
+  demo?: boolean;
+}
+const { demo = false } = Astro.props;
+
+let seed = '';
+if (demo) {
+  const raws = import.meta.glob<string>('/src/content/cursos/*.md', { query: '?raw', import: 'default', eager: true });
+  const cursos = Object.entries(raws).map(([path, texto]) => ({ slug: path.split('/').pop()!.slice(0, -3), ...parseCurso(texto) }));
+  const files = import.meta.glob<ImageMetadata>('/src/assets/img/*.{jpg,jpeg,png,webp,avif}', { import: 'default', eager: true });
+  const imagenes: Record<string, string> = {};
+  for (const [path, img] of Object.entries(files)) {
+    imagenes[path.split('/').pop()!] = (await getImage({ src: img, width: 520, format: 'webp' })).src;
+  }
+  // Escapado de «<» para que el texto de los cursos no pueda cerrar la etiqueta <script>
+  seed = JSON.stringify({ cursos, empresa, imagenes }).replace(/</g, '\\u003c');
+}
 ---
 
 <!doctype html>
@@ -9,21 +33,37 @@ import '../../src/styles/global.css';
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="robots" content="noindex, nofollow" />
-    <title>Panel · RIVSAN</title>
+    <title>{demo ? 'Demo del panel · RIVSAN' : 'Panel · RIVSAN'}</title>
   </head>
-  <body>
+  <body data-demo={demo ? '' : undefined}>
+    {demo && <Gate />}
+    {demo && <script type="application/json" id="demo-seed" set:html={seed} />}
     <div class="adm">
       <aside class="adm-side">
-        <a class="adm-brand" href="/admin/">RIVSAN <span>Panel</span></a>
+        <a class="adm-brand" href={demo ? '/panel-demo/' : '/admin/'}>RIVSAN <span>Panel</span></a>
         <nav aria-label="Secciones del panel">
           <a href="#/cursos" data-tab="cursos">Cursos</a>
           <a href="#/empresa" data-tab="empresa">Datos de empresa</a>
         </nav>
-        <p class="adm-note">Solo en tu ordenador. Los cambios se guardan en los archivos del proyecto: revísalos en la web local y publícalos con el siguiente <code>build</code>.</p>
+        {
+          demo ? (
+            <p class="adm-note">Demostración. Los cambios se guardan solo en este navegador y no modifican la web. En la versión final el panel será privado, con acceso por usuario.</p>
+          ) : (
+            <p class="adm-note">Solo en tu ordenador. Los cambios se guardan en los archivos del proyecto: revísalos en la web local y publícalos con el siguiente <code>build</code>.</p>
+          )
+        }
         <a class="adm-site" href="/" target="_blank" rel="noopener">Ver la web ↗</a>
       </aside>
 
       <main class="adm-main" id="main">
+        {
+          demo && (
+            <div class="demo-bar" role="note">
+              <span><strong>Modo demostración.</strong> Prueba a editar un curso o los datos de empresa: los cambios no salen de tu navegador.</span>
+              <button type="button" class="demo-reset" id="demo-reset">Restablecer datos</button>
+            </div>
+          )
+        }
         <!-- Lista de cursos -->
         <section id="v-lista" hidden>
           <header class="adm-head">
@@ -176,9 +216,88 @@ import '../../src/styles/global.css';
 
       const $ = <T extends Element = HTMLElement>(s: string, el: ParentNode = document) => el.querySelector(s) as T;
       const CATEGORIAS: Record<string, string> = { simulador: 'Simulador VR', auxilios: 'Primeros auxilios', fuerza: 'Fuerza no letal' };
-      const IMG_URL = (f: string) => `/src/assets/img/${encodeURIComponent(f)}`;
+      const DEMO = document.body.hasAttribute('data-demo');
+      const BASE = import.meta.env.BASE_URL.replace(/\/?$/, '/');
+
+      // ---------- Modo demostración: API simulada en el navegador ----------
+      type DemoCurso = { slug: string; data: Record<string, any>; body: string };
+      type DemoState = { cursos: DemoCurso[]; empresa: Record<string, string>; imagenes: Record<string, string> };
+      const DEMO_KEY = 'rivsan-panel-demo';
+      const SEED: DemoState | null = DEMO ? JSON.parse(document.getElementById('demo-seed')!.textContent!) : null;
+      const SLUGS_WEB = new Set(SEED?.cursos.map((c) => c.slug) ?? []);
+      // Las imágenes subidas solo viven en memoria (pesan demasiado para sessionStorage)
+      const subidas: Record<string, string> = {};
+
+      function demoLeer(): DemoState {
+        try {
+          const s = sessionStorage.getItem(DEMO_KEY);
+          if (s) return JSON.parse(s);
+        } catch {}
+        return structuredClone(SEED!);
+      }
+      function demoGuardar(st: DemoState) {
+        try {
+          sessionStorage.setItem(DEMO_KEY, JSON.stringify(st));
+        } catch {}
+      }
+
+      async function demoApi(path: string, opts: RequestInit): Promise<any> {
+        await new Promise((r) => setTimeout(r, 120)); // simula la ida y vuelta al servidor
+        const st = demoLeer();
+        const m = opts.method ?? 'GET';
+        const [recurso, rawId] = path.split('/');
+        const id = rawId ? decodeURIComponent(rawId) : '';
+        const body = opts.body ? JSON.parse(String(opts.body)) : {};
+
+        if (recurso === 'cursos' && !id) {
+          return st.cursos
+            .map((c) => ({ slug: c.slug, ...c.data }))
+            .sort((a, b) => (a.orden ?? 100) - (b.orden ?? 100) || a.titulo.localeCompare(b.titulo));
+        }
+        if (recurso === 'cursos' && m === 'GET') {
+          const c = st.cursos.find((x) => x.slug === id);
+          if (!c) throw new Error('Curso no encontrado');
+          return c;
+        }
+        if (recurso === 'cursos' && m === 'PUT') {
+          const destino = body.nuevoSlug || id;
+          if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(destino)) throw new Error('Identificador no válido (solo minúsculas, números y guiones)');
+          if ((body.crear || destino !== id) && st.cursos.some((c) => c.slug === destino)) throw new Error(`Ya existe un curso con la URL «${destino}»`);
+          const data = { ...body.data, fechas: (body.data.fechas ?? []).filter((f: Fecha) => f.inicio && f.lugar) };
+          st.cursos = st.cursos.filter((c) => c.slug !== id && c.slug !== destino);
+          st.cursos.push({ slug: destino, data, body: body.body ?? '' });
+          demoGuardar(st);
+          return { slug: destino };
+        }
+        if (recurso === 'cursos' && m === 'DELETE') {
+          st.cursos = st.cursos.filter((c) => c.slug !== id);
+          demoGuardar(st);
+          return { ok: true };
+        }
+        if (recurso === 'imagenes' && m === 'GET') return [...Object.keys(st.imagenes), ...Object.keys(subidas)].sort();
+        if (recurso === 'imagenes' && m === 'POST') {
+          const ext = (body.nombre?.match(/\.(jpe?g|png|webp|avif)$/i)?.[0] ?? '').toLowerCase();
+          if (!ext) throw new Error('Sube una imagen JPG, PNG, WebP o AVIF');
+          const base = slugify(body.nombre.slice(0, -ext.length)) || 'imagen';
+          let nombre = base + ext;
+          for (let i = 2; nombre in st.imagenes || nombre in subidas; i++) nombre = `${base}-${i}${ext}`;
+          subidas[nombre] = `data:image/${ext.slice(1).replace('jpg', 'jpeg')};base64,${body.base64}`;
+          return { nombre };
+        }
+        if (recurso === 'empresa' && m === 'GET') return st.empresa;
+        if (recurso === 'empresa' && m === 'PUT') {
+          for (const k of Object.keys(st.empresa)) if (typeof body[k] === 'string') st.empresa[k] = body[k].trim();
+          demoGuardar(st);
+          return st.empresa;
+        }
+        throw new Error('Ruta no encontrada');
+      }
+
+      const IMG_URL = (f: string) =>
+        DEMO ? (subidas[f] ?? SEED!.imagenes[f] ?? '') : `/src/assets/img/${encodeURIComponent(f)}`;
 
       async function api<T = any>(path: string, opts: RequestInit = {}): Promise<T> {
+        if (DEMO) return demoApi(path, opts);
         const res = await fetch(`/admin/api/${path}/`, {
           ...opts,
           headers: { 'x-rivsan-admin': '1', 'Content-Type': 'application/json', ...opts.headers },
@@ -305,8 +424,9 @@ import '../../src/styles/global.css';
         $('#curso-titulo').textContent = slug ? c.titulo : 'Nuevo curso';
         $('#curso-borrar').hidden = !slug;
         const ver = $<HTMLAnchorElement>('#curso-ver');
-        ver.hidden = !slug;
-        if (slug) ver.href = `/formacion/${slug}/`;
+        // En la demo solo existen en la web los cursos originales
+        ver.hidden = !slug || (DEMO && !SLUGS_WEB.has(slug));
+        if (slug) ver.href = `${BASE}formacion/${slug}/`;
       }
 
       (fCurso.elements as any).titulo.addEventListener('input', () => {
@@ -418,6 +538,15 @@ import '../../src/styles/global.css';
         }
       });
 
+      document.getElementById('demo-reset')?.addEventListener('click', () => {
+        try {
+          sessionStorage.removeItem(DEMO_KEY);
+        } catch {}
+        for (const k of Object.keys(subidas)) delete subidas[k];
+        location.hash = '#/cursos';
+        router();
+      });
+
       window.addEventListener('hashchange', router);
       router();
     </script>
@@ -438,6 +567,17 @@ import '../../src/styles/global.css';
       }
       .adm-side nav a:hover { color: var(--text); background: var(--surface); }
       .adm-side nav a[aria-current] { color: var(--ink); background: var(--yellow); }
+      .demo-bar {
+        display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 20px;
+        margin-bottom: 28px; padding: 12px 16px; font-size: 14px; color: var(--text-muted);
+        background: rgba(247, 196, 0, 0.08); border: 1px solid rgba(247, 196, 0, 0.4); border-radius: var(--radius);
+      }
+      .demo-bar strong { color: var(--yellow); font-weight: 600; }
+      .demo-reset {
+        font: inherit; font-size: 13px; color: var(--text); background: none; cursor: pointer;
+        padding: 6px 12px; border: 1px solid var(--line-strong); border-radius: var(--radius);
+      }
+      .demo-reset:hover { border-color: var(--yellow); color: var(--yellow); }
       .adm-note { margin-top: auto; font-size: 13px; color: var(--text-dim); line-height: 1.5; }
       .adm-site { font-size: 14px; color: var(--yellow); }
 

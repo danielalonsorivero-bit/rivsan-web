@@ -10,6 +10,6 @@ export default defineConfig({
   site: process.env.SITE_URL || 'https://rivsan.es',
   base: process.env.BASE_PATH || '/',
   trailingSlash: 'always',
-  // admin() solo actúa con `npm run dev` (panel en /admin/)
-  integrations: [sitemap(), admin(), baseLinks()],
+  // admin(): panel en /admin/ solo con `npm run dev`; demo pública en /panel-demo/ (fuera del sitemap)
+  integrations: [sitemap({ filter: (page) => !page.includes('/panel-demo/') }), admin(), baseLinks()],
 });
