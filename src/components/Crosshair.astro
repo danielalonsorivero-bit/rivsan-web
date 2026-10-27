@@ -1,7 +1,8 @@
 ---
 // Cursor de punto de mira con estela luminosa.
-// Solo se activa con ratón (pointer: fine + hover) y dentro de las zonas marcadas con
-// data-xh-zone (hero y simulador). Fuera de ellas, sin JS o en táctil se ve el cursor normal.
+// Solo se activa con ratón (pointer: fine + hover). Sin JS o en táctil se ve el cursor normal.
+// Dentro de una ventana modal (<dialog>) se usa el cursor normal: la ventana se pinta por
+// encima de todo y taparía la mira.
 // Con "reducir movimiento" se mantiene la mira pero sin estela ni animaciones.
 ---
 
@@ -31,7 +32,8 @@
     if (!xh || !canvas) return;
     const ctx = canvas.getContext('2d')!;
 
-    let inZone = false;
+    let active = true; // falso mientras el puntero está sobre una ventana modal
+    root.classList.add('has-xh');
 
     let x = -100;
     let y = -100;
@@ -90,7 +92,13 @@
     addEventListener(
       'pointermove',
       (e) => {
-        if (e.pointerType !== 'mouse' || !inZone) return;
+        if (e.pointerType !== 'mouse') return;
+        // Al cerrarse la ventana modal no hay pointerover nuevo: se reactiva al moverse
+        if (!active && !document.querySelector('dialog[open]')) {
+          active = true;
+          root.classList.add('has-xh');
+        }
+        if (!active) return;
         x = e.clientX;
         y = e.clientY;
         if (!visible) {
@@ -113,11 +121,11 @@
     // Estado según lo que hay bajo el puntero
     document.addEventListener('pointerover', (e) => {
       const el = e.target as Element;
-      const zone = !!el.closest?.('[data-xh-zone]');
-      if (zone !== inZone) {
-        inZone = zone;
-        root.classList.toggle('has-xh', zone);
-        if (!zone) hide();
+      const outsideDialog = !el.closest?.('dialog[open]');
+      if (outsideDialog !== active) {
+        active = outsideDialog;
+        root.classList.toggle('has-xh', active);
+        if (!active) hide();
       }
       const text = el.closest?.(TEXT_FIELD);
       const target = !text && el.closest?.(INTERACTIVE);
@@ -241,7 +249,9 @@
     margin: -2px 0 0 -2px;
     border-radius: 50%;
     background: var(--yellow);
-    box-shadow: 0 0 6px 1px rgba(247, 196, 0, 0.8);
+    box-shadow:
+      0 0 0 1px rgba(0, 0, 0, 0.7),
+      0 0 6px 1px rgba(247, 196, 0, 0.8);
     transform: scale(0);
     opacity: 0;
   }
@@ -252,6 +262,9 @@
     margin: calc(var(--size) / -2) 0 0 calc(var(--size) / -2);
     border: 1px solid rgba(247, 196, 0, 0.7);
     border-radius: 50%;
+    box-shadow:
+      0 0 0 1px rgba(0, 0, 0, 0.45),
+      inset 0 0 0 1px rgba(0, 0, 0, 0.45);
     transform: scale(1.6);
     opacity: 0;
   }
@@ -263,8 +276,11 @@
     --arm: 6px;
   }
 
+  /* Contorno oscuro también en modo blanco: sobre botones y franjas amarillas seguiría viéndose */
   .xh.is-target .xh-arm {
-    box-shadow: 0 0 6px rgba(247, 196, 0, 0.6);
+    box-shadow:
+      0 0 0 1px rgba(0, 0, 0, 0.7),
+      0 0 6px rgba(247, 196, 0, 0.6);
   }
 
   .xh.is-target .xh-dot {

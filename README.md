@@ -59,7 +59,7 @@ En local (`npm run dev` / `npm run build` sin variables) la web va en la raíz y
 - `src/pages/tienda.astro`: tienda (próximamente) con registro de interesados
 - `src/pages/legal/`: aviso legal, privacidad y cookies (plantilla en `src/layouts/LegalLayout.astro`)
 - `src/pages/formacion/`: catálogo, calendario y fichas de cursos
-- `src/components/Crosshair.astro`: cursor de punto de mira, solo dentro de las secciones marcadas con `data-xh-zone` (hero y simulador; solo con ratón; sin estela con «reducir movimiento»)
+- `src/components/Crosshair.astro`: cursor de punto de mira en toda la web (solo con ratón; cursor normal en campos de texto y ventanas modales; sin estela con «reducir movimiento»)
 - `src/components/AarDemo.astro`: demo interactiva de la revisión posterior (vista cenital, línea de tiempo y métricas; datos ilustrativos), en la home y en `/simulador/#aar`
 - `src/components/LiveEditDemo.astro`: el instructor activa factores de estrés (oscuridad, humo, civil, obstáculo, comunicaciones) sobre el escenario; en `/simulador/#aar`
 - `src/components/ForceDemo.astro`: esquema interactivo del uso progresivo de la fuerza con el curso que entrena cada nivel; en `/formacion/` y en los perfiles de Policía Local y FCSE
