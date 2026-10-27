@@ -115,7 +115,7 @@ const docs = [
   </section>
 
   <!-- Documentación -->
-  <section class="section">
+  <section class="section theme-light">
     <div class="container docs-grid">
       <div class="reveal">
         <p class="eyebrow">Lo que te damos</p>
@@ -258,9 +258,17 @@ const docs = [
   .docs li::before {
     content: '✓';
     position: absolute;
-    left: 6px;
-    color: var(--yellow);
+    left: 0;
+    top: 1.15em;
+    width: 20px;
+    height: 20px;
+    display: grid;
+    place-items: center;
+    font-size: 0.8rem;
     font-weight: 600;
+    color: var(--ink);
+    background: var(--yellow);
+    border-radius: 2px;
   }
 
   @media (max-width: 960px) {

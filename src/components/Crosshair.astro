@@ -1,6 +1,7 @@
 ---
 // Cursor de punto de mira con estela luminosa.
-// Solo se activa con ratón (pointer: fine + hover). Sin JS o en táctil se ve el cursor normal.
+// Solo se activa con ratón (pointer: fine + hover) y dentro de las zonas marcadas con
+// data-xh-zone (hero y simulador). Fuera de ellas, sin JS o en táctil se ve el cursor normal.
 // Con "reducir movimiento" se mantiene la mira pero sin estela ni animaciones.
 ---
 
@@ -30,7 +31,7 @@
     if (!xh || !canvas) return;
     const ctx = canvas.getContext('2d')!;
 
-    root.classList.add('has-xh');
+    let inZone = false;
 
     let x = -100;
     let y = -100;
@@ -89,7 +90,7 @@
     addEventListener(
       'pointermove',
       (e) => {
-        if (e.pointerType !== 'mouse') return;
+        if (e.pointerType !== 'mouse' || !inZone) return;
         x = e.clientX;
         y = e.clientY;
         if (!visible) {
@@ -102,9 +103,22 @@
       { passive: true },
     );
 
+    const hide = () => {
+      visible = false;
+      xh.classList.remove('is-visible');
+      trail.length = 0;
+      schedule();
+    };
+
     // Estado según lo que hay bajo el puntero
     document.addEventListener('pointerover', (e) => {
       const el = e.target as Element;
+      const zone = !!el.closest?.('[data-xh-zone]');
+      if (zone !== inZone) {
+        inZone = zone;
+        root.classList.toggle('has-xh', zone);
+        if (!zone) hide();
+      }
       const text = el.closest?.(TEXT_FIELD);
       const target = !text && el.closest?.(INTERACTIVE);
       xh.classList.toggle('is-target', !!target);
@@ -117,10 +131,7 @@
     // El ratón sale de la ventana
     document.addEventListener('mouseout', (e) => {
       if (e.relatedTarget) return;
-      visible = false;
-      xh.classList.remove('is-visible');
-      trail.length = 0;
-      schedule();
+      hide();
     });
   };
 

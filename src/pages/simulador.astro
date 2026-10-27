@@ -1,5 +1,7 @@
 ---
 import { Image } from 'astro:assets';
+import AarDemo from '../components/AarDemo.astro';
+import LiveEditDemo from '../components/LiveEditDemo.astro';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import DemoForm from '../components/DemoForm.astro';
 
@@ -11,7 +13,6 @@ import armaC from '../assets/img/arma-clase-c.jpg';
 import solo from '../assets/img/setup-solo.jpg';
 import equipo from '../assets/img/equipo-4.jpg';
 import remoto from '../assets/img/setup-remoto.jpg';
-import liveEdit from '../assets/img/live-edit.jpg';
 import aar from '../assets/img/aar-pantalla.jpg';
 import modIdent from '../assets/img/mod-identificacion.jpg';
 import modTiro from '../assets/img/mod-tiro.jpg';
@@ -28,10 +29,10 @@ const specs = [
 ];
 
 const steps = [
-  { n: '01', title: 'Despliega', text: 'Un aula, un garaje o un gimnasio. El equipo se monta en menos de una hora, sin tocar el edificio.' },
-  { n: '02', title: 'Equipa', text: 'Cada agente se coloca el visor y el kit SuitUp sobre un arma con el peso y tacto de la de dotación.' },
-  { n: '03', title: 'Entrena', text: 'Escenarios de dificultad creciente. El instructor añade estrés, obstáculos o personajes en tiempo real.' },
-  { n: '04', title: 'Evalúa', text: 'Revisión en 3D de cada intervención con métricas objetivas: tiempos, conos de visión y disparos.' },
+  { n: '01', readout: 'T+00 min · Llegada', title: 'Despliega', text: 'Un aula, un garaje o un gimnasio. El equipo se monta en menos de una hora, sin tocar el edificio.' },
+  { n: '02', readout: 'T+45 min · Kits listos', title: 'Equipa', text: 'Cada agente se coloca el visor y el kit SuitUp sobre un arma con el peso y tacto de la de dotación.' },
+  { n: '03', readout: 'T+60 min · Escenario activo', title: 'Entrena', text: 'Escenarios de dificultad creciente. El instructor añade estrés, obstáculos o personajes en tiempo real.' },
+  { n: '04', readout: 'Al terminar · Informe 3D', title: 'Evalúa', text: 'Revisión en 3D de cada intervención con métricas objetivas: tiempos, conos de visión y disparos.' },
 ];
 
 const weapons = [
@@ -155,7 +156,7 @@ const modules = [
   image={heroImg}
 >
   <!-- Hero -->
-  <section class="sim-hero">
+  <section class="sim-hero" data-xh-zone>
     <div class="container hero-grid">
       <div class="hero-text">
         <p class="eyebrow">Simulador VR · RE-liON</p>
@@ -190,18 +191,23 @@ const modules = [
     </div>
   </section>
 
-  <!-- Cómo funciona -->
-  <section class="section">
-    <div class="container">
-      <div class="head reveal">
+  <!-- Cómo funciona: secuencia que avanza con el scroll -->
+  <section class="section deploy" data-deploy>
+    <div class="container deploy-grid">
+      <div class="deploy-aside">
         <p class="eyebrow">Cómo funciona</p>
         <h2 class="h-lg">Cuatro pasos, <span class="accent">cero obras</span></h2>
+        <div class="deploy-meter data" aria-hidden="true">
+          <span class="meter-n"><span data-deploy-n>01</span> / 0{steps.length}</span>
+          <span class="meter-bar"><span data-deploy-bar></span></span>
+        </div>
       </div>
       <ol class="steps">
         {
           steps.map((s) => (
-            <li class="reveal">
-              <span class="step-n">{s.n}</span>
+            <li data-step={s.n}>
+              <span class="step-readout data">{s.readout}</span>
+              <span class="step-n" aria-hidden="true">{s.n}</span>
               <h3>{s.title}</h3>
               <p>{s.text}</p>
             </li>
@@ -312,16 +318,19 @@ const modules = [
   </section>
 
   <!-- Control del instructor y AAR -->
-  <section class="section" id="aar">
+  <section class="section" id="aar" data-xh-zone>
     <div class="container">
       <div class="head reveal">
         <p class="eyebrow">El instructor al mando</p>
         <h2 class="h-lg">Ajusta en directo, <span class="accent">mide después</span></h2>
       </div>
+      <div class="aar-demo reveal">
+        <AarDemo />
+      </div>
       <div class="duo">
         <article class="duo-card reveal">
-          <div class="duo-media hud">
-            <Image src={liveEdit} alt="Pantalla del instructor con la vista cenital del escenario y los agentes" widths={[600, 1000]} sizes="(max-width: 960px) 100vw, 50vw" />
+          <div class="duo-demo">
+            <LiveEditDemo />
           </div>
           <h3 class="h-md">Live Edit</h3>
           <p class="muted">
@@ -397,6 +406,32 @@ const modules = [
 
   <DemoForm />
 </BaseLayout>
+
+<script>
+  // Secuencia de despliegue: el paso que cruza el centro de la pantalla se activa
+  const deploy = document.querySelector<HTMLElement>('[data-deploy]');
+  if (deploy) {
+    const items = [...deploy.querySelectorAll<HTMLElement>('[data-step]')];
+    const n = deploy.querySelector('[data-deploy-n]')!;
+    const bar = deploy.querySelector<HTMLElement>('[data-deploy-bar]')!;
+    const activate = (i: number) => {
+      items.forEach((el, j) => {
+        el.classList.toggle('is-active', j === i);
+        el.classList.toggle('is-done', j < i);
+      });
+      n.textContent = items[i].dataset.step!;
+      bar.style.width = `${((i + 1) / items.length) * 100}%`;
+    };
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) if (e.isIntersecting) activate(items.indexOf(e.target as HTMLElement));
+      },
+      { rootMargin: '-45% 0px -45% 0px' },
+    );
+    items.forEach((el) => io.observe(el));
+    activate(0);
+  }
+</script>
 
 <style>
   /* Hero */
@@ -511,39 +546,153 @@ const modules = [
   }
 
   /* Pasos */
+  .aar-demo {
+    max-width: 960px;
+    margin: 0 auto 56px;
+  }
+
+  .deploy-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.3fr;
+    gap: clamp(32px, 6vw, 96px);
+    align-items: start;
+  }
+
+  .deploy-aside {
+    position: sticky;
+    top: calc(var(--header-h) + 48px);
+  }
+
+  .deploy-meter {
+    margin-top: 40px;
+    display: grid;
+    gap: 12px;
+    max-width: 320px;
+  }
+
+  .meter-n {
+    font-size: 0.875rem;
+    letter-spacing: 0.14em;
+    color: var(--text-muted);
+  }
+
+  .meter-n span {
+    color: var(--yellow);
+    font-size: 1.75rem;
+    letter-spacing: 0;
+  }
+
+  .meter-bar {
+    height: 3px;
+    background: var(--line-strong);
+  }
+
+  .meter-bar span {
+    display: block;
+    height: 100%;
+    width: 25%;
+    background: var(--yellow);
+    transition: width 0.4s ease;
+  }
+
   .steps {
     list-style: none;
     margin: 0;
     padding: 0;
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 20px;
-    counter-reset: none;
   }
 
   .steps li {
     position: relative;
-    padding: 28px 24px 24px;
-    border-top: 3px solid var(--yellow);
-    background: var(--bg-2);
+    min-height: 46vh;
+    padding: 32px 0 32px 32px;
+    border-left: 2px solid var(--line-strong);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    opacity: 0.3;
+    transition: opacity 0.4s, border-color 0.4s;
+  }
+
+  .steps li::before {
+    content: '';
+    position: absolute;
+    left: -7px;
+    top: 50%;
+    width: 12px;
+    height: 12px;
+    background: var(--bg);
+    border: 2px solid var(--line-strong);
+    transition: background 0.4s, border-color 0.4s;
+  }
+
+  .steps li.is-active,
+  .steps li.is-done {
+    opacity: 1;
+    border-left-color: var(--yellow);
+  }
+
+  .steps li.is-active::before {
+    background: var(--yellow);
+    border-color: var(--yellow);
+  }
+
+  .steps li.is-done {
+    opacity: 0.55;
+  }
+
+  .step-readout {
+    font-size: 0.75rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--yellow);
   }
 
   .step-n {
     font-family: var(--font-display);
-    font-size: 3.5rem;
+    font-size: clamp(4rem, 8vw, 6.5rem);
     line-height: 1;
     color: transparent;
-    -webkit-text-stroke: 1px var(--yellow);
+    -webkit-text-stroke: 1px var(--line-strong);
+    margin-top: 8px;
+  }
+
+  .is-active .step-n {
+    -webkit-text-stroke-color: var(--yellow);
   }
 
   .steps h3 {
-    font-size: 2rem;
-    margin: 12px 0 10px;
+    font-size: clamp(2rem, 3.5vw, 2.75rem);
+    margin: 4px 0 10px;
   }
 
   .steps p {
     margin: 0;
     color: var(--text-muted);
+    max-width: 44ch;
+  }
+
+  /* Sin JS, en móvil o con «reducir movimiento»: todos los pasos visibles */
+  :global(html:not(.js)) .steps li {
+    opacity: 1;
+  }
+
+  @media (max-width: 860px), (prefers-reduced-motion: reduce) {
+    .deploy-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .deploy-aside {
+      position: static;
+    }
+
+    .deploy-meter {
+      display: none;
+    }
+
+    .steps li {
+      min-height: 0;
+      opacity: 1;
+    }
   }
 
   /* Split operador */
@@ -727,6 +876,10 @@ const modules = [
     gap: clamp(24px, 4vw, 48px);
   }
 
+  .duo-demo {
+    margin-bottom: 24px;
+  }
+
   .duo-media {
     margin-bottom: 24px;
   }
@@ -831,10 +984,6 @@ const modules = [
   }
 
   @media (max-width: 1100px) {
-    .steps {
-      grid-template-columns: 1fr 1fr;
-    }
-
     .module {
       grid-template-columns: 200px 1fr;
     }
@@ -887,10 +1036,6 @@ const modules = [
   }
 
   @media (max-width: 640px) {
-    .steps {
-      grid-template-columns: 1fr;
-    }
-
     .module {
       grid-template-columns: 1fr;
       padding: 16px;

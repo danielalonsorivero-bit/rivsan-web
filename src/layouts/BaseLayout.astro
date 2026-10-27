@@ -81,6 +81,27 @@ const shareUrl = new URL(share.src, Astro.site);
         { rootMargin: '0px 0px -10% 0px' },
       );
       document.querySelectorAll('.reveal').forEach((el) => io.observe(el));
+
+      // Cifras que cuentan desde 0 al entrar en pantalla: <span data-count="60">60</span>
+      if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        const counter = new IntersectionObserver((entries) => {
+          for (const e of entries) {
+            if (!e.isIntersecting) continue;
+            counter.unobserve(e.target);
+            const el = e.target as HTMLElement;
+            const target = Number(el.dataset.count);
+            const start = performance.now();
+            const step = (now: number) => {
+              const k = Math.min(1, (now - start) / 1200);
+              el.textContent = String(Math.round(target * (1 - Math.pow(1 - k, 3))));
+              if (k < 1) requestAnimationFrame(step);
+            };
+            el.textContent = '0';
+            requestAnimationFrame(step);
+          }
+        });
+        document.querySelectorAll('[data-count]').forEach((el) => counter.observe(el));
+      }
     </script>
   </body>
 </html>

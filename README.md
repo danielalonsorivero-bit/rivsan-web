@@ -46,7 +46,12 @@ Los cambios se ven al momento en la web local; para publicarlos hay que compilar
 - `src/pages/tienda.astro`: tienda (próximamente) con registro de interesados
 - `src/pages/legal/`: aviso legal, privacidad y cookies (plantilla en `src/layouts/LegalLayout.astro`)
 - `src/pages/formacion/`: catálogo, calendario y fichas de cursos
-- `src/components/Crosshair.astro`: cursor de punto de mira (solo con ratón; sin estela con «reducir movimiento»)
+- `src/components/Crosshair.astro`: cursor de punto de mira, solo dentro de las secciones marcadas con `data-xh-zone` (hero y simulador; solo con ratón; sin estela con «reducir movimiento»)
+- `src/components/AarDemo.astro`: demo interactiva de la revisión posterior (vista cenital, línea de tiempo y métricas; datos ilustrativos), en la home y en `/simulador/#aar`
+- `src/components/LiveEditDemo.astro`: el instructor activa factores de estrés (oscuridad, humo, civil, obstáculo, comunicaciones) sobre el escenario; en `/simulador/#aar`
+- `src/components/ForceDemo.astro`: esquema interactivo del uso progresivo de la fuerza con el curso que entrena cada nivel; en `/formacion/` y en los perfiles de Policía Local y FCSE
+- `src/components/CounterDroneDemo.astro`: mini ejercicio de 20 s en un radar (clic, Espacio o botón para disparar); en el perfil de Defensa
+- Estilo: `--font-data` (IBM Plex Mono) para antetítulos y cifras; clase `.theme-light` para secciones en claro; las cifras con `data-count` se animan al aparecer
 - `src/components/home/`: secciones de la home
 - `src/components/`: cabecera, pie, logo y formulario de contacto
 - `src/data/site.ts`: datos de empresa y navegación con desplegables (los editables, en `src/data/empresa.json`)

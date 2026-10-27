@@ -38,7 +38,7 @@ const plans = [
 ];
 ---
 
-<section class="section plans" id="contratacion">
+<section class="section plans theme-light" id="contratacion">
   <div class="container">
     <div class="head reveal">
       <p class="eyebrow">Cómo se contrata</p>
@@ -87,7 +87,7 @@ const plans = [
     content: '';
     width: 28px;
     height: 2px;
-    background: currentColor;
+    background: var(--yellow);
   }
 
   .head h2 {
@@ -152,7 +152,7 @@ const plans = [
   }
 
   .plan li {
-    padding-left: 28px;
+    padding-left: 30px;
     position: relative;
   }
 
@@ -160,8 +160,16 @@ const plans = [
     content: '✓';
     position: absolute;
     left: 0;
-    color: var(--yellow);
+    top: 0.2em;
+    width: 18px;
+    height: 18px;
+    display: grid;
+    place-items: center;
+    font-size: 0.75rem;
     font-weight: 600;
+    color: var(--ink);
+    background: var(--yellow);
+    border-radius: 2px;
   }
 
   .plan .btn {
@@ -176,7 +184,7 @@ const plans = [
   }
 
   .promise strong {
-    color: var(--yellow);
+    color: var(--text);
   }
 
   .promise a {
@@ -184,8 +192,10 @@ const plans = [
     white-space: nowrap;
   }
 
-  .promise a:hover {
-    color: var(--yellow);
+  .promise a {
+    text-decoration-color: var(--yellow);
+    text-decoration-thickness: 2px;
+    text-underline-offset: 4px;
   }
 
   @media (max-width: 960px) {

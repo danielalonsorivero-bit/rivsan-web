@@ -1,5 +1,6 @@
 ---
 import { Image } from 'astro:assets';
+import AarDemo from '../AarDemo.astro';
 import kit from '../../assets/img/kit-armas.jpg';
 import team from '../../assets/img/equipo-4.jpg';
 import aar from '../../assets/img/aar-pantalla.jpg';
@@ -33,7 +34,7 @@ const features = [
 ];
 ---
 
-<section class="section simulator" id="simulador">
+<section class="section simulator" id="simulador" data-xh-zone>
   <div class="container">
     <div class="head reveal">
       <div>
@@ -64,6 +65,20 @@ const features = [
           </article>
         ))
       }
+    </div>
+
+    <div class="try">
+      <div class="try-text reveal">
+        <p class="eyebrow">Pruébalo</p>
+        <h3 class="h-md">Revisa una intervención como lo hace tu instructor</h3>
+        <p class="muted">
+          Cada ejercicio queda registrado: quién vio qué, cuándo y cómo respondió. Dale al play o arrastra la línea de
+          tiempo.
+        </p>
+      </div>
+      <div class="reveal">
+        <AarDemo />
+      </div>
     </div>
   </div>
 </section>
@@ -120,7 +135,23 @@ const features = [
     color: var(--yellow);
   }
 
+  .try {
+    margin-top: clamp(64px, 8vw, 112px);
+    padding-top: clamp(40px, 5vw, 64px);
+    border-top: 1px solid var(--line);
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: clamp(32px, 5vw, 64px);
+    align-items: center;
+  }
+
+  .try h3 {
+    font-size: clamp(2rem, 3.4vw, 2.75rem);
+    margin-bottom: 1rem;
+  }
+
   @media (max-width: 960px) {
+    .try,
     .head,
     .cards {
       grid-template-columns: 1fr;

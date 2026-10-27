@@ -6,6 +6,8 @@
 @import '@fontsource/barlow-condensed/600.css';
 @import '@fontsource/montserrat/300.css';
 @import '@fontsource/montserrat/400.css';
+@import '@fontsource/ibm-plex-mono/400.css';
+@import '@fontsource/ibm-plex-mono/500.css';
 
 /* ---------- Tokens ---------- */
 :root {
@@ -32,6 +34,8 @@
   --font-body: 'Barlow', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-label: 'Barlow Condensed', 'Barlow', sans-serif;
   --font-brand: 'Montserrat', sans-serif;
+  /* Datos y lecturas tipo telemetría: antetítulos, cifras, códigos */
+  --font-data: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, monospace;
 
   /* Layout */
   --max: 1240px;
@@ -114,12 +118,12 @@ p {
 }
 
 .eyebrow {
-  font-family: var(--font-label);
-  font-weight: 600;
-  font-size: 0.875rem;
-  letter-spacing: 0.32em;
+  font-family: var(--font-data);
+  font-weight: 500;
+  font-size: 0.8125rem;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: var(--yellow);
+  color: var(--text-muted);
   display: inline-flex;
   align-items: center;
   gap: 0.75em;
@@ -130,7 +134,7 @@ p {
   content: '';
   width: 28px;
   height: 2px;
-  background: currentColor;
+  background: var(--yellow);
 }
 
 .h-xl {
@@ -147,6 +151,23 @@ p {
 
 .accent {
   color: var(--yellow);
+}
+
+/* El amarillo se reserva para el titular principal, las acciones y los datos:
+   en los titulares de sección el resaltado pasa a blanco pleno sobre gris */
+:is(h2, h3):has(.accent) {
+  color: var(--text-muted);
+}
+
+:is(h2, h3) .accent {
+  color: var(--text);
+}
+
+/* Cifras y lecturas de datos */
+.data {
+  font-family: var(--font-data);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
 }
 
 .lead {
@@ -228,6 +249,38 @@ p {
 }
 
 .link-arrow:hover {
+  color: #fff;
+}
+
+/* Secciones en claro (contratación, parte institucional): redefine los tokens */
+.theme-light {
+  --bg: #f2f1ec;
+  --bg-2: #e9e7e0;
+  --surface: #fff;
+  --surface-2: #f6f5f1;
+  --line: rgba(35, 31, 32, 0.12);
+  --line-strong: rgba(35, 31, 32, 0.28);
+  --text: #1b1819;
+  --text-muted: #57524f;
+  --text-dim: #6b6662;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.theme-light .link-arrow {
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-color: var(--yellow);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
+}
+
+.theme-light .link-arrow:hover {
+  color: #000;
+}
+
+.theme-light .btn-primary:hover {
+  background: var(--ink);
   color: #fff;
 }
 

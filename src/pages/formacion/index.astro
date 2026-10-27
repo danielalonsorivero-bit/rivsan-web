@@ -1,6 +1,7 @@
 ---
 import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import ForceDemo from '../../components/ForceDemo.astro';
 import CourseCard from '../../components/CourseCard.astro';
 import {
   calendario,
@@ -125,6 +126,19 @@ const hayEjemplos = cursos.some((c) => c.data.ejemplo);
                 <CourseCard curso={c} />
               ))}
             </div>
+            {g.cat === 'fuerza' && (
+              <div class="feature-demo">
+                <div>
+                  <p class="eyebrow">Pruébalo</p>
+                  <h3 class="h-md">Cada conducta tiene su respuesta</h3>
+                  <p class="muted">
+                    Sube el nivel de resistencia del sujeto y mira cómo se gradúa la respuesta del agente y qué curso la
+                    entrena.
+                  </p>
+                </div>
+                <ForceDemo />
+              </div>
+            )}
           </div>
         ))
       }
@@ -164,6 +178,27 @@ const hayEjemplos = cursos.some((c) => c.data.ejemplo);
 </script>
 
 <style>
+  .feature-demo {
+    margin-top: 48px;
+    padding-top: 40px;
+    border-top: 1px solid var(--line);
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: clamp(32px, 5vw, 64px);
+    align-items: center;
+  }
+
+  .feature-demo h3 {
+    font-size: clamp(2rem, 3.4vw, 2.75rem);
+    margin-bottom: 1rem;
+  }
+
+  @media (max-width: 960px) {
+    .feature-demo {
+      grid-template-columns: 1fr;
+    }
+  }
+
   .page-hero {
     padding: calc(var(--header-h) + clamp(56px, 8vw, 104px)) 0 clamp(40px, 5vw, 64px);
     background:

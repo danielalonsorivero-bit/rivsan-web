@@ -1,0 +1,476 @@
+---
+// Mini ejercicio de counter-drone: radar con drones FPV y comerciales que se acercan al operador.
+// Se neutralizan con clic (o tecla Espacio / botón «Disparar») cuando entran en el alcance eficaz.
+// Ejercicio ilustrativo; no reproduce el módulo real.
+const DURATION = 20; // segundos
+---
+
+<div class="cd" data-cd data-duration={DURATION}>
+  <div class="screen hud">
+    <div class="screen-bar data" aria-hidden="true">
+      <span><i class="dot"></i> COUNTER-DRONE · RADAR</span>
+      <span data-cd-time>{DURATION.toFixed(1)} s</span>
+    </div>
+
+    <div class="stage">
+      <svg viewBox="0 0 400 400" data-cd-svg role="img" aria-labelledby="cd-title">
+        <title id="cd-title">Radar circular con el operador en el centro; los drones se acercan desde los bordes</title>
+        <defs>
+          <linearGradient id="cd-sweep" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0" stop-color="#7ed99a" stop-opacity="0" />
+            <stop offset="1" stop-color="#7ed99a" stop-opacity="0.35" />
+          </linearGradient>
+        </defs>
+        <g class="rings">
+          <circle cx="200" cy="200" r="190" />
+          <circle cx="200" cy="200" r="130" />
+          <circle cx="200" cy="200" r="70" class="range" />
+          <path d="M200 10V390M10 200H390" />
+        </g>
+        <text x="206" y="126" class="label">ALCANCE EFICAZ</text>
+        <g class="sweep">
+          <path d="M200 200L390 200A190 190 0 0 0 334.4 65.6Z" fill="url(#cd-sweep)" />
+        </g>
+        <g data-cd-drones></g>
+        <g class="operator">
+          <circle cx="200" cy="200" r="7" />
+        </g>
+      </svg>
+
+      <div class="overlay" data-cd-overlay>
+        <p class="data overlay-title" data-cd-title>Ejercicio de 20 segundos</p>
+        <p class="overlay-text" data-cd-summary>
+          Neutraliza los drones cuando entren en el círculo amarillo. Disparar fuera de alcance cuenta como fallo.
+        </p>
+        <button type="button" class="btn btn-primary" data-cd-start>Iniciar ejercicio</button>
+      </div>
+    </div>
+
+    <ul class="metrics data">
+      <li><span>Neutralizados</span><strong data-cd-hits>0</strong></li>
+      <li><span>Reacción media</span><strong data-cd-reaction>—</strong></li>
+      <li><span>Fallos</span><strong data-cd-miss>0</strong></li>
+      <li><span>Impactos recibidos</span><strong data-cd-taken>0</strong></li>
+    </ul>
+  </div>
+
+  <div class="controls">
+    <button type="button" class="fire" data-cd-fire disabled>Disparar al más cercano <kbd>Espacio</kbd></button>
+    <p class="note">Ejercicio ilustrativo. Haz clic sobre cada dron o usa el botón.</p>
+  </div>
+  <p class="visually-hidden" aria-live="polite" data-cd-live></p>
+</div>
+
+<script>
+  type Drone = { el: SVGGElement; angle: number; r: number; speed: number; inRangeAt: number | null; done: boolean };
+
+  const C = 200;
+  const RANGE = 70;
+  const SPAWN_R = 190;
+  const NS = 'http://www.w3.org/2000/svg';
+
+  document.querySelectorAll<HTMLElement>('[data-cd]').forEach((root) => {
+    const $ = <T extends Element>(sel: string) => root.querySelector<T>(sel)!;
+    const svg = $<SVGSVGElement>('[data-cd-svg]');
+    const layer = $<SVGGElement>('[data-cd-drones]');
+    const overlay = $<HTMLElement>('[data-cd-overlay]');
+    const title = $('[data-cd-title]');
+    const summary = $('[data-cd-summary]');
+    const start = $<HTMLButtonElement>('[data-cd-start]');
+    const fire = $<HTMLButtonElement>('[data-cd-fire]');
+    const timeOut = $('[data-cd-time]');
+    const out = {
+      hits: $('[data-cd-hits]'),
+      reaction: $('[data-cd-reaction]'),
+      miss: $('[data-cd-miss]'),
+      taken: $('[data-cd-taken]'),
+    };
+    const live = $('[data-cd-live]');
+    const duration = Number(root.dataset.duration);
+
+    let drones: Drone[] = [];
+    let running = false;
+    let elapsed = 0;
+    let last = 0;
+    let nextSpawn = 0;
+    let stats = { hits: 0, miss: 0, taken: 0, reactions: [] as number[] };
+
+    const pos = (d: Drone) => ({ x: C + d.r * Math.cos(d.angle), y: C + d.r * Math.sin(d.angle) });
+
+    const spawn = () => {
+      const fpv = Math.random() < 0.45;
+      const el = document.createElementNS(NS, 'g');
+      el.setAttribute('class', `drone ${fpv ? 'drone--fpv' : ''}`);
+      el.innerHTML = `<circle r="7"/><path d="M-11 -11l5 5M11 -11l-5 5M-11 11l5 -5M11 11l-5 -5"/><text y="-13" text-anchor="middle">${fpv ? 'FPV' : 'UAV'}</text>`;
+      layer.appendChild(el);
+      drones.push({ el, angle: Math.random() * Math.PI * 2, r: SPAWN_R, speed: fpv ? 46 : 26, inRangeAt: null, done: false });
+    };
+
+    const render = () => {
+      for (const d of drones) {
+        const p = pos(d);
+        d.el.setAttribute('transform', `translate(${p.x.toFixed(1)} ${p.y.toFixed(1)})`);
+        d.el.classList.toggle('is-in-range', d.r <= RANGE && !d.done);
+      }
+      const avg = stats.reactions.length ? Math.round(stats.reactions.reduce((a, b) => a + b, 0) / stats.reactions.length) : null;
+      out.hits.textContent = String(stats.hits);
+      out.reaction.textContent = avg === null ? '—' : `${avg} ms`;
+      out.miss.textContent = String(stats.miss);
+      out.taken.textContent = String(stats.taken);
+      timeOut.textContent = `${Math.max(0, duration - elapsed).toFixed(1)} s`;
+    };
+
+    const remove = (d: Drone, cls: string) => {
+      d.done = true;
+      d.el.classList.add(cls);
+      setTimeout(() => d.el.remove(), 600);
+    };
+
+    const shoot = (d: Drone | undefined) => {
+      if (!running) return;
+      if (!d || d.r > RANGE) {
+        stats.miss++;
+        live.textContent = 'Fuera de alcance';
+      } else {
+        stats.hits++;
+        stats.reactions.push(Math.round(elapsed * 1000 - (d.inRangeAt ?? elapsed * 1000)));
+        remove(d, 'is-down');
+        live.textContent = 'Dron neutralizado';
+      }
+      render();
+    };
+
+    const finish = () => {
+      running = false;
+      root.classList.remove('is-running');
+      fire.disabled = true;
+      drones.forEach((d) => d.el.remove());
+      drones = [];
+      const avg = stats.reactions.length ? Math.round(stats.reactions.reduce((a, b) => a + b, 0) / stats.reactions.length) : null;
+      title.textContent = 'Ejercicio terminado';
+      summary.textContent = `${stats.hits} neutralizados, ${stats.miss} fallos y ${stats.taken} impactos recibidos${avg !== null ? `. Reacción media: ${avg} ms` : ''}. En el simulador, cada sesión queda registrada para comparar la evolución del operador.`;
+      start.textContent = 'Repetir';
+      overlay.hidden = false;
+      live.textContent = summary.textContent;
+      start.focus();
+    };
+
+    const tick = (now: number) => {
+      if (!running) return;
+      const dt = Math.min(0.05, (now - last) / 1000);
+      last = now;
+      elapsed += dt;
+
+      if (elapsed >= nextSpawn && elapsed < duration - 2) {
+        spawn();
+        nextSpawn = elapsed + 1.1 + Math.random() * 1.2;
+      }
+
+      for (const d of drones) {
+        if (d.done) continue;
+        d.r -= d.speed * dt;
+        if (d.r <= RANGE && d.inRangeAt === null) d.inRangeAt = elapsed * 1000;
+        if (d.r <= 10) {
+          stats.taken++;
+          remove(d, 'is-hit');
+          root.classList.add('is-flash');
+          setTimeout(() => root.classList.remove('is-flash'), 250);
+        }
+      }
+      drones = drones.filter((d) => !d.done || d.el.isConnected);
+
+      render();
+      if (elapsed >= duration) finish();
+      else requestAnimationFrame(tick);
+    };
+
+    start.addEventListener('click', () => {
+      stats = { hits: 0, miss: 0, taken: 0, reactions: [] };
+      elapsed = 0;
+      nextSpawn = 0.3;
+      overlay.hidden = true;
+      running = true;
+      root.classList.add('is-running');
+      fire.disabled = false;
+      fire.focus();
+      last = performance.now();
+      render();
+      requestAnimationFrame(tick);
+    });
+
+    // Clic en el radar: se dispara al dron más cercano al punto, si lo hay
+    svg.addEventListener('pointerdown', (e) => {
+      if (!running) return;
+      const pt = new DOMPoint(e.clientX, e.clientY).matrixTransform(svg.getScreenCTM()!.inverse());
+      const target = drones
+        .filter((d) => !d.done)
+        .map((d) => ({ d, dist: Math.hypot(pos(d).x - pt.x, pos(d).y - pt.y) }))
+        .filter((o) => o.dist < 26)
+        .sort((a, b) => a.dist - b.dist)[0];
+      shoot(target?.d);
+    });
+
+    const nearest = () => drones.filter((d) => !d.done).sort((a, b) => a.r - b.r)[0];
+    fire.addEventListener('click', () => shoot(nearest()));
+    root.addEventListener('keydown', (e) => {
+      if (running && e.code === 'Space' && e.target !== fire) {
+        e.preventDefault();
+        shoot(nearest());
+      }
+    });
+
+    render();
+  });
+</script>
+
+<style>
+  .screen {
+    background: #070707;
+    border: 1px solid var(--line-strong);
+    color: var(--text);
+    transition: box-shadow 0.2s;
+  }
+
+  .is-flash .screen {
+    box-shadow: inset 0 0 0 3px #ff5a5f;
+  }
+
+  .screen-bar {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 10px 16px;
+    font-size: 0.75rem;
+    letter-spacing: 0.12em;
+    color: var(--text-muted);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #7ed99a;
+    margin-right: 6px;
+  }
+
+  .stage {
+    position: relative;
+    max-width: 440px;
+    margin-inline: auto;
+    padding: 16px;
+  }
+
+  svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    touch-action: manipulation;
+  }
+
+  .is-running svg {
+    cursor: crosshair;
+  }
+
+  .rings circle,
+  .rings path {
+    fill: none;
+    stroke: rgba(126, 217, 154, 0.25);
+  }
+
+  .rings .range {
+    stroke: var(--yellow);
+    stroke-dasharray: 4 4;
+    fill: rgba(247, 196, 0, 0.05);
+  }
+
+  .label {
+    font-family: var(--font-data);
+    font-size: 9px;
+    letter-spacing: 0.14em;
+    fill: rgba(247, 196, 0, 0.8);
+  }
+
+  .sweep {
+    transform-origin: 200px 200px;
+    animation: sweep 4s linear infinite;
+  }
+
+  @keyframes sweep {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  .operator circle {
+    fill: var(--yellow);
+    stroke: #070707;
+    stroke-width: 2;
+  }
+
+  .stage :global(.drone circle) {
+    fill: none;
+    stroke: #fff;
+    stroke-width: 2;
+  }
+
+  .stage :global(.drone path) {
+    stroke: #fff;
+    stroke-width: 2;
+  }
+
+  .stage :global(.drone text) {
+    font-family: var(--font-data);
+    font-size: 9px;
+    fill: rgba(255, 255, 255, 0.7);
+  }
+
+  .stage :global(.drone--fpv circle),
+  .stage :global(.drone--fpv path) {
+    stroke: #6ec3ff;
+  }
+
+  .stage :global(.drone.is-in-range circle),
+  .stage :global(.drone.is-in-range path) {
+    stroke: #ff5a5f;
+  }
+
+  .stage :global(.drone) {
+    transition: opacity 0.5s;
+  }
+
+  .stage :global(.drone.is-down),
+  .stage :global(.drone.is-hit) {
+    opacity: 0;
+  }
+
+  .overlay {
+    position: absolute;
+    inset: 16px;
+    display: grid;
+    place-content: center;
+    justify-items: center;
+    gap: 12px;
+    text-align: center;
+    padding: 24px;
+    background: rgba(7, 7, 7, 0.82);
+    backdrop-filter: blur(2px);
+  }
+
+  .overlay[hidden] {
+    display: none;
+  }
+
+  .overlay-title {
+    margin: 0;
+    font-size: 0.8125rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--yellow);
+  }
+
+  .overlay-text {
+    margin: 0;
+    max-width: 34ch;
+    color: var(--text-muted);
+  }
+
+  .metrics {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    border-top: 1px solid var(--line);
+  }
+
+  .metrics li {
+    padding: 12px 16px;
+    display: grid;
+    gap: 2px;
+  }
+
+  .metrics li + li {
+    border-left: 1px solid var(--line);
+  }
+
+  .metrics span {
+    font-size: 0.6875rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+
+  .metrics strong {
+    font-weight: 500;
+    font-size: 1.125rem;
+    color: var(--yellow);
+  }
+
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px 20px;
+    margin-top: 16px;
+  }
+
+  .fire {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    font-family: var(--font-data);
+    font-size: 0.8125rem;
+    color: var(--text);
+    background: var(--surface);
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius);
+    cursor: pointer;
+  }
+
+  .fire:not(:disabled):hover {
+    border-color: var(--yellow);
+  }
+
+  .fire:disabled {
+    opacity: 0.4;
+    cursor: default;
+  }
+
+  kbd {
+    font-family: var(--font-data);
+    font-size: 0.6875rem;
+    padding: 2px 6px;
+    border: 1px solid var(--line-strong);
+    border-radius: 3px;
+    color: var(--text-muted);
+  }
+
+  .note {
+    margin: 0;
+    font-size: 0.8125rem;
+    color: var(--text-dim);
+  }
+
+  @media (max-width: 640px) {
+    .metrics {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .metrics li:nth-child(3) {
+      border-left: 0;
+    }
+
+    .metrics li:nth-child(n + 3) {
+      border-top: 1px solid var(--line);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .sweep {
+      animation: none;
+    }
+  }
+</style>

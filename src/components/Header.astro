@@ -156,13 +156,17 @@ import { nav } from '../data/site';
 
   .nav-list {
     display: flex;
+    align-items: center;
     gap: 28px;
   }
 
+  /* Enlaces y botones de desplegable comparten métricas: el botón no hereda
+     el interlineado del cuerpo, así que se fija aquí para ambos */
   .nav-top {
     font-family: var(--font-label);
     font-weight: 500;
     font-size: 1rem;
+    line-height: 1.5;
     letter-spacing: 0.1em;
     text-transform: uppercase;
     text-decoration: none;

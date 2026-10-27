@@ -2,15 +2,16 @@
 import { Image } from 'astro:assets';
 import hero from '../../assets/img/hero-binomio.jpg';
 
+// `count`: la cifra se anima desde 0 al aparecer (ver BaseLayout)
 const stats = [
-  { value: '<60', unit: 'min', label: 'Del furgón a la primera intervención' },
-  { value: '12', unit: 'agentes', label: 'La unidad entrena junta, como interviene' },
+  { prefix: '<', value: '60', count: true, unit: 'min', label: 'Del furgón a la primera intervención' },
+  { value: '12', count: true, unit: 'agentes', label: 'La unidad entrena junta, como interviene' },
   { value: '0', unit: 'obras', label: 'Un aula o un garaje bastan' },
   { value: '1:1', unit: '', label: 'Movimiento y armas de peso real' },
 ];
 ---
 
-<section class="hero">
+<section class="hero" data-xh-zone>
   <Image
     src={hero}
     alt="Dos agentes con visores de realidad virtual avanzan en binomio empuñando armas simuladas"
@@ -21,6 +22,11 @@ const stats = [
     fetchpriority="high"
   />
   <div class="hero-shade" aria-hidden="true"></div>
+  <p class="hero-readout data" aria-hidden="true">
+    <span><i></i> SIM ACTIVO</span>
+    <span data-hero-clock>T+00:00.000</span>
+    <span>ESCENARIO 01 · BINOMIO</span>
+  </p>
 
   <div class="container hero-content">
     <p class="eyebrow">Formación táctica inmersiva para FCSE</p>
@@ -41,7 +47,7 @@ const stats = [
         stats.map((s) => (
           <li>
             <span class="stat-value">
-              {s.value}
+              {s.prefix}<span data-count={s.count ? s.value : undefined}>{s.value}</span>
               {s.unit && <small>{s.unit}</small>}
             </span>
             <span class="stat-label">{s.label}</span>
@@ -51,6 +57,27 @@ const stats = [
     </ul>
   </div>
 </section>
+
+<script>
+  // Reloj de la lectura del visor (no corre con «reducir movimiento»)
+  const clock = document.querySelector('[data-hero-clock]');
+  if (clock && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    const start = performance.now();
+    const pad = (n: number, l = 2) => String(n).padStart(l, '0');
+    let on = false;
+    const tick = () => {
+      if (!on) return;
+      const ms = Math.floor(performance.now() - start);
+      clock.textContent = `T+${pad(Math.floor(ms / 60000))}:${pad(Math.floor(ms / 1000) % 60)}.${pad(ms % 1000, 3)}`;
+      requestAnimationFrame(tick);
+    };
+    // Solo corre mientras el hero está en pantalla
+    new IntersectionObserver(([e]) => {
+      on = e.isIntersecting;
+      if (on) requestAnimationFrame(tick);
+    }).observe(clock);
+  }
+</script>
 
 <style>
   .hero {
@@ -138,10 +165,54 @@ const stats = [
   }
 
   .stat-value small {
-    font-size: 0.45em;
+    font-family: var(--font-data);
+    font-size: 0.3em;
+    text-transform: uppercase;
     margin-left: 0.25em;
     color: var(--text);
     letter-spacing: 0.05em;
+  }
+
+  /* Lectura tipo visor en la esquina superior derecha */
+  .hero-readout {
+    position: absolute;
+    top: calc(var(--header-h) + 24px);
+    right: var(--gutter);
+    margin: 0;
+    display: grid;
+    justify-items: end;
+    gap: 4px;
+    font-size: 0.75rem;
+    letter-spacing: 0.12em;
+    color: rgba(242, 242, 240, 0.7);
+  }
+
+  .hero-readout i {
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #ff5a5f;
+    margin-right: 6px;
+    animation: rec 1.2s steps(2) infinite;
+  }
+
+  @keyframes rec {
+    50% {
+      opacity: 0.2;
+    }
+  }
+
+  @media (max-width: 960px) {
+    .hero-readout {
+      display: none;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hero-readout i {
+      animation: none;
+    }
   }
 
   .stat-label {

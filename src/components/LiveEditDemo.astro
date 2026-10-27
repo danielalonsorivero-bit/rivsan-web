@@ -1,0 +1,388 @@
+---
+// Demostración interactiva de Live Edit: el instructor activa factores de estrés
+// sobre el escenario mientras los agentes están dentro. Datos y escena ilustrativos.
+
+const factors = [
+  { id: 'noche', label: 'Oscuridad', weight: 25 },
+  { id: 'humo', label: 'Humo', weight: 20 },
+  { id: 'civil', label: 'Civil en escena', weight: 20 },
+  { id: 'obstaculo', label: 'Obstáculo', weight: 15 },
+  { id: 'comms', label: 'Comms degradadas', weight: 20 },
+];
+---
+
+<div class="live" data-live>
+  <div class="screen hud">
+    <div class="screen-bar data" aria-hidden="true">
+      <span><i class="dot"></i> LIVE EDIT · ESCENARIO 03</span>
+      <span class="comms">COMMS <b data-live-comms>▮▮▮▮</b></span>
+    </div>
+
+    <svg viewBox="0 0 600 340" role="img" aria-labelledby="live-title">
+      <title id="live-title">Vista cenital de una calle con dos agentes y un sospechoso; el instructor añade factores de estrés</title>
+      <defs>
+        <pattern id="live-grid" width="20" height="20" patternUnits="userSpaceOnUse">
+          <path d="M20 0H0V20" fill="none" stroke="currentColor" stroke-opacity="0.07" />
+        </pattern>
+        <radialGradient id="live-torch">
+          <stop offset="0.35" stop-color="#000" stop-opacity="1" />
+          <stop offset="1" stop-color="#000" stop-opacity="0" />
+        </radialGradient>
+        <mask id="live-dark">
+          <rect width="600" height="340" fill="#fff" />
+          <circle data-torch="a" r="70" fill="url(#live-torch)" />
+          <circle data-torch="b" r="70" fill="url(#live-torch)" />
+        </mask>
+        <filter id="live-blur"><feGaussianBlur stdDeviation="14" /></filter>
+      </defs>
+      <rect width="600" height="340" fill="url(#live-grid)" />
+
+      <!-- Manzanas de edificios -->
+      <g class="blocks">
+        <rect x="20" y="20" width="220" height="110" />
+        <rect x="360" y="20" width="220" height="110" />
+        <rect x="20" y="220" width="220" height="100" />
+        <rect x="360" y="220" width="220" height="100" />
+      </g>
+      <text x="40" y="44" class="label">PORTAL 12</text>
+      <text x="380" y="44" class="label">LOCAL COMERCIAL</text>
+
+      <!-- Obstáculo: vehículo atravesado -->
+      <g class="layer" data-layer="obstaculo">
+        <rect x="270" y="150" width="60" height="34" rx="4" class="car" />
+        <text x="300" y="171" text-anchor="middle" class="label">VEHÍCULO</text>
+      </g>
+
+      <!-- Civil -->
+      <g class="layer" data-layer="civil" transform="translate(470 175)">
+        <circle r="9" class="civil" />
+        <text y="-16" text-anchor="middle" class="label">CIVIL</text>
+      </g>
+
+      <!-- Sospechoso -->
+      <g transform="translate(420 160)">
+        <circle r="9" class="suspect" />
+        <text y="-16" text-anchor="middle" class="label">SOSPECHOSO</text>
+      </g>
+
+      <!-- Agentes -->
+      <path class="cone" data-cone="a" />
+      <path class="cone" data-cone="b" />
+      <g class="agent" data-agent="a"><circle r="9" /><text y="4" text-anchor="middle">A</text></g>
+      <g class="agent" data-agent="b"><circle r="9" /><text y="4" text-anchor="middle">B</text></g>
+
+      <!-- Humo -->
+      <g class="layer smoke" data-layer="humo" filter="url(#live-blur)">
+        <circle cx="330" cy="150" r="60" />
+        <circle cx="380" cy="190" r="50" />
+        <circle cx="290" cy="200" r="45" />
+      </g>
+
+      <!-- Oscuridad: todo negro salvo las linternas de los agentes -->
+      <rect class="layer dark" data-layer="noche" width="600" height="340" mask="url(#live-dark)" />
+    </svg>
+
+    <div class="stress data">
+      <span>Estrés del escenario</span>
+      <span class="stress-bar"><span data-live-bar></span></span>
+      <strong data-live-level>Nivel 1</strong>
+    </div>
+  </div>
+
+  <div class="panel" role="group" aria-label="Factores de estrés del instructor">
+    {
+      factors.map((f) => (
+        <button type="button" aria-pressed="false" data-factor={f.id} data-weight={f.weight}>
+          <span class="led" aria-hidden="true" />
+          {f.label}
+        </button>
+      ))
+    }
+  </div>
+  <p class="note">Simulación ilustrativa. Activa factores como lo haría el instructor desde su tablet.</p>
+</div>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-live]').forEach((root) => {
+    const $ = <T extends Element>(sel: string) => root.querySelector<T>(sel)!;
+    const buttons = [...root.querySelectorAll<HTMLButtonElement>('[data-factor]')];
+    const bar = $<HTMLElement>('[data-live-bar]');
+    const level = $('[data-live-level]');
+    const comms = $('[data-live-comms]');
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    const agents = { a: $<SVGGElement>('[data-agent="a"]'), b: $<SVGGElement>('[data-agent="b"]') };
+    const cones = { a: $<SVGPathElement>('[data-cone="a"]'), b: $<SVGPathElement>('[data-cone="b"]') };
+    const torches = { a: $<SVGCircleElement>('[data-torch="a"]'), b: $<SVGCircleElement>('[data-torch="b"]') };
+
+    const active = new Set<string>();
+
+    const update = () => {
+      buttons.forEach((b) => {
+        const on = active.has(b.dataset.factor!);
+        b.setAttribute('aria-pressed', String(on));
+        root.querySelector(`[data-layer="${b.dataset.factor}"]`)?.classList.toggle('is-on', on);
+      });
+      const stress = buttons.filter((b) => active.has(b.dataset.factor!)).reduce((s, b) => s + Number(b.dataset.weight), 0);
+      bar.style.width = `${Math.max(6, stress)}%`;
+      bar.classList.toggle('is-high', stress >= 60);
+      level.textContent = `Nivel ${1 + Math.min(4, Math.floor(stress / 20))}`;
+      root.classList.toggle('is-comms', active.has('comms'));
+    };
+
+    buttons.forEach((b) =>
+      b.addEventListener('click', () => {
+        const id = b.dataset.factor!;
+        active.has(id) ? active.delete(id) : active.add(id);
+        update();
+      }),
+    );
+
+    // Los agentes avanzan en binomio por la calle, de ida y vuelta
+    const cone = (x: number, y: number, a: number, len: number, half: number) => {
+      const r = (d: number) => (d * Math.PI) / 180;
+      const p = (d: number) => `${(x + len * Math.cos(r(d))).toFixed(1)} ${(y + len * Math.sin(r(d))).toFixed(1)}`;
+      return `M${x} ${y}L${p(a - half)}A${len} ${len} 0 0 1 ${p(a + half)}Z`;
+    };
+
+    const place = (t: number) => {
+      const k = (Math.sin(t / 2600) + 1) / 2; // 0..1
+      const pos = {
+        a: { x: 70 + k * 150, y: 160, a: -5 + Math.sin(t / 900) * 18 },
+        b: { x: 50 + k * 150, y: 195, a: 10 + Math.sin(t / 1100 + 1) * 22 },
+      };
+      const dark = active.has('noche');
+      const smoke = active.has('humo');
+      const len = dark ? 110 : smoke ? 130 : 180;
+      for (const id of ['a', 'b'] as const) {
+        const p = pos[id];
+        agents[id].setAttribute('transform', `translate(${p.x.toFixed(1)} ${p.y.toFixed(1)})`);
+        cones[id].setAttribute('d', cone(p.x, p.y, p.a, len, dark ? 22 : 30));
+        torches[id].setAttribute('cx', (p.x + 40).toFixed(1));
+        torches[id].setAttribute('cy', p.y.toFixed(1));
+      }
+    };
+
+    // Indicador de comunicaciones: oscila cuando están degradadas
+    const signal = ['▮▯▯▯', '▮▮▯▯', '▯▯▯▯', '▮▯▯▯'];
+    let running = false;
+    const loop = (t: number) => {
+      if (!running) return;
+      place(t);
+      comms.textContent = active.has('comms') ? signal[Math.floor(t / 300) % signal.length] : '▮▮▮▮';
+      requestAnimationFrame(loop);
+    };
+
+    if (reduced) {
+      place(0);
+    } else {
+      // Solo se anima mientras está en pantalla
+      new IntersectionObserver(([e]) => {
+        running = e.isIntersecting;
+        if (running) requestAnimationFrame(loop);
+      }).observe(root);
+    }
+    place(0);
+    update();
+  });
+</script>
+
+<style>
+  .screen {
+    background: #070707;
+    border: 1px solid var(--line-strong);
+    color: var(--text);
+  }
+
+  .screen-bar {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 10px 16px;
+    font-size: 0.75rem;
+    letter-spacing: 0.12em;
+    color: var(--text-muted);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #7ed99a;
+    margin-right: 6px;
+  }
+
+  .comms b {
+    font-weight: 400;
+    color: #7ed99a;
+    letter-spacing: 0;
+  }
+
+  .is-comms .comms b {
+    color: #ff5a5f;
+  }
+
+  svg {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  .blocks rect {
+    fill: rgba(255, 255, 255, 0.04);
+    stroke: rgba(255, 255, 255, 0.45);
+    stroke-width: 2;
+  }
+
+  .label {
+    font-family: var(--font-data);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    fill: rgba(255, 255, 255, 0.45);
+  }
+
+  .layer {
+    opacity: 0;
+    transition: opacity 0.4s;
+  }
+
+  .layer.is-on {
+    opacity: 1;
+  }
+
+  .car {
+    fill: rgba(255, 255, 255, 0.12);
+    stroke: rgba(255, 255, 255, 0.6);
+    stroke-width: 2;
+  }
+
+  .civil {
+    fill: none;
+    stroke: #fff;
+    stroke-width: 2;
+  }
+
+  .suspect {
+    fill: none;
+    stroke: #ff5a5f;
+    stroke-width: 2;
+  }
+
+  .cone {
+    fill: rgba(247, 196, 0, 0.14);
+    stroke: rgba(247, 196, 0, 0.45);
+  }
+
+  .agent circle {
+    fill: var(--yellow);
+    stroke: #070707;
+    stroke-width: 2;
+  }
+
+  .agent text {
+    font-family: var(--font-data);
+    font-size: 11px;
+    font-weight: 500;
+    fill: #070707;
+  }
+
+  .smoke circle {
+    fill: rgba(200, 200, 195, 0.55);
+  }
+
+  .dark {
+    fill: #000;
+  }
+
+  .layer.dark.is-on {
+    opacity: 0.88;
+  }
+
+  .stress {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 16px;
+    padding: 12px 16px;
+    border-top: 1px solid var(--line);
+    font-size: 0.6875rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+
+  .stress-bar {
+    height: 6px;
+    background: var(--line-strong);
+  }
+
+  .stress-bar span {
+    display: block;
+    height: 100%;
+    width: 6%;
+    background: var(--yellow);
+    transition: width 0.4s ease, background 0.4s;
+  }
+
+  .stress-bar span.is-high {
+    background: #ff5a5f;
+  }
+
+  .stress strong {
+    font-weight: 500;
+    font-size: 0.9rem;
+    color: var(--yellow);
+  }
+
+  .panel {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 16px;
+  }
+
+  .panel button {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    font-family: var(--font-data);
+    font-size: 0.8125rem;
+    color: var(--text);
+    background: var(--surface);
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+  }
+
+  .panel button:hover {
+    border-color: var(--yellow);
+  }
+
+  .led {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--line-strong);
+    transition: background 0.2s, box-shadow 0.2s;
+  }
+
+  .panel button[aria-pressed='true'] {
+    border-color: var(--yellow);
+    background: rgba(247, 196, 0, 0.1);
+  }
+
+  .panel button[aria-pressed='true'] .led {
+    background: var(--yellow);
+    box-shadow: 0 0 8px var(--yellow);
+  }
+
+  .note {
+    margin: 8px 0 0;
+    font-size: 0.8125rem;
+    color: var(--text-dim);
+  }
+</style>

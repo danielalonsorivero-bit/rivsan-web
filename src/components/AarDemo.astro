@@ -1,0 +1,574 @@
+---
+// Demostración interactiva de la revisión posterior (After-Action Review):
+// vista cenital de una entrada en binomio con conos de visión, amenaza, disparo y métricas.
+// Los datos son ilustrativos. Sin JS se ve el fotograma final y la lista de eventos.
+
+const DURATION = 8; // segundos de ejercicio
+const events = [
+  { t: 0, label: 'Inicio' },
+  { t: 2.6, label: 'Entrada' },
+  { t: 3.2, label: 'Amenaza' },
+  { t: 3.81, label: 'Disparo' },
+  { t: 5.4, label: 'Sala asegurada' },
+];
+---
+
+<div class="aar" data-aar data-duration={DURATION}>
+  <div class="screen hud">
+    <div class="screen-bar data" aria-hidden="true">
+      <span><i class="rec"></i> AAR · ESCENARIO 07</span>
+      <span data-aar-clock>T+00:00.000</span>
+    </div>
+
+    <svg viewBox="0 0 600 360" role="img" aria-labelledby="aar-title">
+      <title id="aar-title">Vista cenital de una entrada en binomio: dos agentes entran en una sala, uno identifica la amenaza y dispara</title>
+      <defs>
+        <pattern id="aar-grid" width="20" height="20" patternUnits="userSpaceOnUse">
+          <path d="M20 0H0V20" fill="none" stroke="currentColor" stroke-opacity="0.07" />
+        </pattern>
+      </defs>
+      <rect width="600" height="360" fill="url(#aar-grid)" />
+
+      <!-- Planta: pasillo inferior y sala con puerta -->
+      <g class="walls">
+        <path d="M20 270H260M330 270H580" />
+        <path d="M20 345H580" />
+        <path d="M230 270V30H580V270" />
+        <path d="M230 160H160V30H230" />
+      </g>
+      <text x="410" y="52" class="room-label">SALA 2</text>
+      <text x="40" y="335" class="room-label">PASILLO</text>
+
+      <!-- Conos de visión -->
+      <path class="cone cone-b" data-cone="b" />
+      <path class="cone cone-a" data-cone="a" />
+
+      <!-- Trayectoria de disparo -->
+      <line class="shot" data-shot x1="0" y1="0" x2="0" y2="0" />
+
+      <!-- Amenaza -->
+      <g class="threat" data-threat transform="translate(500 90)">
+        <circle r="9" />
+        <path d="M-5 -5L5 5M5 -5L-5 5" class="threat-x" />
+      </g>
+
+      <!-- Agentes -->
+      <g class="agent agent-b" data-agent="b">
+        <circle r="9" />
+        <text y="4" text-anchor="middle">B</text>
+      </g>
+      <g class="agent agent-a" data-agent="a">
+        <circle r="9" />
+        <text y="4" text-anchor="middle">A</text>
+      </g>
+    </svg>
+
+    <ul class="metrics data">
+      <li><span>Reacción A</span><strong data-aar-reaction>—</strong></li>
+      <li><span>Cono A</span><strong data-aar-cone>0°</strong></li>
+      <li><span>Impactos</span><strong data-aar-hits>0 / 0</strong></li>
+      <li><span>Fuego amigo</span><strong>0</strong></li>
+    </ul>
+  </div>
+
+  <div class="controls">
+    <button type="button" class="play" data-aar-play aria-label="Reproducir">
+      <span class="icon" aria-hidden="true"></span>
+    </button>
+    <div class="track">
+      <input type="range" min="0" max={DURATION * 1000} step="10" value={DURATION * 1000} aria-label="Línea de tiempo del ejercicio" data-aar-range />
+      <ol class="marks">
+        {
+          events.map((e) => (
+            <li style={`left: ${(e.t / DURATION) * 100}%`} data-t={e.t}>
+              <span>{e.label}</span>
+            </li>
+          ))
+        }
+      </ol>
+    </div>
+  </div>
+  <p class="note">Simulación ilustrativa. Arrastra la línea de tiempo para revisar la intervención.</p>
+</div>
+
+<script>
+  type Key = { t: number; x: number; y: number; a: number };
+
+  // Trayectorias (t en segundos, a = orientación en grados; 0 = derecha, negativo = hacia arriba)
+  const PATHS: Record<'a' | 'b', Key[]> = {
+    a: [
+      { t: 0, x: 70, y: 300, a: 0 },
+      { t: 1.6, x: 230, y: 300, a: 0 },
+      { t: 2.6, x: 295, y: 250, a: -55 },
+      { t: 3.4, x: 330, y: 200, a: -32 },
+      { t: 5.4, x: 360, y: 175, a: -30 },
+      { t: 8, x: 420, y: 150, a: -20 },
+    ],
+    b: [
+      { t: 0, x: 40, y: 315, a: 0 },
+      { t: 1.9, x: 210, y: 315, a: 0 },
+      { t: 3.0, x: 290, y: 262, a: -100 },
+      { t: 4.2, x: 285, y: 190, a: -150 },
+      { t: 5.4, x: 300, y: 120, a: -120 },
+      { t: 8, x: 330, y: 90, a: -60 },
+    ],
+  };
+  const THREAT = { x: 500, y: 90, appears: 3.2, down: 3.95 };
+  const SHOT = { t: 3.81, until: 4.25 };
+  const REACTION_MS = Math.round((SHOT.t - 3.4) * 1000);
+  const CONE = { half: 30, len: 170 };
+
+  const lerp = (a: number, b: number, k: number) => a + (b - a) * k;
+  const ease = (k: number) => k * k * (3 - 2 * k);
+
+  function at(keys: Key[], t: number) {
+    if (t <= keys[0].t) return keys[0];
+    for (let i = 1; i < keys.length; i++) {
+      const p = keys[i - 1];
+      const n = keys[i];
+      if (t <= n.t) {
+        const k = ease((t - p.t) / (n.t - p.t));
+        return { t, x: lerp(p.x, n.x, k), y: lerp(p.y, n.y, k), a: lerp(p.a, n.a, k) };
+      }
+    }
+    return keys[keys.length - 1];
+  }
+
+  function conePath(x: number, y: number, a: number) {
+    const r = (d: number) => (d * Math.PI) / 180;
+    const x1 = x + CONE.len * Math.cos(r(a - CONE.half));
+    const y1 = y + CONE.len * Math.sin(r(a - CONE.half));
+    const x2 = x + CONE.len * Math.cos(r(a + CONE.half));
+    const y2 = y + CONE.len * Math.sin(r(a + CONE.half));
+    return `M${x} ${y}L${x1.toFixed(1)} ${y1.toFixed(1)}A${CONE.len} ${CONE.len} 0 0 1 ${x2.toFixed(1)} ${y2.toFixed(1)}Z`;
+  }
+
+  const fmt = (t: number) => {
+    const ms = Math.round(t * 1000);
+    const m = Math.floor(ms / 60000);
+    const s = Math.floor((ms % 60000) / 1000);
+    return `T+${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}.${String(ms % 1000).padStart(3, '0')}`;
+  };
+
+  document.querySelectorAll<HTMLElement>('[data-aar]').forEach((root) => {
+    const duration = Number(root.dataset.duration);
+    const $ = <T extends Element>(sel: string) => root.querySelector<T>(sel)!;
+    const range = $<HTMLInputElement>('[data-aar-range]');
+    const play = $<HTMLButtonElement>('[data-aar-play]');
+    const clock = $('[data-aar-clock]');
+    const reaction = $('[data-aar-reaction]');
+    const coneOut = $('[data-aar-cone]');
+    const hits = $('[data-aar-hits]');
+    const threat = $<SVGGElement>('[data-threat]');
+    const shot = $<SVGLineElement>('[data-shot]');
+    const marks = [...root.querySelectorAll<HTMLElement>('.marks li')];
+    const agents = { a: $<SVGGElement>('[data-agent="a"]'), b: $<SVGGElement>('[data-agent="b"]') };
+    const cones = { a: $<SVGPathElement>('[data-cone="a"]'), b: $<SVGPathElement>('[data-cone="b"]') };
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    let t = duration;
+    let playing = false;
+    let last = 0;
+
+    const render = () => {
+      for (const id of ['a', 'b'] as const) {
+        const p = at(PATHS[id], t);
+        agents[id].setAttribute('transform', `translate(${p.x.toFixed(1)} ${p.y.toFixed(1)})`);
+        cones[id].setAttribute('d', conePath(p.x, p.y, p.a));
+        if (id === 'a') coneOut.textContent = `${Math.round(-p.a)}°`;
+      }
+      const a = at(PATHS.a, t);
+      threat.classList.toggle('is-visible', t >= THREAT.appears);
+      threat.classList.toggle('is-down', t >= THREAT.down);
+      const firing = t >= SHOT.t && t < SHOT.until;
+      shot.classList.toggle('is-visible', firing);
+      if (firing) {
+        shot.setAttribute('x1', a.x.toFixed(1));
+        shot.setAttribute('y1', a.y.toFixed(1));
+        shot.setAttribute('x2', String(THREAT.x));
+        shot.setAttribute('y2', String(THREAT.y));
+      }
+      clock.textContent = fmt(t);
+      reaction.textContent = t >= SHOT.t ? `${REACTION_MS} ms` : '—';
+      hits.textContent = t >= SHOT.t ? '2 / 2' : '0 / 0';
+      marks.forEach((m) => m.classList.toggle('is-past', t >= Number(m.dataset.t)));
+      range.value = String(Math.round(t * 1000));
+      range.style.setProperty('--p', `${(t / duration) * 100}%`);
+    };
+
+    const setPlaying = (on: boolean) => {
+      playing = on;
+      root.classList.toggle('is-playing', on);
+      play.setAttribute('aria-label', on ? 'Pausar' : 'Reproducir');
+      if (on) {
+        if (t >= duration) t = 0;
+        last = performance.now();
+        requestAnimationFrame(tick);
+      }
+    };
+
+    const tick = (now: number) => {
+      if (!playing) return;
+      t = Math.min(duration, t + (now - last) / 1000);
+      last = now;
+      render();
+      if (t >= duration) setPlaying(false);
+      else requestAnimationFrame(tick);
+    };
+
+    play.addEventListener('click', () => setPlaying(!playing));
+    range.addEventListener('input', () => {
+      setPlaying(false);
+      t = Number(range.value) / 1000;
+      render();
+    });
+
+    // Arranca sola la primera vez que se ve (salvo con «reducir movimiento»)
+    if (!reduced) {
+      const io = new IntersectionObserver(
+        ([e]) => {
+          if (e.isIntersecting) {
+            io.disconnect();
+            t = 0;
+            setPlaying(true);
+          }
+        },
+        { threshold: 0.5 },
+      );
+      io.observe(root);
+    }
+
+    render();
+  });
+</script>
+
+<style>
+  .aar {
+    --c-a: var(--yellow);
+    --c-b: #6ec3ff;
+    --c-threat: #ff5a5f;
+  }
+
+  .screen {
+    background: #070707;
+    border: 1px solid var(--line-strong);
+    color: var(--text);
+  }
+
+  .screen-bar {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 10px 16px;
+    font-size: 0.75rem;
+    letter-spacing: 0.12em;
+    color: var(--text-muted);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .rec {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--c-threat);
+    margin-right: 6px;
+  }
+
+  .is-playing .rec {
+    animation: blink 1s steps(2) infinite;
+  }
+
+  @keyframes blink {
+    50% {
+      opacity: 0.2;
+    }
+  }
+
+  svg {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  .walls path {
+    fill: none;
+    stroke: rgba(255, 255, 255, 0.55);
+    stroke-width: 3;
+    stroke-linecap: square;
+  }
+
+  .room-label {
+    font-family: var(--font-data);
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    fill: rgba(255, 255, 255, 0.35);
+  }
+
+  .cone {
+    stroke-width: 1;
+  }
+
+  .cone-a {
+    fill: rgba(247, 196, 0, 0.16);
+    stroke: rgba(247, 196, 0, 0.5);
+  }
+
+  .cone-b {
+    fill: rgba(110, 195, 255, 0.12);
+    stroke: rgba(110, 195, 255, 0.4);
+  }
+
+  .agent circle {
+    stroke: #070707;
+    stroke-width: 2;
+  }
+
+  .agent-a circle {
+    fill: var(--c-a);
+  }
+
+  .agent-b circle {
+    fill: var(--c-b);
+  }
+
+  .agent text {
+    font-family: var(--font-data);
+    font-size: 11px;
+    font-weight: 500;
+    fill: #070707;
+  }
+
+  .threat {
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  .threat.is-visible {
+    opacity: 1;
+  }
+
+  .threat circle {
+    fill: none;
+    stroke: var(--c-threat);
+    stroke-width: 2;
+  }
+
+  .threat-x {
+    stroke: var(--c-threat);
+    stroke-width: 2;
+    opacity: 0;
+  }
+
+  .threat.is-down circle {
+    stroke-dasharray: 3 3;
+    stroke-opacity: 0.6;
+  }
+
+  .threat.is-down .threat-x {
+    opacity: 1;
+  }
+
+  .shot {
+    stroke: #fff;
+    stroke-width: 2;
+    stroke-dasharray: 6 4;
+    opacity: 0;
+  }
+
+  .shot.is-visible {
+    opacity: 1;
+  }
+
+  .metrics {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    border-top: 1px solid var(--line);
+  }
+
+  .metrics li {
+    padding: 12px 16px;
+    display: grid;
+    gap: 2px;
+  }
+
+  .metrics li + li {
+    border-left: 1px solid var(--line);
+  }
+
+  .metrics span {
+    font-size: 0.6875rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+
+  .metrics strong {
+    font-weight: 500;
+    font-size: 1.125rem;
+    color: var(--yellow);
+  }
+
+  .controls {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    margin-top: 16px;
+  }
+
+  .play {
+    flex: none;
+    width: 44px;
+    height: 44px;
+    display: grid;
+    place-items: center;
+    background: var(--yellow);
+    border: 0;
+    border-radius: var(--radius);
+    cursor: pointer;
+  }
+
+  .play .icon {
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 8px 0 8px 13px;
+    border-color: transparent transparent transparent var(--ink);
+    margin-left: 3px;
+  }
+
+  .is-playing .play .icon {
+    width: 12px;
+    height: 16px;
+    border: 0;
+    border-inline: 4px solid var(--ink);
+    margin-left: 0;
+  }
+
+  .track {
+    flex: 1;
+    position: relative;
+    padding-top: 12px;
+  }
+
+  input[type='range'] {
+    --p: 100%;
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 20px;
+    margin: 0;
+    background: transparent;
+    cursor: pointer;
+  }
+
+  input[type='range']::-webkit-slider-runnable-track {
+    height: 4px;
+    background: linear-gradient(90deg, var(--yellow) var(--p), var(--line-strong) var(--p));
+  }
+
+  input[type='range']::-moz-range-track {
+    height: 4px;
+    background: linear-gradient(90deg, var(--yellow) var(--p), var(--line-strong) var(--p));
+  }
+
+  input[type='range']::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    margin-top: -6px;
+    background: #fff;
+    border: 3px solid var(--yellow);
+    border-radius: 50%;
+  }
+
+  input[type='range']::-moz-range-thumb {
+    width: 12px;
+    height: 12px;
+    background: #fff;
+    border: 3px solid var(--yellow);
+    border-radius: 50%;
+  }
+
+  .marks {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    position: relative;
+    height: 52px;
+  }
+
+  .marks li {
+    position: absolute;
+    top: 4px;
+    transform: translateX(-50%);
+    font-family: var(--font-data);
+    font-size: 0.6875rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    color: var(--text-dim);
+    padding-top: 8px;
+    transition: color 0.2s;
+  }
+
+  .marks li::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: 1px;
+    height: 6px;
+    background: currentColor;
+  }
+
+  /* Rótulos en dos alturas para que no se pisen los eventos cercanos */
+  .marks li:nth-child(even) {
+    padding-top: 24px;
+  }
+
+  .marks li:nth-child(even)::before {
+    height: 22px;
+  }
+
+  .marks li:first-child {
+    transform: none;
+  }
+
+  .marks li:first-child::before {
+    left: 0;
+  }
+
+  .marks li.is-past {
+    color: var(--text);
+  }
+
+  .note {
+    margin: 4px 0 0;
+    font-size: 0.8125rem;
+    color: var(--text-dim);
+  }
+
+  @media (max-width: 640px) {
+    .metrics {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .metrics li:nth-child(3) {
+      border-left: 0;
+    }
+
+    .metrics li:nth-child(n + 3) {
+      border-top: 1px solid var(--line);
+    }
+
+    /* En móvil solo se rotulan los eventos clave */
+    .marks li:nth-child(2) span,
+    .marks li:nth-child(5) span {
+      display: none;
+    }
+  }
+</style>

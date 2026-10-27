@@ -2,6 +2,8 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PageHero from '../../components/PageHero.astro';
 import DemoForm from '../../components/DemoForm.astro';
+import ForceDemo from '../../components/ForceDemo.astro';
+import CounterDroneDemo from '../../components/CounterDroneDemo.astro';
 import { perfiles, type Perfil } from '../../data/perfiles';
 
 export function getStaticPaths() {
@@ -72,6 +74,35 @@ const otros = perfiles.filter((o) => o.slug !== p.slug);
           }
         </ul>
       </div>
+    </div>
+  </section>
+
+  <!-- Demo interactiva según el perfil -->
+  <section class="section">
+    <div class="container try">
+      <div class="reveal">
+        <p class="eyebrow">Pruébalo</p>
+        {
+          p.slug === 'defensa' ? (
+            <>
+              <h2 class="h-md">20 segundos frente a un enjambre</h2>
+              <p class="muted">
+                Una muestra del módulo counter-drone: identifica, espera a tenerlo en alcance y dispara. Cada intento queda
+                medido.
+              </p>
+            </>
+          ) : (
+            <>
+              <h2 class="h-md">Cada conducta tiene su respuesta</h2>
+              <p class="muted">
+                Sube el nivel de resistencia del sujeto y mira cómo se gradúa la respuesta del agente y qué curso la
+                entrena.
+              </p>
+            </>
+          )
+        }
+      </div>
+      <div class="reveal">{p.slug === 'defensa' ? <CounterDroneDemo /> : <ForceDemo />}</div>
     </div>
   </section>
 
@@ -246,9 +277,9 @@ const otros = perfiles.filter((o) => o.slug !== p.slug);
   }
 
   .band-eyebrow {
-    font-family: var(--font-label);
-    font-weight: 600;
-    letter-spacing: 0.24em;
+    font-family: var(--font-data);
+    font-weight: 500;
+    letter-spacing: 0.16em;
     text-transform: uppercase;
     font-size: 0.85rem;
     margin-bottom: 0.75rem;
@@ -282,6 +313,24 @@ const otros = perfiles.filter((o) => o.slug !== p.slug);
   .band-link {
     font-weight: 600;
     color: var(--ink);
+  }
+
+  .try {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: clamp(32px, 5vw, 64px);
+    align-items: center;
+  }
+
+  .try h2 {
+    font-size: clamp(2rem, 3.4vw, 2.75rem);
+    margin-bottom: 1rem;
+  }
+
+  @media (max-width: 960px) {
+    .try {
+      grid-template-columns: 1fr;
+    }
   }
 
   .others {
