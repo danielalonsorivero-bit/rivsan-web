@@ -3,9 +3,9 @@ import { Image } from 'astro:assets';
 import hero from '../../assets/img/hero-binomio.jpg';
 
 const stats = [
-  { value: '<60', unit: 'min', label: 'Despliegue en la propia jefatura' },
-  { value: '12', unit: 'agentes', label: 'Simultáneos en el mismo escenario' },
-  { value: '0', unit: 'obras', label: 'Sin cableado ni sensores fijos' },
+  { value: '<60', unit: 'min', label: 'Del furgón a la primera intervención' },
+  { value: '12', unit: 'agentes', label: 'La unidad entrena junta, como interviene' },
+  { value: '0', unit: 'obras', label: 'Un aula o un garaje bastan' },
   { value: '1:1', unit: '', label: 'Movimiento y armas de peso real' },
 ];
 ---
@@ -23,16 +23,15 @@ const stats = [
   <div class="hero-shade" aria-hidden="true"></div>
 
   <div class="container hero-content">
-    <p class="eyebrow">Ayudamos a los que nos protegen</p>
-    <h1 class="h-xl">
-      Formación táctica <span class="accent">inmersiva y móvil</span> para Fuerzas y Cuerpos de Seguridad
-    </h1>
+    <p class="eyebrow">Formación táctica inmersiva para FCSE</p>
+    <h1 class="h-xl">Entrena la intervención <span class="accent">antes de que ocurra</span></h1>
     <p class="lead">
-      Sin obras. Desplegable en la propia Jefatura en menos de 60 minutos, con armas y automatismos de peso real.
+      Simulación en realidad virtual, primeros auxilios tácticos y uso de la fuerza no letal. Lo llevamos a tu jefatura:
+      sin obras y en marcha en menos de una hora.
     </p>
     <div class="hero-actions">
-      <a href="#contacto" class="btn btn-primary">Solicitar demostración operativa <span class="arrow">→</span></a>
-      <a href="/simulador/" class="btn btn-ghost">Conocer el simulador</a>
+      <a href="#contacto" class="btn btn-primary">Solicitar demostración <span class="arrow">→</span></a>
+      <a href="#perfiles" class="btn btn-ghost">Ver soluciones</a>
     </div>
   </div>
 
@@ -90,7 +89,11 @@ const stats = [
 
   .hero-content h1 {
     font-size: clamp(2.75rem, 5.4vw, 5.25rem);
-    max-width: 11.5em;
+    max-width: 12em;
+  }
+
+  .hero-content h1 .accent {
+    display: block;
     margin-bottom: 1.5rem;
   }
 

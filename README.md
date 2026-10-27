@@ -38,6 +38,9 @@ Los cambios se ven al momento en la web local; para publicarlos hay que compilar
 
 - `src/pages/index.astro`: página de inicio
 - `src/pages/simulador.astro`: página del simulador VR
+- `src/pages/soluciones/[perfil].astro`: una página por perfil (Policía Local, FCSE, Fuerzas Armadas); contenidos en `src/data/perfiles.ts`
+- `src/pages/contratar.astro`: modalidades y cómo tramitar la contratación desde un ayuntamiento
+- `src/pages/preguntas-frecuentes.astro`: preguntas frecuentes (con datos estructurados `FAQPage`)
 - `src/pages/nosotros.astro`: sobre RIVSAN, RE-liON y alianzas
 - `src/pages/normativa.astro`: marco legal y calculadora de ahorro
 - `src/pages/tienda.astro`: tienda (próximamente) con registro de interesados
@@ -46,7 +49,8 @@ Los cambios se ven al momento en la web local; para publicarlos hay que compilar
 - `src/components/Crosshair.astro`: cursor de punto de mira (solo con ratón; sin estela con «reducir movimiento»)
 - `src/components/home/`: secciones de la home
 - `src/components/`: cabecera, pie, logo y formulario de contacto
-- `src/data/site.ts`: datos de empresa y navegación (los editables, en `src/data/empresa.json`)
+- `src/data/site.ts`: datos de empresa y navegación con desplegables (los editables, en `src/data/empresa.json`)
+- `src/components/PageHero.astro`: cabecera común de las páginas interiores nuevas
 - `admin/`: panel de administración local (solo `npm run dev`)
 - `src/styles/global.css`: colores, tipografías y utilidades
 - `src/assets/img/`: fotos (se optimizan a WebP al compilar)
@@ -75,4 +79,7 @@ así que hay que recompilar la web periódicamente (o al añadir fechas).
 - Las fotos se sacaron del dossier comercial y del catálogo de RE-liON; habrá que sustituirlas.
 - Los formularios (contacto, cursos y registro de la tienda) aún no envían ni guardan nada (falta el backend del alojamiento).
 - Las categorías de la tienda son orientativas.
+- `/contratar/` (contrato menor, gasto corriente, certificado de exclusividad): **validar con un asesor de contratación pública** antes de publicar.
+- Preguntas frecuentes: las respuestas marcadas con `(*)` en `preguntas-frecuentes.astro` (espacio, mareo, conexión, acreditación, datos) deben confirmarse con RE-liON / el estado de la homologación.
+- Las cifras de impacto de RE-liON (75 %, 25 %, 30 %) ya no salen en la home; siguen en `/nosotros/` hasta tener la fuente.
 - Pendiente de revisar: uso de logos oficiales de clientes de RE-liON, fuente de las cifras de impacto (75 %, 25 %, 30 %) y la falta de referencias en España.

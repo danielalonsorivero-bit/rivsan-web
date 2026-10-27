@@ -41,16 +41,18 @@ const plans = [
 <section class="section plans" id="contratacion">
   <div class="container">
     <div class="head reveal">
-      <p class="eyebrow">Modalidades de contratación</p>
-      <h2 class="h-lg">Elige cómo <span class="accent">quieres entrenar</span></h2>
-      <p class="lead">Cada jefatura es distinta. Preparamos una propuesta a medida de tus agentes, espacio y presupuesto.</p>
+      <p class="eyebrow">Cómo se contrata</p>
+      <h2 class="h-lg">Empieza con una jornada, <span class="accent">quédate con el sistema</span></h2>
+      <p class="lead">
+        Preparamos la propuesta según tus agentes, tu espacio y tu presupuesto, y te damos la documentación para tramitarla.
+      </p>
     </div>
 
     <div class="grid">
       {
         plans.map((p) => (
           <article class:list={['plan', 'reveal', { 'plan--featured hud': p.featured }]}>
-            {p.featured && <span class="badge">Más solicitado</span>}
+            {p.featured && <span class="badge">Recomendado</span>}
             <h3 class="h-md">{p.name}</h3>
             <p class="summary">{p.summary}</p>
             <ul>
@@ -68,8 +70,8 @@ const plans = [
     </div>
 
     <p class="promise reveal">
-      <strong>Compromiso RIVSAN:</strong> un único interlocutor presencial en España, desde la primera demostración hasta
-      la asistencia postventa.
+      <strong>¿Ayuntamiento?</strong> Una jornada formativa suele poder tramitarse como contrato menor.
+      <a href="/contratar/">Cómo contratar paso a paso →</a>
     </p>
   </div>
 </section>
@@ -174,6 +176,15 @@ const plans = [
   }
 
   .promise strong {
+    color: var(--yellow);
+  }
+
+  .promise a {
+    color: var(--text);
+    white-space: nowrap;
+  }
+
+  .promise a:hover {
     color: var(--yellow);
   }
 

@@ -1,0 +1,282 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHero from '../components/PageHero.astro';
+import DemoForm from '../components/DemoForm.astro';
+
+// PENDIENTE DE VALIDAR con un asesor de contratación pública antes de publicar.
+// Umbrales: contrato menor de servicios y suministros < 15.000 € (valor estimado, sin IVA), art. 118 LCSP.
+const modalidades = [
+  {
+    name: 'Jornada formativa',
+    what: 'Servicio de formación con equipo e instructores RIVSAN.',
+    route: 'Contrato menor de servicios',
+    note: 'El importe de una jornada queda muy por debajo del umbral de 15.000 € del contrato menor.',
+    interest: 'jornada',
+  },
+  {
+    name: 'Renting anual',
+    what: 'Arrendamiento del sistema con licencias, mantenimiento y soporte.',
+    route: 'Suministro en arrendamiento',
+    note: 'Cuota anual que suele imputarse a gasto corriente. Según el importe: contrato menor o procedimiento simplificado.',
+    interest: 'renting',
+    featured: true,
+  },
+  {
+    name: 'Compra llave en mano',
+    what: 'Equipo en propiedad, licencia permanente e implantación.',
+    route: 'Contrato de suministro',
+    note: 'Inversión. Como socio exclusivo de RE-liON en España, aportamos el certificado de exclusividad para el expediente.',
+    interest: 'compra',
+  },
+];
+
+const steps = [
+  { n: '01', title: 'Demostración', text: 'Tus agentes prueban el sistema en la jefatura. Sin compromiso.' },
+  { n: '02', title: 'Propuesta y memoria', text: 'Te enviamos presupuesto desglosado y memoria justificativa con la necesidad, la normativa y el coste comparado.' },
+  { n: '03', title: 'Expediente', text: 'Tu ayuntamiento tramita el contrato. Respondemos a secretaría e intervención con la documentación técnica que pidan.' },
+  { n: '04', title: 'Implantación', text: 'Desplegamos el equipo, formamos a tus instructores y empieza el entrenamiento.' },
+];
+
+const docs = [
+  'Presupuesto desglosado por partidas',
+  'Memoria justificativa de la necesidad',
+  'Ficha técnica del sistema y de los cursos',
+  'Comparativa con el coste actual de formación',
+  'Certificado de exclusividad RE-liON',
+  'Declaraciones responsables y documentación de empresa',
+];
+---
+
+<BaseLayout
+  title="Cómo contratar"
+  description="Jornadas, renting o compra: cómo contratar el simulador y los cursos de RIVSAN desde un ayuntamiento o un organismo público, paso a paso."
+>
+  <PageHero
+    eyebrow="Recursos · Contratación pública"
+    title={['Cómo contratarlo', 'desde tu ayuntamiento']}
+    lead="Sabemos que el reto no es solo técnico: también hay que justificarlo y tramitarlo. Te acompañamos en todo el proceso y te damos la documentación que necesita el expediente."
+  >
+    <a href="?interes=ahorro#contacto" class="btn btn-primary">Pedir memoria justificativa <span class="arrow">→</span></a>
+    <a href="#modalidades" class="btn btn-ghost">Ver modalidades</a>
+  </PageHero>
+
+  <!-- Modalidades -->
+  <section class="section" id="modalidades">
+    <div class="container">
+      <div class="head reveal">
+        <p class="eyebrow">Modalidades</p>
+        <h2 class="h-lg">Tres formas de empezar, <span class="accent">tres vías de tramitación</span></h2>
+      </div>
+      <div class="grid">
+        {
+          modalidades.map((m) => (
+            <article class:list={['mod', 'reveal', { 'mod--featured hud': m.featured }]}>
+              <h3 class="h-md">{m.name}</h3>
+              <p class="muted">{m.what}</p>
+              <dl>
+                <dt>Vía habitual</dt>
+                <dd>{m.route}</dd>
+              </dl>
+              <p class="note">{m.note}</p>
+              <a href={`?interes=${m.interest}#contacto`} class="link-arrow">
+                Solicitar presupuesto <span aria-hidden="true">→</span>
+              </a>
+            </article>
+          ))
+        }
+      </div>
+      <p class="disclaimer">
+        Información orientativa. La vía de contratación la decide cada órgano de contratación según el importe y su
+        planificación anual; consulta siempre con secretaría-intervención. Recuerda que un contrato no puede
+        fraccionarse para quedar por debajo de los umbrales.
+      </p>
+    </div>
+  </section>
+
+  <!-- Pasos -->
+  <section class="section alt">
+    <div class="container">
+      <div class="head reveal">
+        <p class="eyebrow">El proceso</p>
+        <h2 class="h-lg">De la demo al primer <span class="accent">entrenamiento</span></h2>
+      </div>
+      <ol class="steps">
+        {
+          steps.map((s) => (
+            <li class="reveal">
+              <span class="n">{s.n}</span>
+              <h3>{s.title}</h3>
+              <p class="muted">{s.text}</p>
+            </li>
+          ))
+        }
+      </ol>
+    </div>
+  </section>
+
+  <!-- Documentación -->
+  <section class="section">
+    <div class="container docs-grid">
+      <div class="reveal">
+        <p class="eyebrow">Lo que te damos</p>
+        <h2 class="h-lg">El expediente, <span class="accent">ya preparado</span></h2>
+        <p class="lead">Toda la documentación técnica y económica que suele pedir tu departamento de contratación.</p>
+        <a href="/normativa/#calculadora" class="link-arrow">Calcula antes tu ahorro <span aria-hidden="true">→</span></a>
+      </div>
+      <ul class="docs reveal">
+        {docs.map((d) => <li>{d}</li>)}
+      </ul>
+    </div>
+  </section>
+
+  <DemoForm />
+</BaseLayout>
+
+<style>
+  .alt {
+    background: var(--bg-2);
+    border-block: 1px solid var(--line);
+  }
+
+  .head {
+    max-width: 780px;
+    margin-bottom: 48px;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+
+  .mod {
+    display: flex;
+    flex-direction: column;
+    padding: 32px 28px;
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+  }
+
+  .mod--featured {
+    background: var(--surface);
+    border-color: rgba(247, 196, 0, 0.45);
+  }
+
+  .mod h3 {
+    margin-bottom: 10px;
+  }
+
+  dl {
+    margin: 8px 0 12px;
+    padding: 16px 0;
+    border-block: 1px solid var(--line);
+  }
+
+  dt {
+    font-family: var(--font-label);
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+  }
+
+  dd {
+    margin: 4px 0 0;
+    font-family: var(--font-display);
+    font-size: 1.6rem;
+    line-height: 1.05;
+    text-transform: uppercase;
+    color: var(--yellow);
+  }
+
+  .note {
+    font-size: 0.95rem;
+    margin-bottom: 24px;
+  }
+
+  .mod .link-arrow {
+    margin-top: auto;
+  }
+
+  .disclaimer {
+    margin: 32px 0 0;
+    font-size: 0.875rem;
+    color: var(--text-dim);
+    max-width: 80ch;
+  }
+
+  .steps {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+  }
+
+  .steps li {
+    padding-top: 24px;
+    border-top: 2px solid var(--yellow);
+  }
+
+  .n {
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    color: var(--yellow);
+  }
+
+  .steps h3 {
+    font-size: 1.75rem;
+    margin: 8px 0 12px;
+  }
+
+  .docs-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: clamp(32px, 6vw, 80px);
+    align-items: start;
+  }
+
+  .docs-grid h2 {
+    margin-bottom: 1.25rem;
+  }
+
+  .docs {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-top: 1px solid var(--line);
+  }
+
+  .docs li {
+    padding: 16px 0 16px 36px;
+    border-bottom: 1px solid var(--line);
+    position: relative;
+  }
+
+  .docs li::before {
+    content: '✓';
+    position: absolute;
+    left: 6px;
+    color: var(--yellow);
+    font-weight: 600;
+  }
+
+  @media (max-width: 960px) {
+    .grid,
+    .docs-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .steps {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  @media (max-width: 560px) {
+    .steps {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

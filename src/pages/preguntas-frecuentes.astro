@@ -1,0 +1,236 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHero from '../components/PageHero.astro';
+import DemoForm from '../components/DemoForm.astro';
+
+// PENDIENTE DE VALIDAR: las respuestas marcadas con (*) dependen de datos técnicos de RE-liON
+// o de gestiones en curso (homologación de horas) y deben confirmarse antes de publicar.
+const groups = [
+  {
+    title: 'El simulador',
+    items: [
+      {
+        q: '¿Cuánto espacio hace falta?',
+        a: 'Un espacio diáfano y cubierto: un aula, un gimnasio, un garaje o un pabellón. No hace falta obra ni instalación fija. En la demostración valoramos tu espacio y te decimos cuántos agentes pueden entrenar a la vez. (*)',
+      },
+      {
+        q: '¿Cuánto se tarda en montar?',
+        a: 'Menos de 60 minutos. El sistema es inalámbrico y no necesita sensores anclados ni cableado.',
+      },
+      {
+        q: '¿La realidad virtual marea?',
+        a: 'El movimiento en el escenario es 1:1: el agente camina de verdad y lo que ve coincide con lo que hace su cuerpo, que es lo que reduce el mareo. Aun así, las primeras sesiones son cortas y el instructor adapta el ritmo a cada agente. (*)',
+      },
+      {
+        q: '¿Se usa el arma reglamentaria?',
+        a: 'Hay tres clases de armas: réplicas con sensores, plataformas airsoft modificadas y, bajo demanda, adaptación sobre el arma de dotación. Todas reproducen el peso, el tacto y los automatismos del arma real.',
+      },
+      {
+        q: '¿Necesita conexión a internet?',
+        a: 'No para entrenar: el sistema funciona en local. Solo se necesita conexión para enlazar equipos en distintas localizaciones. (*)',
+      },
+    ],
+  },
+  {
+    title: 'Formación y acreditación',
+    items: [
+      {
+        q: '¿Cuántos agentes entrenan en una jornada?',
+        a: 'Hasta 20 agentes por jornada, en binomios, con unos 40 minutos de entrenamiento efectivo por agente.',
+      },
+      {
+        q: '¿Las horas computan para la formación obligatoria?',
+        a: 'Cada curso indica su acreditación en la ficha. Estamos trabajando para que las jornadas computen dentro de la formación continua de las Policías Locales de Andalucía; pregúntanos por el estado de cada curso. (*)',
+      },
+      {
+        q: '¿Podéis hacer un curso a medida para mi unidad?',
+        a: 'Sí. Adaptamos contenidos, fechas y lugar: en tus instalaciones o en las nuestras.',
+      },
+    ],
+  },
+  {
+    title: 'Contratación',
+    items: [
+      {
+        q: '¿La demostración tiene coste?',
+        a: 'No. Vamos a tu jefatura o unidad, desplegamos el sistema y tus agentes lo prueban sin compromiso.',
+      },
+      {
+        q: '¿Cómo lo contrata un ayuntamiento?',
+        a: 'Depende de la modalidad y del importe: una jornada suele tramitarse como contrato menor de servicios y el renting o la compra como suministro. Te lo explicamos en «Cómo contratar» y te damos la documentación del expediente.',
+        href: '/contratar/',
+      },
+      {
+        q: '¿Qué incluye el renting?',
+        a: 'Licencias de software anuales, formación de tus instructores, mantenimiento, sustitución en garantía y soporte local.',
+      },
+    ],
+  },
+  {
+    title: 'Datos y seguridad',
+    items: [
+      {
+        q: '¿Qué datos de los agentes se registran?',
+        a: 'La revisión del ejercicio registra datos de la intervención: tiempos de reacción, conos de visión y trayectorias de disparo. Sirven para la evaluación formativa y se gestionan conforme a la normativa de protección de datos. (*)',
+      },
+    ],
+  },
+];
+
+const faqLd = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: groups.flatMap((g) =>
+    g.items.map((i) => ({
+      '@type': 'Question',
+      name: i.q,
+      acceptedAnswer: { '@type': 'Answer', text: i.a.replace(' (*)', '') },
+    })),
+  ),
+};
+---
+
+<BaseLayout
+  title="Preguntas frecuentes"
+  description="Espacio necesario, montaje, mareo, armas, acreditación, contratación y datos: respuestas a las dudas más habituales sobre RIVSAN."
+  jsonLd={faqLd}
+>
+  <PageHero
+    eyebrow="Recursos"
+    title={['Preguntas', 'frecuentes']}
+    lead="Lo que más nos preguntan jefes de policía, instructores y responsables de formación. Si tu duda no está aquí, escríbenos."
+  />
+
+  <section class="section">
+    <div class="container faq">
+      <nav class="toc" aria-label="Temas">
+        <ul>
+          {groups.map((g, i) => <li><a href={`#tema-${i + 1}`}>{g.title}</a></li>)}
+        </ul>
+      </nav>
+      <div>
+        {
+          groups.map((g, i) => (
+            <div class="group" id={`tema-${i + 1}`}>
+              <h2 class="h-md">{g.title}</h2>
+              {g.items.map((it) => (
+                <details>
+                  <summary>{it.q}</summary>
+                  <div class="answer">
+                    <p>{it.a.replace(' (*)', '')}</p>
+                    {it.href && (
+                      <a href={it.href} class="link-arrow">
+                        Ver más <span aria-hidden="true">→</span>
+                      </a>
+                    )}
+                  </div>
+                </details>
+              ))}
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <DemoForm />
+</BaseLayout>
+
+<style>
+  .faq {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    gap: clamp(32px, 6vw, 80px);
+    align-items: start;
+  }
+
+  .toc {
+    position: sticky;
+    top: calc(var(--header-h) + 24px);
+  }
+
+  .toc ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-left: 2px solid var(--line-strong);
+  }
+
+  .toc a {
+    display: block;
+    padding: 8px 0 8px 16px;
+    font-family: var(--font-label);
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    text-decoration: none;
+  }
+
+  .toc a:hover {
+    color: var(--yellow);
+  }
+
+  .group + .group {
+    margin-top: 56px;
+  }
+
+  .group h2 {
+    margin-bottom: 16px;
+    color: var(--yellow);
+  }
+
+  details {
+    border-bottom: 1px solid var(--line);
+  }
+
+  summary {
+    list-style: none;
+    cursor: pointer;
+    padding: 20px 40px 20px 0;
+    font-weight: 600;
+    font-size: 1.125rem;
+    position: relative;
+  }
+
+  summary::-webkit-details-marker {
+    display: none;
+  }
+
+  summary::after {
+    content: '+';
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 1.5rem;
+    font-weight: 400;
+    color: var(--yellow);
+    transition: transform 0.2s;
+  }
+
+  details[open] summary::after {
+    transform: translateY(-50%) rotate(45deg);
+  }
+
+  summary:hover {
+    color: var(--yellow);
+  }
+
+  .answer {
+    padding: 0 40px 24px 0;
+    color: var(--text-muted);
+    max-width: 70ch;
+  }
+
+  @media (max-width: 820px) {
+    .faq {
+      grid-template-columns: 1fr;
+    }
+
+    .toc {
+      position: static;
+    }
+  }
+</style>

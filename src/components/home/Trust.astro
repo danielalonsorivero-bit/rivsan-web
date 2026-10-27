@@ -1,0 +1,193 @@
+---
+// Respaldo de RE-liON y compromisos de RIVSAN. Versión corta para la home;
+// la historia completa de RE-liON está en /nosotros/ (componente Partner).
+// PENDIENTE DE REVISAR: uso de logos/emblemas oficiales (de momento solo texto).
+import { site } from '../../data/site';
+
+const clients = [
+  'Ministerio de Defensa · Países Bajos',
+  'Fuerzas Armadas · Alemania',
+  'Defensa · Dinamarca',
+  'Defensa · Finlandia',
+  'Policía Nacional · Países Bajos',
+  'Policía de Berlín',
+  'Agencia Europea de Defensa',
+  'Fuerzas Armadas · Singapur',
+];
+
+const pledges = [
+  { title: 'Socio exclusivo', text: 'Únicos autorizados por RE-liON en España: equipos, licencias y soporte oficial.' },
+  { title: 'Un solo interlocutor', text: 'La misma persona de la primera demo al soporte. Presencial y en español.' },
+  { title: 'Llave en mano', text: 'Implantación, formación de instructores y mantenimiento. Tú solo entrenas.' },
+  { title: 'Toda la preparación', text: 'Simulador, sanitaria táctica y uso de la fuerza con un mismo proveedor.' },
+];
+---
+
+<section class="section trust" id="respaldo">
+  <div class="container">
+    <div class="grid">
+      <div class="reveal">
+        <p class="eyebrow">Respaldo internacional</p>
+        <h2 class="h-lg">Probado por quienes <span class="accent">no pueden fallar</span></h2>
+      </div>
+      <div class="reveal">
+        <p class="lead">
+          RE-liON lleva desde 2005 desarrollando entrenamiento inmersivo para seguridad y defensa: creó el primer sistema
+          sin cables del mundo y el primero desplegable para escuadras completas. RIVSAN lo trae a España.
+        </p>
+        <a href="/nosotros/" class="link-arrow">Conocer RIVSAN y RE-liON <span aria-hidden="true">→</span></a>
+      </div>
+    </div>
+
+    <div class="clients reveal">
+      <p class="clients-title">Lo utilizan</p>
+      <ul>
+        {clients.map((c) => <li>{c}</li>)}
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="pledges" aria-label={`Compromiso ${site.name}`}>
+  <div class="container">
+    <ul>
+      {
+        pledges.map((p) => (
+          <li class="reveal">
+            <h3>{p.title}</h3>
+            <p>{p.text}</p>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</section>
+
+<style>
+  .grid {
+    display: grid;
+    grid-template-columns: 1.1fr 1fr;
+    gap: 24px clamp(40px, 6vw, 96px);
+    align-items: end;
+  }
+
+  .grid .lead {
+    margin-bottom: 1rem;
+  }
+
+  .clients {
+    margin-top: 56px;
+    padding-top: 32px;
+    border-top: 1px solid var(--line);
+  }
+
+  .clients-title {
+    font-family: var(--font-label);
+    font-weight: 600;
+    font-size: 0.85rem;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 20px;
+  }
+
+  .clients ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px 24px;
+  }
+
+  .clients li {
+    font-family: var(--font-label);
+    font-weight: 500;
+    font-size: 1.05rem;
+    letter-spacing: 0.04em;
+    padding-left: 14px;
+    border-left: 2px solid var(--line-strong);
+  }
+
+  /* Franja amarilla de ruptura */
+  .pledges {
+    background: var(--yellow);
+    color: var(--ink);
+  }
+
+  .pledges ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .pledges li {
+    padding: clamp(32px, 4vw, 48px) clamp(16px, 2vw, 28px);
+  }
+
+  .pledges li:first-child {
+    padding-left: 0;
+  }
+
+  .pledges li + li {
+    border-left: 1px solid rgba(35, 31, 32, 0.2);
+  }
+
+  .pledges h3 {
+    font-size: clamp(1.6rem, 2.4vw, 2rem);
+    margin-bottom: 8px;
+  }
+
+  .pledges p {
+    margin: 0;
+    font-weight: 500;
+  }
+
+  @media (max-width: 960px) {
+    .grid {
+      grid-template-columns: 1fr;
+    }
+
+    .clients ul,
+    .pledges ul {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .pledges li,
+    .pledges li:first-child {
+      padding-left: 0;
+      padding-right: 20px;
+    }
+
+    .pledges li:nth-child(even) {
+      padding-left: 20px;
+    }
+
+    .pledges li:nth-child(odd) {
+      border-left: 0;
+    }
+
+    .pledges li:nth-child(n + 3) {
+      border-top: 1px solid rgba(35, 31, 32, 0.2);
+    }
+  }
+
+  @media (max-width: 560px) {
+    .clients ul,
+    .pledges ul {
+      grid-template-columns: 1fr;
+    }
+
+    .pledges li,
+    .pledges li:nth-child(even) {
+      padding-inline: 0;
+      border-left: 0;
+    }
+
+    .pledges li + li {
+      border-top: 1px solid rgba(35, 31, 32, 0.2);
+    }
+  }
+</style>

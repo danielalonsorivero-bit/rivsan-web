@@ -1,0 +1,80 @@
+---
+// Cabecera de páginas interiores: texto a la izquierda e imagen opcional a la derecha.
+// Los botones van en el slot.
+import { Image } from 'astro:assets';
+
+interface Props {
+  eyebrow: string;
+  /** El segundo fragmento va resaltado en amarillo */
+  title: [string, string];
+  lead: string;
+  image?: ImageMetadata;
+  alt?: string;
+}
+const { eyebrow, title, lead, image, alt = '' } = Astro.props;
+---
+
+<section class:list={['page-hero', { 'page-hero--text': !image }]}>
+  <div class="container hero-grid">
+    <div>
+      <p class="eyebrow">{eyebrow}</p>
+      <h1 class="h-xl">{title[0]} <span class="accent">{title[1]}</span></h1>
+      <p class="lead">{lead}</p>
+      {Astro.slots.has('default') && <div class="actions"><slot /></div>}
+    </div>
+    {
+      image && (
+        <div class="hero-media hud">
+          <Image src={image} alt={alt} widths={[500, 900]} sizes="(max-width: 960px) 100vw, 40vw" loading="eager" fetchpriority="high" />
+        </div>
+      )
+    }
+  </div>
+</section>
+
+<style>
+  .page-hero {
+    padding: calc(var(--header-h) + clamp(48px, 7vw, 96px)) 0 clamp(56px, 7vw, 96px);
+    background:
+      radial-gradient(ellipse at 85% 10%, rgba(247, 196, 0, 0.1), transparent 55%),
+      var(--bg);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .hero-grid {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: clamp(32px, 5vw, 72px);
+    align-items: center;
+  }
+
+  .page-hero--text .hero-grid {
+    grid-template-columns: minmax(0, 860px);
+  }
+
+  h1 {
+    font-size: clamp(2.75rem, 5.6vw, 5.25rem);
+    margin-bottom: 1.25rem;
+  }
+
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-top: 2rem;
+  }
+
+  .hero-media img {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    object-position: 50% 30%;
+    filter: saturate(0.8);
+  }
+
+  @media (max-width: 960px) {
+    .hero-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

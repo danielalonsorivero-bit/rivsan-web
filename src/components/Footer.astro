@@ -1,7 +1,11 @@
 ---
 import Logo from './Logo.astro';
-import { site, nav } from '../data/site';
+import { site, nav, footerExtra } from '../data/site';
 const year = new Date().getFullYear();
+
+// Una columna por cada desplegable del menú y otra con los enlaces sueltos
+const groups = nav.filter((i) => i.children);
+const loose = [...nav.filter((i) => !i.children), ...footerExtra];
 ---
 
 <footer class="site-footer">
@@ -14,10 +18,34 @@ const year = new Date().getFullYear();
       </p>
     </div>
 
+    {
+      groups.map((g) => (
+        <div>
+          <h2 class="footer-title">{g.label}</h2>
+          <ul>
+            {g.children!.map((c) => (
+              <li>
+                <a href={c.href}>{c.label}</a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))
+    }
+
     <div>
-      <h2 class="footer-title">Explorar</h2>
+      <h2 class="footer-title">RIVSAN</h2>
       <ul>
-        {nav.map((item) => <li><a href={item.href}>{item.label}</a></li>)}
+        {
+          loose.map((item) => (
+            <li>
+              <a href={item.href}>
+                {item.label}
+                {item.soon && <span class="soon">Pronto</span>}
+              </a>
+            </li>
+          ))
+        }
       </ul>
     </div>
 
@@ -52,8 +80,8 @@ const year = new Date().getFullYear();
 
   .footer-grid {
     display: grid;
-    grid-template-columns: 1.6fr 1fr 1fr;
-    gap: 48px;
+    grid-template-columns: 1.6fr repeat(5, 1fr);
+    gap: 40px;
     padding-bottom: 56px;
   }
 
@@ -96,6 +124,18 @@ const year = new Date().getFullYear();
     color: var(--yellow);
   }
 
+  .soon {
+    margin-left: 6px;
+    font-family: var(--font-label);
+    font-size: 0.65rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 1px 5px;
+    border: 1px solid var(--yellow);
+    color: var(--yellow);
+    border-radius: 2px;
+  }
+
   .footer-cta {
     margin-top: 24px;
     font-size: 0.875rem;
@@ -125,10 +165,20 @@ const year = new Date().getFullYear();
     color: var(--text-dim);
   }
 
-  @media (max-width: 820px) {
+  @media (max-width: 1080px) {
     .footer-grid {
-      grid-template-columns: 1fr;
-      gap: 36px;
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .footer-brand {
+      grid-column: 1 / -1;
+    }
+  }
+
+  @media (max-width: 620px) {
+    .footer-grid {
+      grid-template-columns: 1fr 1fr;
+      gap: 32px 24px;
     }
   }
 </style>

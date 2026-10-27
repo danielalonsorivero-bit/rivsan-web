@@ -1,29 +1,29 @@
 ---
 const traditional = [
-  'Salas fijas con obras, cableado y sensores anclados.',
+  'Desplazar a la plantilla a una galería externa, con turnos que cubrir.',
   'Réplicas de plástico que alteran el tacto y rompen los automatismos.',
-  'Simulación limitada a binomios o a vídeo pasivo.',
-  'Costes logísticos recurrentes: galería, munición, dietas, desplazamientos.',
-  'Baja frecuencia de entrenamiento y horas fuera de servicio.',
+  'Ejercicios en binomio o vídeo pasivo: la unidad nunca entrena junta.',
+  'Munición, dietas y alquileres que se repiten cada año.',
+  'Evaluación a ojo, sin datos de lo que pasó.',
 ];
 
 const rivsan = [
-  'Cero infraestructura permanente: un aula o un garaje se convierten en zona táctica.',
+  'El entrenamiento va a tu jefatura: los agentes no salen del municipio.',
   'Armas con el peso, equilibrio y tacto de las de dotación.',
-  'Hasta 12 agentes en un entorno compartido.',
-  'Tecnología 100% inalámbrica, operativa en menos de 60 minutos.',
-  'Entrenamiento bajo fisiología real de estrés: pulsaciones, fatiga, visión de túnel.',
+  'Toda la unidad en el mismo escenario: entradas, perímetros, desescalada.',
+  'Sin munición ni galería: el coste por sesión cae y se puede entrenar más a menudo.',
+  'Cada intervención queda registrada y se revisa en 3D.',
 ];
 ---
 
 <section class="section problem" id="solucion">
   <div class="container">
     <div class="intro reveal">
-      <p class="eyebrow">El problema</p>
-      <h2 class="h-lg">Lo tradicional <span class="accent">ya no basta</span></h2>
+      <p class="eyebrow">Por qué cambiar</p>
+      <h2 class="h-lg">Entrenar más a menudo <span class="accent">cuesta menos</span></h2>
       <p class="lead">
-        La realidad operativa exige coordinación, presión y decisiones en tiempo real. Los sistemas tradicionales siguen
-        anclados a salas fijas y a un coste que se repite cada año.
+        La calle exige coordinación y decisiones bajo presión, y en Andalucía la formación continua ya es obligatoria. El
+        modelo de siempre no da para entrenar con la frecuencia necesaria.
       </p>
     </div>
 
@@ -40,13 +40,18 @@ const rivsan = [
 
       <article class="col col-new hud reveal">
         <header>
-          <span class="tag">Modelo RIVSAN · RE-liON</span>
-          <p class="cost"><strong>Mobile Training Team</strong> desplegado en tu jefatura</p>
+          <span class="tag">Modelo RIVSAN</span>
+          <p class="cost"><strong>Equipo móvil</strong> de instrucción desplegado en tu jefatura</p>
         </header>
         <ul>
           {rivsan.map((t) => <li>{t}</li>)}
         </ul>
       </article>
+    </div>
+
+    <div class="next reveal">
+      <a href="/normativa/#calculadora" class="link-arrow">Calcula lo que te cuesta seguir igual <span aria-hidden="true">→</span></a>
+      <a href="/normativa/" class="link-plain">Ley 6/2023 y Decreto 8/2026</a>
     </div>
 
     <blockquote class="quote reveal">
@@ -56,6 +61,11 @@ const rivsan = [
 </section>
 
 <style>
+  .problem {
+    background: var(--bg-2);
+    border-block: 1px solid var(--line);
+  }
+
   .intro {
     max-width: 760px;
     margin-bottom: 56px;
@@ -152,6 +162,23 @@ const rivsan = [
   .col-new li::before {
     content: '✓';
     color: var(--yellow);
+  }
+
+  .next {
+    margin-top: 28px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 12px 32px;
+  }
+
+  .link-plain {
+    font-size: 0.95rem;
+    color: var(--text-muted);
+  }
+
+  .link-plain:hover {
+    color: var(--text);
   }
 
   .quote {

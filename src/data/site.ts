@@ -17,16 +17,44 @@ export const site = {
   partner: { name: 'RE-liON', url: 'https://re-lion.com/' },
 };
 
-export type NavItem = { label: string; href: string; soon?: boolean };
+export type NavLink = { label: string; href: string; desc?: string };
+export type NavItem = NavLink & { soon?: boolean; children?: NavLink[] };
 
-// Mientras solo existe la home, la navegación apunta a anclas.
-// Cuando existan las páginas, sustituir por sus rutas (/simulador, /formacion, ...).
+// Menú principal. Los elementos con `children` se muestran como desplegable;
+// su `href` es el destino en el pie y el enlace «Ver todo» del desplegable.
 export const nav: NavItem[] = [
-  { label: 'Simulador VR', href: '/simulador/' },
-  { label: 'Módulos', href: '/simulador/#modulos' },
+  {
+    label: 'Soluciones',
+    href: '/simulador/',
+    children: [
+      { label: 'Simulador VR', href: '/simulador/', desc: 'Entrenamiento inmersivo RE-liON en tu jefatura' },
+      { label: 'Jornadas con simulador', href: '/formacion/#simulador', desc: 'Equipo e instructores incluidos' },
+      { label: 'Primeros auxilios tácticos', href: '/formacion/#auxilios', desc: 'Asistencia bajo amenaza, con Iberotac' },
+      { label: 'Uso de la fuerza no letal', href: '/formacion/#fuerza', desc: 'Control, arresto y defensa ante armas' },
+    ],
+  },
+  {
+    label: 'Para quién',
+    href: '/soluciones/policia-local/',
+    children: [
+      { label: 'Policía Local', href: '/soluciones/policia-local/', desc: 'Formación continua obligatoria' },
+      { label: 'FCSE y unidades especiales', href: '/soluciones/fcse/', desc: 'Intervención en equipo y medición' },
+      { label: 'Fuerzas Armadas', href: '/soluciones/defensa/', desc: 'Escuadras, drones y ensayo de misión' },
+    ],
+  },
   { label: 'Formación', href: '/formacion/' },
-  { label: 'Normativa', href: '/normativa/' },
-  { label: 'Contratación', href: '/#contratacion' },
+  {
+    label: 'Recursos',
+    href: '/normativa/',
+    children: [
+      { label: 'Cómo contratar', href: '/contratar/', desc: 'Modalidades y tramitación en tu ayuntamiento' },
+      { label: 'Normativa', href: '/normativa/', desc: 'Ley 6/2023 y Decreto 8/2026' },
+      { label: 'Calculadora de ahorro', href: '/normativa/#calculadora', desc: 'Lo que te cuesta seguir igual' },
+      { label: 'Preguntas frecuentes', href: '/preguntas-frecuentes/', desc: 'Espacio, mareo, datos, acreditación…' },
+    ],
+  },
   { label: 'Nosotros', href: '/nosotros/' },
-  { label: 'Tienda', href: '/tienda/', soon: true },
 ];
+
+// Enlaces que solo van en el pie (la tienda vuelve al menú cuando se lance)
+export const footerExtra: NavItem[] = [{ label: 'Tienda', href: '/tienda/', soon: true }];

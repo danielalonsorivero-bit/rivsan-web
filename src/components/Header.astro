@@ -10,16 +10,37 @@ import { nav } from '../data/site';
     </a>
 
     <nav class="nav" id="main-nav" aria-label="Principal">
-      <ul>
+      <ul class="nav-list">
         {
-          nav.map((item) => (
-            <li>
-              <a href={item.href}>
-                {item.label}
-                {item.soon && <span class="soon">Pronto</span>}
-              </a>
-            </li>
-          ))
+          nav.map((item, i) =>
+            item.children ? (
+              <li class="has-sub" data-sub>
+                <button class="nav-top" aria-expanded="false" aria-controls={`sub-${i}`} data-sub-toggle>
+                  {item.label}
+                  <span class="chev" aria-hidden="true" />
+                </button>
+                <div class="sub" id={`sub-${i}`}>
+                  <ul>
+                    {item.children.map((c) => (
+                      <li>
+                        <a href={c.href}>
+                          <span class="sub-label">{c.label}</span>
+                          {c.desc && <span class="sub-desc">{c.desc}</span>}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </li>
+            ) : (
+              <li>
+                <a href={item.href} class="nav-top">
+                  {item.label}
+                  {item.soon && <span class="soon">Pronto</span>}
+                </a>
+              </li>
+            ),
+          )
         }
       </ul>
       <a href="/#contacto" class="btn btn-primary nav-cta">Solicitar demo</a>
@@ -35,6 +56,7 @@ import { nav } from '../data/site';
 <script>
   const header = document.querySelector<HTMLElement>('[data-header]')!;
   const toggle = document.querySelector<HTMLButtonElement>('[data-menu-toggle]')!;
+  const subs = [...header.querySelectorAll<HTMLElement>('[data-sub]')];
 
   const onScroll = () => header.classList.toggle('is-scrolled', window.scrollY > 24);
   onScroll();
@@ -47,6 +69,30 @@ import { nav } from '../data/site';
   };
   toggle.addEventListener('click', () => setOpen(!header.classList.contains('is-open')));
   header.querySelectorAll('.nav a').forEach((a) => a.addEventListener('click', () => setOpen(false)));
+
+  // Desplegables: clic (y teclado) en escritorio y acordeón en el menú móvil
+  const setSub = (li: HTMLElement, open: boolean) => {
+    li.classList.toggle('is-sub-open', open);
+    li.querySelector('[data-sub-toggle]')!.setAttribute('aria-expanded', String(open));
+  };
+  subs.forEach((li) =>
+    li.querySelector('[data-sub-toggle]')!.addEventListener('click', () => {
+      const open = !li.classList.contains('is-sub-open');
+      subs.forEach((other) => other !== li && setSub(other, false));
+      setSub(li, open);
+    }),
+  );
+  document.addEventListener('click', (e) => {
+    if (!header.contains(e.target as Node)) subs.forEach((li) => setSub(li, false));
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape') return;
+    const open = subs.find((li) => li.classList.contains('is-sub-open'));
+    if (open) {
+      setSub(open, false);
+      open.querySelector<HTMLButtonElement>('[data-sub-toggle]')!.focus();
+    }
+  });
 </script>
 
 <style>
@@ -99,18 +145,21 @@ import { nav } from '../data/site';
   .nav {
     display: flex;
     align-items: center;
-    gap: 28px;
+    gap: 32px;
   }
 
   .nav ul {
-    display: flex;
-    gap: 26px;
     list-style: none;
     margin: 0;
     padding: 0;
   }
 
-  .nav ul a {
+  .nav-list {
+    display: flex;
+    gap: 28px;
+  }
+
+  .nav-top {
     font-family: var(--font-label);
     font-weight: 500;
     font-size: 1rem;
@@ -118,18 +167,88 @@ import { nav } from '../data/site';
     text-transform: uppercase;
     text-decoration: none;
     color: var(--text);
+    background: none;
+    border: 0;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
     white-space: nowrap;
-    padding-block: 6px;
-    border-bottom: 2px solid transparent;
+    padding: 6px 0;
     transition: color 0.2s, border-color 0.2s;
   }
 
-  .nav ul a:hover {
+  .nav-top:hover,
+  .is-sub-open > .nav-top {
     color: var(--yellow);
     border-bottom-color: var(--yellow);
+  }
+
+  .chev {
+    width: 7px;
+    height: 7px;
+    border: solid currentColor;
+    border-width: 0 2px 2px 0;
+    transform: translateY(-2px) rotate(45deg);
+    transition: transform 0.2s;
+  }
+
+  .is-sub-open .chev {
+    transform: translateY(1px) rotate(-135deg);
+  }
+
+  .has-sub {
+    position: relative;
+  }
+
+  .sub {
+    position: absolute;
+    top: calc(100% + 14px);
+    left: -20px;
+    min-width: 320px;
+    background: var(--surface);
+    border: 1px solid var(--line-strong);
+    border-top: 2px solid var(--yellow);
+    padding: 8px;
+    box-shadow: 0 24px 48px rgba(0, 0, 0, 0.5);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-6px);
+    transition: opacity 0.2s, transform 0.2s, visibility 0.2s;
+  }
+
+  .is-sub-open .sub {
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+  }
+
+  .sub a {
+    display: grid;
+    gap: 2px;
+    padding: 12px 14px;
+    text-decoration: none;
+    border-radius: var(--radius);
+    transition: background 0.15s;
+  }
+
+  .sub a:hover {
+    background: var(--surface-2);
+  }
+
+  .sub-label {
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .sub a:hover .sub-label {
+    color: var(--yellow);
+  }
+
+  .sub-desc {
+    font-size: 0.875rem;
+    color: var(--text-muted);
   }
 
   .soon {
@@ -145,13 +264,6 @@ import { nav } from '../data/site';
     padding: 0.7em 1.2em;
     font-size: 0.875rem;
     white-space: nowrap;
-  }
-
-  @media (max-width: 1380px) {
-    .nav,
-    .nav ul {
-      gap: 20px;
-    }
   }
 
   .menu-toggle {
@@ -206,7 +318,7 @@ import { nav } from '../data/site';
     transform: translateY(-7px) rotate(-45deg);
   }
 
-  @media (max-width: 1240px) {
+  @media (max-width: 1080px) {
     .menu-toggle {
       display: block;
     }
@@ -219,7 +331,7 @@ import { nav } from '../data/site';
       align-items: stretch;
       justify-content: flex-start;
       gap: 32px;
-      padding: 32px var(--gutter);
+      padding: 24px var(--gutter) 32px;
       transform: translateX(100%);
       visibility: hidden;
       transition: transform 0.3s, visibility 0.3s;
@@ -231,18 +343,50 @@ import { nav } from '../data/site';
       visibility: visible;
     }
 
-    .nav ul {
+    .nav-list {
       flex-direction: column;
       gap: 0;
     }
 
-    .nav ul a {
+    .nav-list > li {
+      border-bottom: 1px solid var(--line);
+    }
+
+    .nav-top {
       font-family: var(--font-display);
       font-size: 2.25rem;
       letter-spacing: 0.02em;
       padding-block: 12px;
       width: 100%;
-      border-bottom: 1px solid var(--line);
+      justify-content: space-between;
+      border-bottom: 0;
+    }
+
+    .chev {
+      width: 12px;
+      height: 12px;
+      border-width: 0 3px 3px 0;
+    }
+
+    /* En móvil el desplegable es un acordeón dentro del panel */
+    .sub {
+      position: static;
+      min-width: 0;
+      background: none;
+      border: 0;
+      box-shadow: none;
+      padding: 0 0 12px;
+      transform: none;
+      display: none;
+    }
+
+    .is-sub-open .sub {
+      display: block;
+    }
+
+    .sub a {
+      padding: 10px 0 10px 16px;
+      border-left: 2px solid var(--line-strong);
     }
 
     .nav-cta {
