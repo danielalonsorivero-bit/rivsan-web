@@ -1,5 +1,5 @@
 ---
-// Panel de administración local (solo `npm run dev`). Ver admin/integration.mjs.
+// Panel de administración: en local con `npm run dev` o publicado en Vercel. Ver admin/integration.mjs.
 // Con `demo` (página /panel-demo/) funciona sin servidor: los datos de la web se incrustan al
 // compilar y los cambios se guardan solo en el navegador (sessionStorage), sin tocar archivos.
 import '../../src/styles/global.css';
@@ -49,9 +49,10 @@ if (demo) {
           demo ? (
             <p class="adm-note">Demostración. Los cambios se guardan solo en este navegador y no modifican la web. En la versión final el panel será privado, con acceso por usuario.</p>
           ) : (
-            <p class="adm-note">Solo en tu ordenador. Los cambios se guardan en los archivos del proyecto: revísalos en la web local y publícalos con el siguiente <code>build</code>.</p>
+            <p class="adm-note" id="adm-nota" />
           )
         }
+        {!demo && <button type="button" class="adm-salir" id="adm-salir" hidden>Cerrar sesión</button>}
         <a class="adm-site" href="/" target="_blank" rel="noopener">Ver la web ↗</a>
       </aside>
 
@@ -64,6 +65,18 @@ if (demo) {
             </div>
           )
         }
+        <!-- Acceso (solo si el servidor pide contraseña) -->
+        <section id="v-login" hidden>
+          <header class="adm-head"><h1>Acceso al panel</h1></header>
+          <form class="adm-form adm-login" id="f-login">
+            <fieldset>
+              <label>Contraseña<input type="password" name="clave" required autocomplete="current-password" /></label>
+              <button class="btn btn-primary" type="submit">Entrar</button>
+              <span id="login-estado" role="status"></span>
+            </fieldset>
+          </form>
+        </section>
+
         <!-- Lista de cursos -->
         <section id="v-lista" hidden>
           <header class="adm-head">
@@ -294,7 +307,11 @@ if (demo) {
       }
 
       const IMG_URL = (f: string) =>
-        DEMO ? (subidas[f] ?? SEED!.imagenes[f] ?? '') : `/src/assets/img/${encodeURIComponent(f)}`;
+        DEMO ? (subidas[f] ?? SEED!.imagenes[f] ?? '') : `/admin/api/imagen/?f=${encodeURIComponent(f)}`;
+
+      // Guardado en GitHub (Vercel): la web tarda un poco en volver a publicarse
+      let REMOTO = false;
+      const GUARDADO = () => (REMOTO ? 'Guardado ✓ · la web se actualiza en 1–2 minutos' : 'Guardado ✓');
 
       async function api<T = any>(path: string, opts: RequestInit = {}): Promise<T> {
         if (DEMO) return demoApi(path, opts);
@@ -302,7 +319,13 @@ if (demo) {
           ...opts,
           headers: { 'x-rivsan-admin': '1', 'Content-Type': 'application/json', ...opts.headers },
         });
-        const json = await res.json();
+        const json = await res.json().catch(() => ({}));
+        // Sesión caducada a mitad de trabajo: se vuelve a pedir la contraseña
+        if (res.status === 401 && path !== 'login') {
+          mostrarLogin();
+          throw new Error('Tu sesión ha caducado. Vuelve a entrar.');
+        }
+        if (res.status === 413) throw new Error('El archivo es demasiado grande');
         if (!res.ok) throw new Error(json.error ?? res.statusText);
         return json;
       }
@@ -333,7 +356,7 @@ if (demo) {
       }
 
       // ---------- Vistas ----------
-      const vistas = ['v-lista', 'v-curso', 'v-empresa'];
+      const vistas = ['v-login', 'v-lista', 'v-curso', 'v-empresa'];
       function mostrar(id: string, tab: string) {
         for (const v of vistas) $(`#${v}`).hidden = v !== id;
         document.querySelectorAll('[data-tab]').forEach((a) => a.toggleAttribute('aria-current', (a as HTMLElement).dataset.tab === tab));
@@ -444,6 +467,12 @@ if (demo) {
         const input = e.target as HTMLInputElement;
         const file = input.files?.[0];
         if (!file) return;
+        // Límite de las funciones de Vercel (4,5 MB por petición, y el base64 ocupa un tercio más)
+        if (file.size > 3 * 1024 * 1024) {
+          estado($('#curso-estado'), 'La imagen pesa más de 3 MB: redúcela antes de subirla', 'err');
+          input.value = '';
+          return;
+        }
         const base64 = await new Promise<string>((ok) => {
           const r = new FileReader();
           r.onload = () => ok(String(r.result).split(',')[1]);
@@ -494,11 +523,11 @@ if (demo) {
             method: 'PUT',
             body: JSON.stringify({ data, body: els.body.value, nuevoSlug, crear: !slugActual }),
           });
-          estado(st, 'Guardado ✓', 'ok');
+          estado(st, GUARDADO(), 'ok');
           if (slug !== slugActual) {
             history.replaceState(null, '', `#/cursos/${encodeURIComponent(slug)}`);
             await cargarCurso(slug);
-            estado(st, 'Guardado ✓', 'ok');
+            estado(st, GUARDADO(), 'ok');
           } else {
             $('#curso-titulo').textContent = data.titulo;
           }
@@ -532,7 +561,7 @@ if (demo) {
         if (!fEmpresa.reportValidity()) return;
         try {
           await api('empresa', { method: 'PUT', body: JSON.stringify(Object.fromEntries(new FormData(fEmpresa))) });
-          estado($('#empresa-estado'), 'Guardado ✓', 'ok');
+          estado($('#empresa-estado'), GUARDADO(), 'ok');
         } catch (err) {
           estado($('#empresa-estado'), (err as Error).message, 'err');
         }
@@ -547,8 +576,53 @@ if (demo) {
         router();
       });
 
-      window.addEventListener('hashchange', router);
-      router();
+      // ---------- Acceso ----------
+      const navPanel = $('.adm-side nav');
+      function mostrarLogin() {
+        mostrar('v-login', '');
+        navPanel.hidden = true;
+        $<HTMLInputElement>('#f-login [name="clave"]').focus();
+      }
+      $('#f-login').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const f = e.target as HTMLFormElement;
+        try {
+          await api('login', { method: 'POST', body: JSON.stringify({ clave: (f.elements as any).clave.value }) });
+          f.reset();
+          estado($('#login-estado'), '');
+          iniciar();
+        } catch (err) {
+          estado($('#login-estado'), (err as Error).message, 'err');
+        }
+      });
+      document.getElementById('adm-salir')?.addEventListener('click', async () => {
+        await api('logout', { method: 'POST' }).catch(() => {});
+        $('#adm-salir').hidden = true;
+        mostrarLogin();
+      });
+
+      let enMarcha = false;
+      async function iniciar() {
+        if (!DEMO) {
+          try {
+            const s = await api<{ remoto: boolean; login: boolean }>('sesion');
+            REMOTO = s.remoto;
+            $('#adm-salir').hidden = !s.login;
+            $('#adm-nota').textContent = REMOTO
+              ? 'Los cambios se guardan en GitHub y la web se vuelve a publicar sola en 1–2 minutos.'
+              : 'Solo en tu ordenador. Los cambios se guardan en los archivos del proyecto: revísalos en la web local y publícalos con el siguiente build.';
+          } catch (e) {
+            if (!$('#v-login').hidden) return; // pide contraseña
+            alert((e as Error).message);
+            return;
+          }
+        }
+        navPanel.hidden = false;
+        if (!enMarcha) window.addEventListener('hashchange', router);
+        enMarcha = true;
+        router();
+      }
+      iniciar();
     </script>
 
     <style is:global>
@@ -580,6 +654,14 @@ if (demo) {
       .demo-reset:hover { border-color: var(--yellow); color: var(--yellow); }
       .adm-note { margin-top: auto; font-size: 13px; color: var(--text-dim); line-height: 1.5; }
       .adm-site { font-size: 14px; color: var(--yellow); }
+      .adm-salir {
+        align-self: flex-start; font: inherit; font-size: 13px; color: var(--text-muted); background: none; cursor: pointer;
+        padding: 6px 12px; border: 1px solid var(--line-strong); border-radius: var(--radius);
+      }
+      .adm-salir:hover { border-color: var(--yellow); color: var(--yellow); }
+      .adm-login { max-width: 420px; }
+      .adm-login fieldset { display: flex; flex-direction: column; align-items: flex-start; gap: 16px; }
+      .adm-login label { align-self: stretch; }
 
       .adm-main { padding: 32px clamp(16px, 4vw, 48px) 0; max-width: 1100px; width: 100%; }
       .adm-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap; margin-bottom: 24px; }

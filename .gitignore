@@ -9,3 +9,6 @@ doc/
 
 # Documentos de entrega al cliente (no van al repositorio público)
 entregables/
+
+# Salida del adaptador de Vercel
+.vercel/

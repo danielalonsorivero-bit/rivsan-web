@@ -17,10 +17,39 @@ Con `npm run dev` abierto, entra en **http://localhost:4321/admin/**. Desde ahí
 - Crear, editar y borrar **cursos**: ficha, imagen (o subir una nueva), convocatorias con plazas libres y el texto en Markdown.
 - Cambiar los **datos de empresa**: email, teléfono, dirección, datos fiscales, lema y descripción.
 
-El panel solo existe en tu ordenador: escribe directamente en los archivos del proyecto
-(`src/content/cursos/*.md`, `src/assets/img/` y `src/data/empresa.json`) y **no se incluye en `npm run build`**.
-Los cambios se ven al momento en la web local; para publicarlos hay que compilar y subir `dist/` como siempre
-(y, si usas git, hacer commit de los archivos cambiados). El código está en `admin/` y se activa en `astro.config.mjs`.
+En local escribe directamente en los archivos del proyecto (`src/content/cursos/*.md`, `src/assets/img/` y
+`src/data/empresa.json`): los cambios se ven al momento en la web local y se publican haciendo commit y push.
+El código está en `admin/` y se activa en `astro.config.mjs`. En la compilación de GitHub Pages el panel no existe.
+
+### Panel en Vercel (guarda en GitHub)
+
+Desplegada en Vercel, la web sigue siendo estática, pero **/admin/** queda publicado con contraseña y su API
+funciona como función de servidor (`admin/endpoint.mjs`). Cada guardado es un **commit en `main`** con un mensaje
+del tipo «Panel: actualiza el curso «…»» (`admin/github.mjs`). Ese commit vuelve a publicar la web sola en Vercel en
+1–2 minutos (y también la muestra de GitHub Pages). El historial de git sirve para ver o deshacer cualquier cambio.
+
+Puesta en marcha:
+
+1. **Token de GitHub**: en GitHub → Settings → Developer settings → *Fine-grained tokens*, crear uno con acceso
+   solo al repositorio `rivsan-web` y el permiso **Contents: Read and write**. Ponerle caducidad y renovarlo.
+2. **Proyecto en Vercel**: *Add New → Project*, importar el repositorio. Vercel detecta Astro; no hace falta tocar
+   nada de la compilación. El plan gratuito (Hobby) solo admite uso no comercial: sirve para enseñárselo a clientes,
+   pero para la web definitiva hay que pasar a Pro.
+3. **Variables de entorno** (Project → Settings → Environment Variables, entorno *Production*):
+
+   | Variable | Valor |
+   | --- | --- |
+   | `GITHUB_TOKEN` | el token del paso 1 |
+   | `ADMIN_PASSWORD` | la contraseña del panel (larga; cambiarla cierra todas las sesiones) |
+   | `GITHUB_REPO` | opcional: `danielalonsorivero-bit/rivsan-web` (se deduce del repositorio conectado) |
+   | `GITHUB_BRANCH` | opcional: rama donde guardar, `main` por defecto |
+   | `PUBLIC_PASSWORD_HASH` | opcional: la misma barrera de cortesía de la muestra (ver más abajo) |
+
+4. Volver a desplegar (*Deployments → Redeploy*) para que coja las variables y entrar en `https://<proyecto>.vercel.app/admin/`.
+
+Límites: imágenes de hasta 3 MB por subida (límite de las funciones de Vercel) y una sola contraseña compartida.
+La sesión dura 12 horas. Para probar el modo servidor en local: `ADMIN_SERVIDOR=1 ADMIN_PASSWORD=… npm run dev`
+(sin `GITHUB_TOKEN` escribe en los archivos locales; con él, en GitHub).
 
 ## Versión de muestra (GitHub Pages)
 
@@ -77,7 +106,7 @@ Para quitarlo de la versión final: borrar el enlace en `src/components/Footer.a
 - `src/components/`: cabecera, pie, logo y formulario de contacto
 - `src/data/site.ts`: datos de empresa y navegación con desplegables (los editables, en `src/data/empresa.json`)
 - `src/components/PageHero.astro`: cabecera común de las páginas interiores nuevas
-- `admin/`: panel de administración local (solo `npm run dev`)
+- `admin/`: panel de administración (`npm run dev` en local, o publicado en Vercel guardando en GitHub)
 - `src/styles/global.css`: colores, tipografías y utilidades
 - `src/assets/img/`: fotos (se optimizan a WebP al compilar)
 - `logo/`: logos originales en SVG/PDF
