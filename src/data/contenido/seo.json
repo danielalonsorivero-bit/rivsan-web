@@ -1,0 +1,70 @@
+{
+  "paginas": [
+    {
+      "pagina": "Inicio",
+      "ruta": "/",
+      "titulo": "",
+      "descripcion": ""
+    },
+    {
+      "pagina": "Simulador VR",
+      "ruta": "/simulador/",
+      "titulo": "Simulador VR",
+      "descripcion": "Simulador táctico RE-liON: sistema móvil e inalámbrico para hasta 12 agentes, armas de peso real, módulos de entrenamiento y After-Action Review."
+    },
+    {
+      "pagina": "Formación",
+      "ruta": "/formacion/",
+      "titulo": "Formación",
+      "descripcion": "Cursos de simulación táctica, primeros auxilios tácticos y uso de la fuerza no letal para Policía Local y Fuerzas y Cuerpos de Seguridad."
+    },
+    {
+      "pagina": "Cómo contratar",
+      "ruta": "/contratar/",
+      "titulo": "Cómo contratar",
+      "descripcion": "Jornadas, renting o compra: cómo contratar el simulador y los cursos de RIVSAN desde un ayuntamiento o un organismo público, paso a paso."
+    },
+    {
+      "pagina": "Normativa y ahorro",
+      "ruta": "/normativa/",
+      "titulo": "Normativa y ahorro",
+      "descripcion": "Ley 6/2023 y Decreto 8/2026: la formación continua de la Policía Local de Andalucía es obligatoria. Calcula cuánto puedes ahorrar."
+    },
+    {
+      "pagina": "Sobre nosotros",
+      "ruta": "/nosotros/",
+      "titulo": "Sobre nosotros",
+      "descripcion": "Socio exclusivo de RE-liON en España: simulación táctica avanzada para Fuerzas y Cuerpos de Seguridad, llave en mano y con un único interlocutor."
+    },
+    {
+      "pagina": "Preguntas frecuentes",
+      "ruta": "/preguntas-frecuentes/",
+      "titulo": "Preguntas frecuentes",
+      "descripcion": "Espacio necesario, montaje, mareo, armas, acreditación, contratación y datos: respuestas a las dudas más habituales sobre RIVSAN."
+    },
+    {
+      "pagina": "Tienda",
+      "ruta": "/tienda/",
+      "titulo": "Tienda táctica",
+      "descripcion": "Próximamente: tienda de material táctico para policía seleccionado por instructores. Regístrate y te avisamos de la apertura."
+    },
+    {
+      "pagina": "Aviso legal",
+      "ruta": "/legal/aviso-legal/",
+      "titulo": "Aviso legal",
+      "descripcion": "Aviso legal y condiciones de uso del sitio web de RIVSAN."
+    },
+    {
+      "pagina": "Política de privacidad",
+      "ruta": "/legal/privacidad/",
+      "titulo": "Política de privacidad",
+      "descripcion": "Cómo trata RIVSAN los datos personales de quienes contactan a través de su web."
+    },
+    {
+      "pagina": "Política de cookies",
+      "ruta": "/legal/cookies/",
+      "titulo": "Política de cookies",
+      "descripcion": "Información sobre el uso de cookies y tecnologías similares en la web de RIVSAN."
+    }
+  ]
+}

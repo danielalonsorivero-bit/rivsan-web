@@ -1,0 +1,31 @@
+{
+  "clientes": [
+    "Ministerio de Defensa · Países Bajos",
+    "Fuerzas Armadas · Alemania",
+    "Defensa · Dinamarca",
+    "Defensa · Finlandia",
+    "Policía Nacional · Países Bajos",
+    "Policía de Berlín",
+    "Agencia Europea de Defensa",
+    "Fuerzas Armadas · Singapur"
+  ],
+  "compromisos": [
+    {
+      "titulo": "Socio exclusivo",
+      "texto": "Únicos autorizados por RE-liON en España: equipos, licencias y soporte oficial."
+    },
+    {
+      "titulo": "Un solo interlocutor",
+      "texto": "La misma persona de la primera demo al soporte. Presencial y en español."
+    },
+    {
+      "titulo": "Llave en mano",
+      "texto": "Implantación, formación de instructores y mantenimiento. Tú solo entrenas."
+    },
+    {
+      "titulo": "Toda la preparación",
+      "texto": "Simulador, sanitaria táctica y uso de la fuerza con un mismo proveedor."
+    }
+  ],
+  "testimonios": []
+}

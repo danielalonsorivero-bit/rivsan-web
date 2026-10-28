@@ -1,66 +1,29 @@
 ---
-// Modalidades de contratación. Sin precios: todo se cierra por presupuesto.
-const plans = [
-  {
-    name: 'Jornadas formativas',
-    summary: 'Entrena sin invertir en equipo. Nosotros lo llevamos todo.',
-    points: [
-      'Hasta 20 agentes por jornada, en binomios',
-      '40 minutos de entrenamiento por agente',
-      'Instructores y equipo completo desplegado',
-      'Perfecta como demostración operativa',
-    ],
-    interest: 'jornada',
-  },
-  {
-    name: 'Renting anual',
-    summary: 'El sistema en tu jefatura todo el año, con cuota fija.',
-    points: [
-      'Onboarding de instructores',
-      'Licencias de software anuales',
-      'Mantenimiento y sustitución en garantía',
-      'Servicio postventa local',
-    ],
-    interest: 'renting',
-    featured: true,
-  },
-  {
-    name: 'Compra llave en mano',
-    summary: 'Equipo en propiedad y licencia permanente.',
-    points: [
-      'Implantación presencial',
-      'Formación técnica de instructores',
-      'Tramitación de garantías',
-      'Soporte del socio exclusivo en España',
-    ],
-    interest: 'compra',
-  },
-];
+// Modalidades de contratación, editables desde el panel (Portada). Sin precios: todo se cierra por presupuesto.
+import { planes } from '../../data/contenido/home.json';
 ---
 
 <section class="section plans theme-light" id="contratacion">
   <div class="container">
     <div class="head reveal">
-      <p class="eyebrow">Cómo se contrata</p>
-      <h2 class="h-lg">Empieza con una jornada, <span class="accent">quédate con el sistema</span></h2>
-      <p class="lead">
-        Preparamos la propuesta según tus agentes, tu espacio y tu presupuesto, y te damos la documentación para tramitarla.
-      </p>
+      {planes.antetitulo && <p class="eyebrow">{planes.antetitulo}</p>}
+      <h2 class="h-lg">{planes.titulo} {planes.acento && <span class="accent">{planes.acento}</span>}</h2>
+      {planes.entrada && <p class="lead">{planes.entrada}</p>}
     </div>
 
     <div class="grid">
       {
-        plans.map((p) => (
-          <article class:list={['plan', 'reveal', { 'plan--featured hud': p.featured }]}>
-            {p.featured && <span class="badge">Recomendado</span>}
-            <h3 class="h-md">{p.name}</h3>
-            <p class="summary">{p.summary}</p>
+        planes.planes.map((p) => (
+          <article class:list={['plan', 'reveal', { 'plan--featured hud': p.destacado }]}>
+            {p.destacado && <span class="badge">Recomendado</span>}
+            <h3 class="h-md">{p.nombre}</h3>
+            {p.resumen && <p class="summary">{p.resumen}</p>}
             <ul>
-              {p.points.map((pt) => <li>{pt}</li>)}
+              {p.puntos.map((pt) => <li>{pt}</li>)}
             </ul>
             <a
-              href={`/?interes=${p.interest}#contacto`}
-              class:list={['btn', p.featured ? 'btn-primary' : 'btn-ghost']}
+              href={`/?interes=${p.interes}#contacto`}
+              class:list={['btn', p.destacado ? 'btn-primary' : 'btn-ghost']}
             >
               Solicitar presupuesto
             </a>

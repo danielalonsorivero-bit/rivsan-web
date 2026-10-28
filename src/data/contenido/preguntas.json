@@ -1,0 +1,84 @@
+{
+  "grupos": [
+    {
+      "titulo": "El simulador",
+      "preguntas": [
+        {
+          "pregunta": "¿Cuánto espacio hace falta?",
+          "respuesta": "Un espacio diáfano y cubierto: un aula, un gimnasio, un garaje o un pabellón. No hace falta obra ni instalación fija. En la demostración valoramos tu espacio y te decimos cuántos agentes pueden entrenar a la vez. (*)",
+          "enlace": ""
+        },
+        {
+          "pregunta": "¿Cuánto se tarda en montar?",
+          "respuesta": "Menos de 60 minutos. El sistema es inalámbrico y no necesita sensores anclados ni cableado.",
+          "enlace": ""
+        },
+        {
+          "pregunta": "¿La realidad virtual marea?",
+          "respuesta": "El movimiento en el escenario es 1:1: el agente camina de verdad y lo que ve coincide con lo que hace su cuerpo, que es lo que reduce el mareo. Aun así, las primeras sesiones son cortas y el instructor adapta el ritmo a cada agente. (*)",
+          "enlace": ""
+        },
+        {
+          "pregunta": "¿Se usa el arma reglamentaria?",
+          "respuesta": "Hay tres clases de armas: réplicas con sensores, plataformas airsoft modificadas y, bajo demanda, adaptación sobre el arma de dotación. Todas reproducen el peso, el tacto y los automatismos del arma real.",
+          "enlace": ""
+        },
+        {
+          "pregunta": "¿Necesita conexión a internet?",
+          "respuesta": "No para entrenar: el sistema funciona en local. Solo se necesita conexión para enlazar equipos en distintas localizaciones. (*)",
+          "enlace": ""
+        }
+      ]
+    },
+    {
+      "titulo": "Formación y acreditación",
+      "preguntas": [
+        {
+          "pregunta": "¿Cuántos agentes entrenan en una jornada?",
+          "respuesta": "Hasta 20 agentes por jornada, en binomios, con unos 40 minutos de entrenamiento efectivo por agente.",
+          "enlace": ""
+        },
+        {
+          "pregunta": "¿Las horas computan para la formación obligatoria?",
+          "respuesta": "Cada curso indica su acreditación en la ficha. Estamos trabajando para que las jornadas computen dentro de la formación continua de las Policías Locales de Andalucía; pregúntanos por el estado de cada curso. (*)",
+          "enlace": ""
+        },
+        {
+          "pregunta": "¿Podéis hacer un curso a medida para mi unidad?",
+          "respuesta": "Sí. Adaptamos contenidos, fechas y lugar: en tus instalaciones o en las nuestras.",
+          "enlace": ""
+        }
+      ]
+    },
+    {
+      "titulo": "Contratación",
+      "preguntas": [
+        {
+          "pregunta": "¿La demostración tiene coste?",
+          "respuesta": "No. Vamos a tu jefatura o unidad, desplegamos el sistema y tus agentes lo prueban sin compromiso.",
+          "enlace": ""
+        },
+        {
+          "pregunta": "¿Cómo lo contrata un ayuntamiento?",
+          "respuesta": "Depende de la modalidad y del importe: una jornada suele tramitarse como contrato menor de servicios y el renting o la compra como suministro. Te lo explicamos en «Cómo contratar» y te damos la documentación del expediente.",
+          "enlace": "/contratar/"
+        },
+        {
+          "pregunta": "¿Qué incluye el renting?",
+          "respuesta": "Licencias de software anuales, formación de tus instructores, mantenimiento, sustitución en garantía y soporte local.",
+          "enlace": ""
+        }
+      ]
+    },
+    {
+      "titulo": "Datos y seguridad",
+      "preguntas": [
+        {
+          "pregunta": "¿Qué datos de los agentes se registran?",
+          "respuesta": "La revisión del ejercicio registra datos de la intervención: tiempos de reacción, conos de visión y trayectorias de disparo. Sirven para la evaluación formativa y se gestionan conforme a la normativa de protección de datos. (*)",
+          "enlace": ""
+        }
+      ]
+    }
+  ]
+}

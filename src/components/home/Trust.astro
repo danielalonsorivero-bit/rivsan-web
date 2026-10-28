@@ -3,24 +3,10 @@
 // la historia completa de RE-liON está en /nosotros/ (componente Partner).
 // PENDIENTE DE REVISAR: uso de logos/emblemas oficiales (de momento solo texto).
 import { site } from '../../data/site';
+import datos from '../../data/contenido/clientes.json';
 
-const clients = [
-  'Ministerio de Defensa · Países Bajos',
-  'Fuerzas Armadas · Alemania',
-  'Defensa · Dinamarca',
-  'Defensa · Finlandia',
-  'Policía Nacional · Países Bajos',
-  'Policía de Berlín',
-  'Agencia Europea de Defensa',
-  'Fuerzas Armadas · Singapur',
-];
-
-const pledges = [
-  { title: 'Socio exclusivo', text: 'Únicos autorizados por RE-liON en España: equipos, licencias y soporte oficial.' },
-  { title: 'Un solo interlocutor', text: 'La misma persona de la primera demo al soporte. Presencial y en español.' },
-  { title: 'Llave en mano', text: 'Implantación, formación de instructores y mantenimiento. Tú solo entrenas.' },
-  { title: 'Toda la preparación', text: 'Simulador, sanitaria táctica y uso de la fuerza con un mismo proveedor.' },
-];
+// Clientes, compromisos y testimonios: editables desde el panel (Clientes y testimonios)
+const { clientes: clients, compromisos: pledges, testimonios } = datos;
 ---
 
 <section class="section trust" id="respaldo">
@@ -45,6 +31,22 @@ const pledges = [
         {clients.map((c) => <li>{c}</li>)}
       </ul>
     </div>
+
+    {
+      testimonios.length > 0 && (
+        <div class="voices">
+          {testimonios.map((t) => (
+            <figure class="voice reveal">
+              <blockquote>{t.frase}</blockquote>
+              <figcaption>
+                <strong>{t.autor}</strong>
+                {t.cargo && <span>{t.cargo}</span>}
+              </figcaption>
+            </figure>
+          ))}
+        </div>
+      )
+    }
   </div>
 </section>
 
@@ -54,8 +56,8 @@ const pledges = [
       {
         pledges.map((p) => (
           <li class="reveal">
-            <h3>{p.title}</h3>
-            <p>{p.text}</p>
+            <h3>{p.titulo}</h3>
+            <p>{p.texto}</p>
           </li>
         ))
       }
@@ -64,6 +66,50 @@ const pledges = [
 </section>
 
 <style>
+  .voices {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+    margin-top: 48px;
+  }
+
+  .voice {
+    margin: 0;
+    padding: 28px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--yellow);
+    border-radius: var(--radius);
+  }
+
+  .voice blockquote {
+    margin: 0 0 20px;
+    font-size: 1.1rem;
+    line-height: 1.55;
+    color: var(--text);
+  }
+
+  .voice blockquote::before {
+    content: '«';
+    color: var(--yellow);
+  }
+
+  .voice blockquote::after {
+    content: '»';
+    color: var(--yellow);
+  }
+
+  .voice figcaption {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-size: 0.9rem;
+  }
+
+  .voice figcaption span {
+    color: var(--text-muted);
+  }
+
   .grid {
     display: grid;
     grid-template-columns: 1.1fr 1fr;

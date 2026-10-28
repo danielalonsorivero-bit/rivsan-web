@@ -2,80 +2,15 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import PageHero from '../components/PageHero.astro';
 import DemoForm from '../components/DemoForm.astro';
+import { grupos } from '../data/contenido/preguntas.json';
 
-// PENDIENTE DE VALIDAR: las respuestas marcadas con (*) dependen de datos técnicos de RE-liON
-// o de gestiones en curso (homologación de horas) y deben confirmarse antes de publicar.
-const groups = [
-  {
-    title: 'El simulador',
-    items: [
-      {
-        q: '¿Cuánto espacio hace falta?',
-        a: 'Un espacio diáfano y cubierto: un aula, un gimnasio, un garaje o un pabellón. No hace falta obra ni instalación fija. En la demostración valoramos tu espacio y te decimos cuántos agentes pueden entrenar a la vez. (*)',
-      },
-      {
-        q: '¿Cuánto se tarda en montar?',
-        a: 'Menos de 60 minutos. El sistema es inalámbrico y no necesita sensores anclados ni cableado.',
-      },
-      {
-        q: '¿La realidad virtual marea?',
-        a: 'El movimiento en el escenario es 1:1: el agente camina de verdad y lo que ve coincide con lo que hace su cuerpo, que es lo que reduce el mareo. Aun así, las primeras sesiones son cortas y el instructor adapta el ritmo a cada agente. (*)',
-      },
-      {
-        q: '¿Se usa el arma reglamentaria?',
-        a: 'Hay tres clases de armas: réplicas con sensores, plataformas airsoft modificadas y, bajo demanda, adaptación sobre el arma de dotación. Todas reproducen el peso, el tacto y los automatismos del arma real.',
-      },
-      {
-        q: '¿Necesita conexión a internet?',
-        a: 'No para entrenar: el sistema funciona en local. Solo se necesita conexión para enlazar equipos en distintas localizaciones. (*)',
-      },
-    ],
-  },
-  {
-    title: 'Formación y acreditación',
-    items: [
-      {
-        q: '¿Cuántos agentes entrenan en una jornada?',
-        a: 'Hasta 20 agentes por jornada, en binomios, con unos 40 minutos de entrenamiento efectivo por agente.',
-      },
-      {
-        q: '¿Las horas computan para la formación obligatoria?',
-        a: 'Cada curso indica su acreditación en la ficha. Estamos trabajando para que las jornadas computen dentro de la formación continua de las Policías Locales de Andalucía; pregúntanos por el estado de cada curso. (*)',
-      },
-      {
-        q: '¿Podéis hacer un curso a medida para mi unidad?',
-        a: 'Sí. Adaptamos contenidos, fechas y lugar: en tus instalaciones o en las nuestras.',
-      },
-    ],
-  },
-  {
-    title: 'Contratación',
-    items: [
-      {
-        q: '¿La demostración tiene coste?',
-        a: 'No. Vamos a tu jefatura o unidad, desplegamos el sistema y tus agentes lo prueban sin compromiso.',
-      },
-      {
-        q: '¿Cómo lo contrata un ayuntamiento?',
-        a: 'Depende de la modalidad y del importe: una jornada suele tramitarse como contrato menor de servicios y el renting o la compra como suministro. Te lo explicamos en «Cómo contratar» y te damos la documentación del expediente.',
-        href: '/contratar/',
-      },
-      {
-        q: '¿Qué incluye el renting?',
-        a: 'Licencias de software anuales, formación de tus instructores, mantenimiento, sustitución en garantía y soporte local.',
-      },
-    ],
-  },
-  {
-    title: 'Datos y seguridad',
-    items: [
-      {
-        q: '¿Qué datos de los agentes se registran?',
-        a: 'La revisión del ejercicio registra datos de la intervención: tiempos de reacción, conos de visión y trayectorias de disparo. Sirven para la evaluación formativa y se gestionan conforme a la normativa de protección de datos. (*)',
-      },
-    ],
-  },
-];
+// Preguntas editables desde el panel. Las respuestas con (*) dependen de datos técnicos de
+// RE-liON o de gestiones en curso y deben confirmarse antes de publicar: el (*) no se muestra.
+const sinMarca = (t: string) => t.replace(/\s*\(\*\)/g, '');
+const groups = grupos.map((g) => ({
+  title: g.titulo,
+  items: g.preguntas.map((p) => ({ q: p.pregunta, a: sinMarca(p.respuesta), href: p.enlace || undefined })),
+}));
 
 const faqLd = {
   '@context': 'https://schema.org',
@@ -84,7 +19,7 @@ const faqLd = {
     g.items.map((i) => ({
       '@type': 'Question',
       name: i.q,
-      acceptedAnswer: { '@type': 'Answer', text: i.a.replace(' (*)', '') },
+      acceptedAnswer: { '@type': 'Answer', text: i.a },
     })),
   ),
 };
@@ -117,7 +52,7 @@ const faqLd = {
                 <details>
                   <summary>{it.q}</summary>
                   <div class="answer">
-                    <p>{it.a.replace(' (*)', '')}</p>
+                    <p>{it.a}</p>
                     {it.href && (
                       <a href={it.href} class="link-arrow">
                         Ver más <span aria-hidden="true">→</span>

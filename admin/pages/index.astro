@@ -7,6 +7,7 @@ import { getImage } from 'astro:assets';
 import Gate from '../../src/components/Gate.astro';
 import empresa from '../../src/data/empresa.json';
 import { parseCurso } from '../api.mjs';
+import { SECCIONES } from '../esquemas.mjs';
 
 interface Props {
   demo?: boolean;
@@ -23,7 +24,9 @@ if (demo) {
     imagenes[path.split('/').pop()!] = (await getImage({ src: img, width: 520, format: 'webp' })).src;
   }
   // Escapado de «<» para que el texto de los cursos no pueda cerrar la etiqueta <script>
-  seed = JSON.stringify({ cursos, empresa, imagenes }).replace(/</g, '\\u003c');
+  const jsons = import.meta.glob('/src/data/contenido/*.json', { import: 'default', eager: true });
+  const contenido = Object.fromEntries(Object.entries(jsons).map(([path, d]) => [path.split('/').pop()!.slice(0, -5), d]));
+  seed = JSON.stringify({ cursos, empresa, imagenes, contenido }).replace(/</g, '\\u003c');
 }
 ---
 
@@ -43,6 +46,7 @@ if (demo) {
         <a class="adm-brand" href={demo ? '/panel-demo/' : '/admin/'}>RIVSAN <span>Panel</span></a>
         <nav aria-label="Secciones del panel">
           <a href="#/cursos" data-tab="cursos">Cursos</a>
+          {SECCIONES.map((sec) => <a href={`#/contenido/${sec.id}`} data-tab={sec.id}>{sec.titulo}</a>)}
           <a href="#/empresa" data-tab="empresa">Datos de empresa</a>
         </nav>
         {
@@ -60,7 +64,7 @@ if (demo) {
         {
           demo && (
             <div class="demo-bar" role="note">
-              <span><strong>Modo demostración.</strong> Prueba a editar un curso o los datos de empresa: los cambios no salen de tu navegador.</span>
+              <span><strong>Modo demostración.</strong> Prueba a editar cualquier sección: los cambios no salen de tu navegador.</span>
               <button type="button" class="demo-reset" id="demo-reset">Restablecer datos</button>
             </div>
           )
@@ -230,6 +234,26 @@ if (demo) {
             </div>
           </form>
         </section>
+
+        <!-- Secciones de contenido (esquemas en admin/esquemas.mjs) -->
+        <section id="v-contenido" hidden>
+          <header class="adm-head">
+            <div>
+              <h1 id="contenido-titulo"></h1>
+              <p class="hint" id="contenido-desc"></p>
+            </div>
+            <div class="adm-actions">
+              <a class="btn btn-ghost" id="contenido-ver" target="_blank" rel="noopener">Ver en la web ↗</a>
+            </div>
+          </header>
+          <form id="f-contenido" class="adm-form" novalidate>
+            <div id="contenido-campos"></div>
+            <div class="adm-savebar">
+              <span id="contenido-estado" role="status"></span>
+              <button type="submit" class="btn btn-primary">Guardar</button>
+            </div>
+          </form>
+        </section>
       </main>
     </div>
 
@@ -244,6 +268,8 @@ if (demo) {
     </template>
 
     <script>
+      import { normalizar, seccion } from '../esquemas.mjs';
+
       type Fecha = { inicio: string; fin?: string; lugar: string; plazasLibres?: number | string };
       type Curso = Record<string, any> & { slug: string; fechas: Fecha[] };
 
@@ -254,7 +280,7 @@ if (demo) {
 
       // ---------- Modo demostración: API simulada en el navegador ----------
       type DemoCurso = { slug: string; data: Record<string, any>; body: string };
-      type DemoState = { cursos: DemoCurso[]; empresa: Record<string, string>; imagenes: Record<string, string> };
+      type DemoState = { cursos: DemoCurso[]; empresa: Record<string, string>; imagenes: Record<string, string>; contenido: Record<string, any> };
       const DEMO_KEY = 'rivsan-panel-demo';
       const SEED: DemoState | null = DEMO ? JSON.parse(document.getElementById('demo-seed')!.textContent!) : null;
       const SLUGS_WEB = new Set(SEED?.cursos.map((c) => c.slug) ?? []);
@@ -264,7 +290,8 @@ if (demo) {
       function demoLeer(): DemoState {
         try {
           const s = sessionStorage.getItem(DEMO_KEY);
-          if (s) return JSON.parse(s);
+          // Las sesiones de antes de las secciones de contenido no las traen
+          if (s) return { contenido: structuredClone(SEED!.contenido), ...JSON.parse(s) };
         } catch {}
         return structuredClone(SEED!);
       }
@@ -316,6 +343,14 @@ if (demo) {
           for (let i = 2; nombre in st.imagenes || nombre in subidas; i++) nombre = `${base}-${i}${ext}`;
           subidas[nombre] = `data:image/${ext.slice(1).replace('jpg', 'jpeg')};base64,${body.base64}`;
           return { nombre };
+        }
+        if (recurso === 'contenido' && seccion(id)) {
+          if (m === 'GET') return st.contenido[id];
+          const { datos, errores } = normalizar(seccion(id).campos, body, st.contenido[id]);
+          if (errores.length) throw new Error(`Revisa: ${errores.slice(0, 3).join(' · ')}`);
+          st.contenido[id] = datos;
+          demoGuardar(st);
+          return datos;
         }
         if (recurso === 'empresa' && m === 'GET') return st.empresa;
         if (recurso === 'empresa' && m === 'PUT') {
@@ -376,19 +411,22 @@ if (demo) {
       }
 
       // ---------- Vistas ----------
-      const vistas = ['v-login', 'v-lista', 'v-curso', 'v-empresa'];
+      const vistas = ['v-login', 'v-lista', 'v-curso', 'v-empresa', 'v-contenido'];
       function mostrar(id: string, tab: string) {
         for (const v of vistas) $(`#${v}`).hidden = v !== id;
         document.querySelectorAll('[data-tab]').forEach((a) => a.toggleAttribute('aria-current', (a as HTMLElement).dataset.tab === tab));
       }
 
       async function router() {
-        const [, seccion, id] = location.hash.split('/');
+        const [, parte, id] = location.hash.split('/');
         try {
-          if (seccion === 'empresa') {
+          if (parte === 'empresa') {
             mostrar('v-empresa', 'empresa');
             await cargarEmpresa();
-          } else if (seccion === 'cursos' && id) {
+          } else if (parte === 'contenido' && id) {
+            mostrar('v-contenido', id);
+            await cargarContenido(decodeURIComponent(id));
+          } else if (parte === 'cursos' && id) {
             mostrar('v-curso', 'cursos');
             await cargarCurso(id === 'nuevo' ? null : decodeURIComponent(id));
           } else {
@@ -587,6 +625,209 @@ if (demo) {
         }
       });
 
+
+      // ---------- Secciones de contenido: formulario pintado a partir del esquema ----------
+      // El formulario edita directamente `datosSeccion`; las listas se vuelven a pintar al añadir,
+      // quitar o mover elementos (las fichas abiertas siguen abiertas).
+      type Campo = Record<string, any>;
+      const fContenido = $<HTMLFormElement>('#f-contenido');
+      let seccionActual: Campo | null = null;
+      let datosSeccion: Record<string, any> = {};
+      let imagenesDisponibles: string[] = [];
+      const abiertas = new WeakSet<object>();
+
+      const el = <K extends keyof HTMLElementTagNameMap>(tag: K, clase = '', texto = '') => {
+        const e = document.createElement(tag);
+        if (clase) e.className = clase;
+        if (texto) e.textContent = texto;
+        return e;
+      };
+      const vacio = (c: Campo): any =>
+        c.tipo === 'lista' ? [] : c.tipo === 'grupo' ? nuevo(c.campos) : c.tipo === 'check' ? false : '';
+      const nuevo = (campos: Campo[]) => Object.fromEntries(campos.map((c) => [c.k, vacio(c)]));
+
+      function pintarCampos(campos: Campo[], obj: Record<string, any>, cont: HTMLElement) {
+        let grid: HTMLElement | null = null;
+        for (const c of campos) {
+          if (c.tipo === 'lista' || c.tipo === 'grupo') {
+            grid = null;
+            cont.append(c.tipo === 'lista' ? pintarLista(c, obj) : pintarGrupo(c, obj));
+            continue;
+          }
+          if (!grid) cont.append((grid = el('div', 'grid-2')));
+          grid.append(pintarCampo(c, obj));
+        }
+      }
+
+      function pintarGrupo(c: Campo, obj: Record<string, any>) {
+        const fs = el('fieldset');
+        fs.append(el('legend', '', c.etiqueta));
+        obj[c.k] ??= nuevo(c.campos);
+        pintarCampos(c.campos, obj[c.k], fs);
+        return fs;
+      }
+
+      function pintarCampo(c: Campo, obj: Record<string, any>) {
+        if (c.tipo === 'check') {
+          const lab = el('label', 'check wide');
+          const i = el('input');
+          i.type = 'checkbox';
+          i.checked = !!obj[c.k];
+          i.addEventListener('change', () => (obj[c.k] = i.checked));
+          lab.append(i, ' ' + c.etiqueta);
+          return lab;
+        }
+        const lab = el('label', c.ancho === 'wide' || c.tipo === 'area' ? 'wide' : '', c.etiqueta);
+        let input: HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement;
+        if (c.tipo === 'area') {
+          input = el('textarea');
+          input.rows = c.filas ?? 3;
+        } else if (c.tipo === 'opcion' || c.tipo === 'imagen') {
+          input = el('select');
+          const opciones = c.tipo === 'opcion' ? c.opciones : imagenesDisponibles.map((f) => ({ valor: f, texto: f }));
+          if (!c.requerido) input.append(new Option('—', ''));
+          for (const o of opciones) input.append(new Option(o.texto, o.valor));
+        } else {
+          input = el('input');
+          input.type = c.tipo === 'numero' ? 'number' : c.tipo === 'fecha' ? 'date' : 'text';
+          if (c.max) input.maxLength = c.max;
+        }
+        if (c.max && input instanceof HTMLTextAreaElement) input.maxLength = c.max;
+        input.value = obj[c.k] ?? '';
+        input.required = !!c.requerido;
+        if (c.fijo) input.disabled = true;
+        input.addEventListener('input', () => (obj[c.k] = input.value));
+        lab.append(input);
+        if (c.tipo === 'imagen') {
+          const img = el('img', 'mini');
+          img.alt = '';
+          const ver = () => (img.src = input.value ? IMG_URL(input.value) : '');
+          input.addEventListener('change', ver);
+          ver();
+          lab.append(img);
+        }
+        return lab;
+      }
+
+      function botonera(arr: any[], i: number, redibujar: () => void, quitarTexto: string) {
+        const caja = el('span', 'item-acciones');
+        const boton = (txt: string, etiqueta: string, accion: () => void, deshabilitado = false) => {
+          const b = el('button', 'icon-btn', txt);
+          b.type = 'button';
+          b.setAttribute('aria-label', etiqueta);
+          b.title = etiqueta;
+          b.disabled = deshabilitado;
+          b.addEventListener('click', (e) => {
+            e.preventDefault();
+            accion();
+            redibujar();
+          });
+          caja.append(b);
+        };
+        boton('↑', 'Subir', () => arr.splice(i - 1, 0, ...arr.splice(i, 1)), i === 0);
+        boton('↓', 'Bajar', () => arr.splice(i + 1, 0, ...arr.splice(i, 1)), i === arr.length - 1);
+        boton('✕', quitarTexto, () => {
+          if (typeof arr[i] !== 'object' || confirm(`¿${quitarTexto}?`)) arr.splice(i, 1);
+        });
+        return caja;
+      }
+
+      function pintarLista(c: Campo, obj: Record<string, any>) {
+        const caja = el('div', 'lista');
+        caja.append(el('p', 'lista-titulo', c.etiqueta));
+        const items = el('div', 'lista-items');
+        const arr: any[] = (obj[c.k] ??= []);
+        const anadir = el('button', 'btn btn-ghost', `+ Añadir ${c.singular ?? 'elemento'}`);
+        anadir.type = 'button';
+        const redibujar = () => {
+          items.replaceChildren(...arr.map((_, i) => (c.de === 'texto' ? filaTexto(c, arr, i, redibujar) : ficha(c, arr, i, redibujar))));
+          anadir.hidden = !!c.fija || arr.length >= (c.max ?? 200);
+        };
+        anadir.addEventListener('click', () => {
+          const n = c.de === 'texto' ? '' : nuevo(c.campos);
+          arr.push(n);
+          if (typeof n === 'object') abiertas.add(n);
+          redibujar();
+          items.lastElementChild?.querySelector<HTMLElement>('input, textarea, select')?.focus();
+        });
+        redibujar();
+        caja.append(items, anadir);
+        return caja;
+      }
+
+      function filaTexto(c: Campo, arr: string[], i: number, redibujar: () => void) {
+        const fila = el('div', 'item-texto');
+        const input = el('input');
+        input.value = arr[i];
+        input.maxLength = 300;
+        input.setAttribute('aria-label', `${c.singular ?? 'Elemento'} ${i + 1}`);
+        input.addEventListener('input', () => (arr[i] = input.value));
+        fila.append(input, botonera(arr, i, redibujar, `Quitar ${c.singular ?? 'elemento'}`));
+        return fila;
+      }
+
+      function ficha(c: Campo, arr: Record<string, any>[], i: number, redibujar: () => void) {
+        const item = arr[i];
+        const d = el('details', 'item');
+        d.open = abiertas.has(item);
+        d.addEventListener('toggle', () => (d.open ? abiertas.add(item) : abiertas.delete(item)));
+        const sum = el('summary');
+        const titulo = el('span', 'item-titulo');
+        const rotulo = () => {
+          const v = c.resumen ? item[c.resumen] : '';
+          titulo.textContent = v ? (c.campos.find((x: Campo) => x.k === c.resumen)?.tipo === 'fecha' ? fechaLarga(v) : v) : `${c.singular ?? 'Elemento'} ${i + 1}`;
+        };
+        rotulo();
+        sum.append(titulo);
+        if (!c.fija) sum.append(botonera(arr, i, redibujar, `Quitar ${c.singular ?? 'elemento'}`));
+        const cuerpo = el('div', 'item-cuerpo');
+        pintarCampos(c.campos, item, cuerpo);
+        cuerpo.addEventListener('input', rotulo);
+        d.append(sum, cuerpo);
+        return d;
+      }
+
+      const fechaLarga = (iso: string) =>
+        new Date(`${iso}T12:00:00`).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+
+      async function cargarContenido(id: string) {
+        const sec = seccion(id);
+        if (!sec) throw new Error('Sección no encontrada');
+        const [datos, imgs] = await Promise.all([api('contenido/' + encodeURIComponent(id)), api<string[]>('imagenes')]);
+        seccionActual = sec;
+        datosSeccion = datos ?? {};
+        imagenesDisponibles = imgs;
+        $('#contenido-titulo').textContent = sec.titulo;
+        $('#contenido-desc').textContent = sec.descripcion ?? '';
+        const ver = $<HTMLAnchorElement>('#contenido-ver');
+        ver.hidden = !sec.ver;
+        if (sec.ver) ver.href = BASE + sec.ver.replace(/^\//, '');
+        const cont = $('#contenido-campos');
+        cont.replaceChildren();
+        // Los campos sueltos y las listas de primer nivel van en una caja como el resto del panel
+        const fs = el('fieldset', 'raiz');
+        pintarCampos(sec.campos, datosSeccion, fs);
+        cont.append(fs);
+        estado($('#contenido-estado'), '');
+      }
+
+      fContenido.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const st = $('#contenido-estado');
+        // Abre las fichas con campos sin rellenar para que el navegador pueda señalarlos
+        fContenido.querySelectorAll(':invalid').forEach((i) => {
+          for (let d = i.closest('details'); d; d = d.parentElement!.closest('details')) d.open = true;
+        });
+        if (!fContenido.reportValidity()) return;
+        try {
+          datosSeccion = await api('contenido/' + encodeURIComponent(seccionActual!.id), { method: 'PUT', body: JSON.stringify(datosSeccion) });
+          await cargarContenido(seccionActual!.id);
+          estado(st, GUARDADO(), 'ok');
+        } catch (err) {
+          estado(st, (err as Error).message, 'err');
+        }
+      });
+
       document.getElementById('demo-reset')?.addEventListener('click', () => {
         try {
           sessionStorage.removeItem(DEMO_KEY);
@@ -714,6 +955,7 @@ if (demo) {
       .adm-back:hover { color: var(--yellow); }
       .adm-actions { display: flex; gap: 8px; }
       .adm .btn { padding: 0.7em 1.2em; font-size: 0.9rem; }
+      .adm button.btn-ghost { background: none; }
       [hidden] { display: none !important; }
       .adm-link { color: var(--text); text-decoration: none; font-weight: 600; }
       .adm-link:hover { color: var(--yellow); }
@@ -766,6 +1008,30 @@ if (demo) {
       }
       [role='status'][data-tipo='ok'] { color: #7bd88f; }
       [role='status'][data-tipo='err'] { color: #ff8a7d; }
+
+      .adm-head .hint { max-width: 70ch; margin: 10px 0 0; }
+      .lista { grid-column: 1 / -1; margin: 18px 0 4px; }
+      .lista-titulo { margin: 0 0 8px; font-family: var(--font-label); font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; font-size: 13px; color: var(--text-muted); }
+      .lista-items { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; }
+      .item { border: 1px solid var(--line-strong); border-radius: var(--radius); background: var(--bg-2); }
+      .item[open] { border-color: rgba(247, 196, 0, 0.45); }
+      .item summary { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 8px 8px 14px; cursor: pointer; list-style: none; }
+      .item summary::-webkit-details-marker { display: none; }
+      .item summary::before { content: '▸'; color: var(--yellow); margin-right: -4px; }
+      .item[open] > summary::before { content: '▾'; }
+      .item-titulo { flex: 1; font-weight: 600; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .item-cuerpo { padding: 4px 14px 16px; border-top: 1px solid var(--line); }
+      .item-cuerpo > .grid-2 { margin-top: 12px; }
+      .item-acciones { display: flex; gap: 4px; flex-shrink: 0; }
+      .item-acciones .icon-btn { width: 32px; height: 32px; }
+      .icon-btn:disabled { opacity: 0.3; cursor: default; }
+      .icon-btn:disabled:hover { color: var(--text-muted); border-color: var(--line-strong); }
+      .item-texto { display: flex; gap: 8px; align-items: center; }
+      .item-texto input { flex: 1; }
+      .adm-form fieldset fieldset { background: var(--bg-2); margin: 18px 0 0; }
+      .adm-form fieldset.raiz { padding-top: 4px; }
+      .adm-form input:disabled { opacity: 0.6; }
+      img.mini { width: 160px; aspect-ratio: 4 / 3; object-fit: cover; border-radius: var(--radius); background: var(--surface); }
 
       @media (max-width: 820px) {
         .adm { grid-template-columns: 1fr; }

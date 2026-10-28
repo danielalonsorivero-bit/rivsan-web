@@ -9,6 +9,7 @@ import Gate from '../components/Gate.astro';
 import Sound from '../components/Sound.astro';
 import { site } from '../data/site';
 import { indexable, organizationLd } from '../data/seo';
+import { paginas as seoPaginas } from '../data/contenido/seo.json';
 import defaultShare from '../assets/img/hero-binomio.jpg';
 
 interface Props {
@@ -19,7 +20,13 @@ interface Props {
   /** Datos estructurados adicionales de la página (schema.org) */
   jsonLd?: Record<string, unknown>;
 }
-const { title, description = site.description, image = defaultShare, jsonLd } = Astro.props;
+// Título y descripción editables desde el panel (Buscadores) para las páginas fijas; si están vacíos,
+// los que pasa la página. La comparación ignora la subcarpeta de publicación (BASE_PATH).
+const ruta = '/' + Astro.url.pathname.slice(import.meta.env.BASE_URL.replace(/\/?$/, '/').length);
+const seo = seoPaginas.find((p) => p.ruta === ruta);
+const { image = defaultShare, jsonLd } = Astro.props;
+const title = seo?.titulo || Astro.props.title;
+const description = seo?.descripcion || Astro.props.description || site.description;
 const fullTitle = title ? `${title} · ${site.name}` : `${site.name} · ${site.tagline}`;
 const canonical = new URL(Astro.url.pathname, Astro.site);
 

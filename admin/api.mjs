@@ -12,10 +12,13 @@
 //   POST   /imagenes            sube una imagen; body { nombre, base64 }
 //   GET    /empresa             datos de src/data/empresa.json
 //   PUT    /empresa             los guarda
+//   GET    /contenido/:id       una sección de src/data/contenido/ (esquemas en esquemas.mjs)
+//   PUT    /contenido/:id       la guarda, validada y limpia según su esquema
 // Responde igual con dos almacenes (ver github.mjs): los archivos del proyecto en `npm run dev`,
 // o la rama de GitHub en Vercel, donde cada guardado es un commit que vuelve a publicar la web.
 import { createHmac, createHash, timingSafeEqual } from 'node:crypto';
 import { almacenDisco, almacenGitHub } from './github.mjs';
+import { archivoSeccion, imagenesDe, normalizar, seccion } from './esquemas.mjs';
 import yaml from 'js-yaml';
 
 const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
@@ -173,6 +176,22 @@ async function rutas({ metodo: m, recurso, id, consulta, leerJson }, almacen) {
     for (const k of Object.keys(actual)) if (typeof nuevo[k] === 'string') actual[k] = nuevo[k].trim();
     await almacen.escribir([{ ruta: RUTA_EMPRESA, contenido: JSON.stringify(actual, null, 2) + '\n' }], 'Panel: actualiza los datos de empresa');
     return actual;
+  }
+
+  if (recurso === 'contenido' && id) {
+    const sec = seccion(id);
+    if (!sec) throw new HttpError(404, 'Sección no encontrada');
+    const actual = JSON.parse((await texto(archivoSeccion(id))) ?? '{}');
+    if (m === 'GET') return actual;
+    if (m === 'PUT') {
+      const { datos, errores } = normalizar(sec.campos, await leerJson(), actual);
+      if (errores.length) throw new HttpError(400, `Revisa: ${errores.slice(0, 3).join(' · ')}${errores.length > 3 ? ` (y ${errores.length - 3} más)` : ''}`);
+      for (const img of new Set(imagenesDe(sec.campos, datos))) {
+        if (!(await almacen.existe(`${RUTA_IMG}/${img}`))) throw new HttpError(400, `No existe la imagen «${img}»`);
+      }
+      await almacen.escribir([{ ruta: archivoSeccion(id), contenido: JSON.stringify(datos, null, 2) + '\n' }], `Panel: actualiza «${sec.titulo}»`);
+      return datos;
+    }
   }
 
   throw new HttpError(404, 'Ruta no encontrada');

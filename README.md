@@ -16,10 +16,19 @@ Con `npm run dev` abierto, entra en **http://localhost:4321/admin/**. Desde ahí
 
 - Crear, editar y borrar **cursos**: ficha, imagen (o subir una nueva), convocatorias con plazas libres y el texto en Markdown.
 - Cambiar los **datos de empresa**: email, teléfono, dirección, datos fiscales, lema y descripción.
+- Editar las secciones de contenido, cada una en un JSON de `src/data/contenido/`:
+  - **Fechas de demostración** (`demos.json`): días que ofrece «Fecha preferente» en el formulario (sin fechas, calendario libre desde mañana).
+  - **Preguntas frecuentes** (`preguntas.json`): bloques y preguntas; el `(*)` marca respuestas por confirmar y no se muestra.
+  - **Portada** (`home.json`): cabecera y cifras, frase de marca y modalidades de contratación.
+  - **Clientes y testimonios** (`clientes.json`): lista «Lo utilizan» (portada y Nosotros), compromisos y testimonios.
+  - **Perfiles** (`perfiles.json`): textos, imagen, retos, servicios y módulos de cada página de «Para quién». Los perfiles en sí se añaden en el código.
+  - **Buscadores (SEO)** (`seo.json`): título y descripción de cada página fija.
 
-En local escribe directamente en los archivos del proyecto (`src/content/cursos/*.md`, `src/assets/img/` y
-`src/data/empresa.json`): los cambios se ven al momento en la web local y se publican haciendo commit y push.
-El código está en `admin/` y se activa en `astro.config.mjs`. En la compilación de GitHub Pages el panel no existe.
+En local escribe directamente en los archivos del proyecto (`src/content/cursos/*.md`, `src/assets/img/`,
+`src/data/empresa.json` y `src/data/contenido/`): los cambios se ven al momento en la web local y se publican
+haciendo commit y push. El código está en `admin/` y se activa en `astro.config.mjs`; los formularios de las
+secciones se generan a partir de `admin/esquemas.mjs`, que también valida lo que se guarda (para añadir un campo
+editable: añadirlo al esquema y usarlo en la página). En la compilación de GitHub Pages el panel no existe.
 
 ### Panel en Vercel (guarda en GitHub)
 
@@ -111,7 +120,7 @@ Para quitarlo de la versión final: borrar el enlace en `src/components/Footer.a
 
 - `src/pages/index.astro`: página de inicio
 - `src/pages/simulador.astro`: página del simulador VR
-- `src/pages/soluciones/[perfil].astro`: una página por perfil (Policía Local, FCSE, Fuerzas Armadas); contenidos en `src/data/perfiles.ts`
+- `src/pages/soluciones/[perfil].astro`: una página por perfil (Policía Local, FCSE, Fuerzas Armadas); textos en `src/data/contenido/perfiles.json` (editables desde el panel)
 - `src/pages/contratar.astro`: modalidades y cómo tramitar la contratación desde un ayuntamiento
 - `src/pages/preguntas-frecuentes.astro`: preguntas frecuentes (con datos estructurados `FAQPage`)
 - `src/pages/nosotros.astro`: sobre RIVSAN, RE-liON y alianzas

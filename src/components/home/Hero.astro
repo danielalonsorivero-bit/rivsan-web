@@ -4,14 +4,11 @@ import poster from '../../assets/img/hero-video-poster.jpg';
 import video720 from '../../assets/video/hero-720.mp4?url';
 import video1080 from '../../assets/video/hero-1080.mp4?url';
 import SignalFx from '../SignalFx.astro';
+import { hero as h } from '../../data/contenido/home.json';
 
-// `count`: la cifra se anima desde 0 al aparecer (ver BaseLayout)
-const stats = [
-  { prefix: '<', value: '60', count: true, unit: 'min', label: 'Del furgón a la primera intervención' },
-  { value: '12', count: true, unit: 'agentes', label: 'La unidad entrena junta, como interviene' },
-  { value: '0', unit: 'obras', label: 'Un aula o un garaje bastan' },
-  { value: '1:1', unit: '', label: 'Movimiento y armas de peso real' },
-];
+// Textos y cifras editables desde el panel (Portada). `animar`: la cifra se anima desde 0 al aparecer
+// (ver BaseLayout), solo si es un número entero.
+const stats = h.cifras.map((c) => ({ ...c, animar: c.animar && /^\d+$/.test(c.valor) }));
 ---
 
 <section class="hero">
@@ -46,12 +43,9 @@ const stats = [
   </p>
 
   <div class="container hero-content">
-    <p class="eyebrow">Formación táctica inmersiva para FCSE</p>
-    <h1 class="h-xl">Entrena la intervención <span class="accent">antes de que ocurra</span></h1>
-    <p class="lead">
-      Simulación en realidad virtual, primeros auxilios tácticos y uso de la fuerza no letal. Lo llevamos a tu jefatura:
-      sin obras y en marcha en menos de una hora.
-    </p>
+    {h.antetitulo && <p class="eyebrow">{h.antetitulo}</p>}
+    <h1 class="h-xl">{h.titulo} {h.acento && <span class="accent">{h.acento}</span>}</h1>
+    {h.entrada && <p class="lead">{h.entrada}</p>}
     <div class="hero-actions">
       <a href="#contacto" class="btn btn-primary">Solicitar demostración <span class="arrow">→</span></a>
       <a href="#perfiles" class="btn btn-ghost">Ver soluciones</a>
@@ -64,10 +58,10 @@ const stats = [
         stats.map((s) => (
           <li>
             <span class="stat-value">
-              {s.prefix}<span data-count={s.count ? s.value : undefined}>{s.value}</span>
-              {s.unit && <small>{s.unit}</small>}
+              {s.prefijo}<span data-count={s.animar ? s.valor : undefined}>{s.valor}</span>
+              {s.unidad && <small>{s.unidad}</small>}
             </span>
-            <span class="stat-label">{s.label}</span>
+            <span class="stat-label">{s.texto}</span>
           </li>
         ))
       }

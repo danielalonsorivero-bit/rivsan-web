@@ -1,4 +1,6 @@
 ---
+import datosClientes from '../../data/contenido/clientes.json';
+
 // Aval internacional de RE-liON.
 // PENDIENTE DE REVISAR: uso de logos/emblemas oficiales (de momento solo texto)
 // y fuente citable de las cifras de impacto.
@@ -8,16 +10,8 @@ const milestones = [
   { year: '2017', text: 'Primer sistema desplegable para escuadras completas: 12 kits por unidad.' },
 ];
 
-const clients = [
-  'Ministerio de Defensa · Países Bajos',
-  'Fuerzas Armadas · Alemania',
-  'Defensa · Dinamarca',
-  'Defensa · Finlandia',
-  'Policía Nacional · Países Bajos',
-  'Policía de Berlín',
-  'Agencia Europea de Defensa',
-  'Fuerzas Armadas · Singapur',
-];
+// La lista de clientes es la misma de la portada: se edita desde el panel (Clientes y testimonios)
+const { clientes: clients } = datosClientes;
 
 const metrics = [
   { value: '75%', label: 'menos daños colaterales (fuego amigo y civiles)' },

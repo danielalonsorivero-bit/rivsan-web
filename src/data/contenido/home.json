@@ -1,0 +1,87 @@
+{
+  "hero": {
+    "antetitulo": "Formación táctica inmersiva para FCSE",
+    "titulo": "Entrena la intervención",
+    "acento": "antes de que ocurra",
+    "entrada": "Simulación en realidad virtual, primeros auxilios tácticos y uso de la fuerza no letal. Lo llevamos a tu jefatura: sin obras y en marcha en menos de una hora.",
+    "cifras": [
+      {
+        "prefijo": "<",
+        "valor": "60",
+        "unidad": "min",
+        "texto": "Del furgón a la primera intervención",
+        "animar": true
+      },
+      {
+        "prefijo": "",
+        "valor": "12",
+        "unidad": "agentes",
+        "texto": "La unidad entrena junta, como interviene",
+        "animar": true
+      },
+      {
+        "prefijo": "",
+        "valor": "0",
+        "unidad": "obras",
+        "texto": "Un aula o un garaje bastan",
+        "animar": false
+      },
+      {
+        "prefijo": "",
+        "valor": "1:1",
+        "unidad": "",
+        "texto": "Movimiento y armas de peso real",
+        "animar": false
+      }
+    ]
+  },
+  "cita": {
+    "antes": "Mejor fallar 100 veces",
+    "destacado": "en el simulador",
+    "despues": "que una sola vez en la calle."
+  },
+  "planes": {
+    "antetitulo": "Cómo se contrata",
+    "titulo": "Empieza con una jornada,",
+    "acento": "quédate con el sistema",
+    "entrada": "Preparamos la propuesta según tus agentes, tu espacio y tu presupuesto, y te damos la documentación para tramitarla.",
+    "planes": [
+      {
+        "nombre": "Jornadas formativas",
+        "resumen": "Entrena sin invertir en equipo. Nosotros lo llevamos todo.",
+        "puntos": [
+          "Hasta 20 agentes por jornada, en binomios",
+          "40 minutos de entrenamiento por agente",
+          "Instructores y equipo completo desplegado",
+          "Perfecta como demostración operativa"
+        ],
+        "interes": "jornada",
+        "destacado": false
+      },
+      {
+        "nombre": "Renting anual",
+        "resumen": "El sistema en tu jefatura todo el año, con cuota fija.",
+        "puntos": [
+          "Onboarding de instructores",
+          "Licencias de software anuales",
+          "Mantenimiento y sustitución en garantía",
+          "Servicio postventa local"
+        ],
+        "interes": "renting",
+        "destacado": true
+      },
+      {
+        "nombre": "Compra llave en mano",
+        "resumen": "Equipo en propiedad y licencia permanente.",
+        "puntos": [
+          "Implantación presencial",
+          "Formación técnica de instructores",
+          "Tramitación de garantías",
+          "Soporte del socio exclusivo en España"
+        ],
+        "interes": "compra",
+        "destacado": false
+      }
+    ]
+  }
+}

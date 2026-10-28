@@ -4,18 +4,15 @@
 // compilación estática (GitHub Pages) no hay servidor y se queda en modo maqueta.
 import { site } from '../data/site';
 
-// Valores enlazados desde otras secciones con ?interes=<valor>#contacto
-const interests = [
-  { value: 'demo', label: 'Demostración operativa del simulador' },
-  { value: 'jornada', label: 'Jornada formativa con simulador' },
-  { value: 'renting', label: 'Renting anual del simulador' },
-  { value: 'compra', label: 'Compra llave en mano' },
-  { value: 'auxilios', label: 'Curso de primeros auxilios tácticos' },
-  { value: 'fuerza', label: 'Curso de uso de la fuerza no letal' },
-  { value: 'ahorro', label: 'Memoria justificativa / estudio de ahorro' },
-  { value: 'tienda', label: 'Tienda de material táctico' },
-  { value: 'otro', label: 'Otro' },
-];
+import { intereses as interests } from '../data/intereses.mjs';
+import { fechas as fechasDemo } from '../data/contenido/demos.json';
+
+// Fechas de demostración (panel → Fechas de demostración). Las pasadas se quitan aquí al compilar
+// y en el navegador (la web puede llevar días sin recompilarse). Sin fechas: calendario libre.
+const hoyCompilacion = new Date().toISOString().slice(0, 10);
+const fechasLibres = fechasDemo.filter((f) => f.fecha > hoyCompilacion);
+const fechaLarga = (iso: string) =>
+  new Date(`${iso}T12:00:00Z`).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC' });
 
 interface Props {
   /** Si se indica, el formulario es la solicitud de este curso */
@@ -109,7 +106,19 @@ const endpoint = conEnvio ? `${import.meta.env.BASE_URL.replace(/\/?$/, '/')}api
       !curso && (
         <label>
           <span>Fecha preferente</span>
-          <input name="fecha" type="date" data-fecha />
+          {fechasLibres.length ? (
+            <select name="fecha" data-fechas>
+              <option value="">A convenir</option>
+              {fechasLibres.map((f) => (
+                <option value={f.fecha}>
+                  {fechaLarga(f.fecha)}
+                  {f.lugar && ` · ${f.lugar}`}
+                </option>
+              ))}
+            </select>
+          ) : (
+            <input name="fecha" type="date" data-fecha />
+          )}
         </label>
       )
     }
@@ -162,6 +171,13 @@ const endpoint = conEnvio ? `${import.meta.env.BASE_URL.replace(/\/?$/, '/')}api
     sincronizar();
 
     // Fecha preferente: desde mañana. Más adelante se cruzará con las fechas disponibles.
+    const hoyIso = () => {
+      const d = new Date();
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    };
+    form.querySelectorAll<HTMLOptionElement>('[data-fechas] option[value]').forEach((o) => {
+      if (o.value && o.value <= hoyIso()) o.remove();
+    });
     if (fecha) {
       const m = new Date();
       m.setDate(m.getDate() + 1);
@@ -196,6 +212,9 @@ const endpoint = conEnvio ? `${import.meta.env.BASE_URL.replace(/\/?$/, '/')}api
       // Los desplegables se envían con su texto visible, que es lo que se lee en los correos
       const datos: Record<string, unknown> = Object.fromEntries(new FormData(form));
       form.querySelectorAll('select').forEach((s) => (datos[s.name] = s.selectedOptions[0]?.text ?? ''));
+      // La fecha va como AAAA-MM-DD (el servidor la valida y la escribe larga en los correos)
+      const sel = form.querySelector<HTMLSelectElement>('[data-fechas]');
+      if (sel) datos.fecha = sel.value;
       Object.assign(datos, { privacidad: datos.privacidad === 'on', pagina: location.href, t: Math.round(performance.now() - cargado) });
 
       boton.disabled = true;

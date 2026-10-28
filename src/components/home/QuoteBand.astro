@@ -2,6 +2,7 @@
 // Franja de ruptura a sangre: foto con desplazamiento suave al hacer scroll y la frase de marca.
 import { Image } from 'astro:assets';
 import photo from '../../assets/img/mod-cqb.jpg';
+import { cita } from '../../data/contenido/home.json'; // editable desde el panel (Portada)
 ---
 
 <section class="quote-band" aria-label="Nuestra filosofía">
@@ -9,7 +10,7 @@ import photo from '../../assets/img/mod-cqb.jpg';
   <div class="container inner">
     <p class="readout data" aria-hidden="true">REC ● ESCENARIO 07 · INTENTO 100</p>
     <blockquote class="reveal">
-      Mejor fallar 100 veces <span>en el simulador</span> que una sola vez en la calle.
+      {cita.antes} {cita.destacado && <span>{cita.destacado}</span>} {cita.despues}
     </blockquote>
   </div>
 </section>

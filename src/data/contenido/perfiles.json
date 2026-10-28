@@ -1,0 +1,198 @@
+{
+  "perfiles": [
+    {
+      "slug": "policia-local",
+      "label": "Policía Local",
+      "short": "Cumple la formación obligatoria sin sacar a tus agentes del municipio.",
+      "eyebrow": "Soluciones · Policía Local",
+      "titulo": "Formación continua",
+      "acento": "sin salir de tu jefatura",
+      "lead": "La Ley 6/2023 y el Decreto 8/2026 hacen obligatoria la formación continua en Andalucía. Te ayudamos a cumplirla con más frecuencia, menos coste y sin desplazar a la plantilla.",
+      "imagen": "policia-pabellon.jpg",
+      "alt": "Dos agentes de policía con visores de realidad virtual entrenando en un pabellón",
+      "interes": "jornada",
+      "retos": [
+        {
+          "title": "Formación obligatoria",
+          "text": "Hay que planificar, impartir y acreditar formación continua cada año, con plantillas ajustadas."
+        },
+        {
+          "title": "Presupuesto limitado",
+          "text": "Galería externa, munición, dietas y desplazamientos se comen la partida antes de llegar a la práctica."
+        },
+        {
+          "title": "Turnos que cubrir",
+          "text": "Cada salida a la galería son horas fuera de servicio. Entrenar en la jefatura las reduce al mínimo."
+        }
+      ],
+      "servicios": [
+        {
+          "title": "Jornadas con simulador",
+          "href": "/formacion/#simulador",
+          "text": "Llevamos equipo e instructores: hasta 20 agentes por jornada, sin comprar ni alquilar nada."
+        },
+        {
+          "title": "Uso de la fuerza no letal",
+          "href": "/formacion/#fuerza",
+          "text": "Control y arresto, defensa ante armas de filo e impacto y grappling táctico operativo."
+        },
+        {
+          "title": "Primeros auxilios tácticos",
+          "href": "/formacion/#auxilios",
+          "text": "Control de hemorragias y asistencia bajo amenaza, con Iberotac."
+        },
+        {
+          "title": "Simulador propio",
+          "href": "/contratar/",
+          "text": "Renting anual o compra para entrenar todo el año con tus propios instructores."
+        }
+      ],
+      "modulos": [
+        {
+          "id": "identificacion",
+          "texto": "Identificación de amenazas"
+        },
+        {
+          "id": "tiro",
+          "texto": "Tiro táctico"
+        },
+        {
+          "id": "cqb",
+          "texto": "Desescalada y uso progresivo de la fuerza"
+        }
+      ]
+    },
+    {
+      "slug": "fcse",
+      "label": "FCSE y unidades especiales",
+      "short": "Ensaya entradas, perímetros y trabajo en equipo con datos objetivos de cada intervención.",
+      "eyebrow": "Soluciones · FCSE",
+      "titulo": "Entrena la unidad",
+      "acento": "como interviene",
+      "lead": "Hasta 12 agentes en el mismo escenario, con armas de peso real y revisión 3D de cada intervención. Para unidades que necesitan repetir lo difícil sin riesgo.",
+      "imagen": "operador-anotado.jpg",
+      "alt": "Operador con visor de realidad virtual y anotaciones de los sensores del equipo",
+      "interes": "demo",
+      "retos": [
+        {
+          "title": "Coordinación real",
+          "text": "Entradas, perímetros y gestión de masas exigen ensayar con toda la unidad, no solo en binomios."
+        },
+        {
+          "title": "Decisiones bajo estrés",
+          "text": "Identificar la amenaza y graduar la respuesta en milisegundos solo se aprende repitiendo con presión."
+        },
+        {
+          "title": "Medir el progreso",
+          "text": "Sin datos objetivos, la evaluación depende de la impresión del instructor."
+        }
+      ],
+      "servicios": [
+        {
+          "title": "Simulador VR RE-liON",
+          "href": "/simulador/",
+          "text": "Hasta 12 agentes simultáneos, sin cables ni sensores fijos, en cualquier instalación."
+        },
+        {
+          "title": "Revisión 3D de la intervención",
+          "href": "/simulador/#aar",
+          "text": "Conos de visión, tiempos de reacción y trayectorias de disparo, desde cualquier ángulo."
+        },
+        {
+          "title": "Uso de la fuerza no letal",
+          "href": "/formacion/#fuerza",
+          "text": "Técnicas operativas de intervención, control y reducción."
+        },
+        {
+          "title": "Primeros auxilios tácticos",
+          "href": "/formacion/#auxilios",
+          "text": "Atención sanitaria en entornos hostiles, integrada en los escenarios."
+        }
+      ],
+      "modulos": [
+        {
+          "id": "cqb",
+          "texto": "Combate en espacios cerrados (CQB)"
+        },
+        {
+          "id": "identificacion",
+          "texto": "Identificación positiva de amenazas"
+        },
+        {
+          "id": "tiro",
+          "texto": "Tiro táctico"
+        },
+        {
+          "id": "planificacion",
+          "texto": "Planificación inmersiva"
+        }
+      ]
+    },
+    {
+      "slug": "defensa",
+      "label": "Fuerzas Armadas",
+      "short": "Escuadras completas, amenaza dron y ensayo de misión sobre gemelos digitales.",
+      "eyebrow": "Soluciones · Defensa",
+      "titulo": "La escuadra completa,",
+      "acento": "en cualquier lugar",
+      "lead": "La misma tecnología que usan las fuerzas armadas de Países Bajos, Alemania o Singapur, desplegable en una base o en zona de operaciones.",
+      "imagen": "relion-operadores.jpg",
+      "alt": "Dos operadores con visores de realidad virtual y fusiles simulados",
+      "interes": "demo",
+      "retos": [
+        {
+          "title": "Nuevas amenazas",
+          "text": "Los drones FPV y comerciales han cambiado el campo de batalla. Hay que entrenar la respuesta ya."
+        },
+        {
+          "title": "Desgaste de material",
+          "text": "Cada hora de vuelo o de galería consume munición, repuestos y horas de mantenimiento."
+        },
+        {
+          "title": "Ensayar la misión",
+          "text": "Conocer el terreno antes de pisarlo marca la diferencia en la ejecución."
+        }
+      ],
+      "servicios": [
+        {
+          "title": "Simulador desplegable",
+          "href": "/simulador/",
+          "text": "12 kits por unidad, operativos en menos de 60 minutos, sin infraestructura."
+        },
+        {
+          "title": "Counter-drone",
+          "href": "/simulador/#counter-drone",
+          "text": "Respuesta con escopeta ante UAV y drones FPV. Desarrollado junto a UKRSOF."
+        },
+        {
+          "title": "Pilotaje de drones",
+          "href": "/simulador/#pilotaje",
+          "text": "Formación acelerada de operadores UAS sin desgaste de material."
+        },
+        {
+          "title": "Planificación inmersiva e ISR",
+          "href": "/simulador/#planificacion",
+          "text": "Gemelos digitales en 3D con dron o LiDAR en 5-10 minutos para ensayar la misión."
+        }
+      ],
+      "modulos": [
+        {
+          "id": "counter-drone",
+          "texto": "Counter-drone"
+        },
+        {
+          "id": "pilotaje",
+          "texto": "Pilotaje de drones"
+        },
+        {
+          "id": "planificacion",
+          "texto": "Planificación inmersiva e ISR"
+        },
+        {
+          "id": "cqb",
+          "texto": "Combate en espacios cerrados (CQB)"
+        }
+      ]
+    }
+  ]
+}
