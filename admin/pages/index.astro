@@ -70,9 +70,29 @@ if (demo) {
           <header class="adm-head"><h1>Acceso al panel</h1></header>
           <form class="adm-form adm-login" id="f-login">
             <fieldset>
-              <label>Contraseña<input type="password" name="clave" required autocomplete="current-password" /></label>
+              <label>
+                Contraseña
+                <span class="clave">
+                  <input type="password" name="clave" required autocomplete="current-password" />
+                  <button type="button" class="clave-ver" id="clave-ver" aria-label="Mostrar contraseña" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z" />
+                      <circle cx="12" cy="12" r="3" />
+                      <path class="tachado" d="M4 4l16 16" />
+                    </svg>
+                  </button>
+                </span>
+              </label>
               <button class="btn btn-primary" type="submit">Entrar</button>
               <span id="login-estado" role="status"></span>
+              <details class="olvido">
+                <summary>¿Has olvidado la contraseña?</summary>
+                <p>
+                  Hay una única contraseña para el panel. Quien administra el proyecto en Vercel puede cambiarla en
+                  <em>Settings → Environment Variables → ADMIN_PASSWORD</em> y volver a desplegar
+                  (<em>Deployments → ⋯ → Redeploy</em>). Al cambiarla se cierran todas las sesiones abiertas.
+                </p>
+              </details>
             </fieldset>
           </form>
         </section>
@@ -583,12 +603,23 @@ if (demo) {
         navPanel.hidden = true;
         $<HTMLInputElement>('#f-login [name="clave"]').focus();
       }
+      $('#clave-ver').addEventListener('click', (e) => {
+        const b = e.currentTarget as HTMLButtonElement;
+        const input = $<HTMLInputElement>('#f-login [name="clave"]');
+        const ver = input.type === 'password';
+        input.type = ver ? 'text' : 'password';
+        b.setAttribute('aria-pressed', String(ver));
+        b.setAttribute('aria-label', ver ? 'Ocultar contraseña' : 'Mostrar contraseña');
+        input.focus();
+      });
       $('#f-login').addEventListener('submit', async (e) => {
         e.preventDefault();
         const f = e.target as HTMLFormElement;
         try {
           await api('login', { method: 'POST', body: JSON.stringify({ clave: (f.elements as any).clave.value }) });
           f.reset();
+          (f.elements as any).clave.type = 'password';
+          $('#clave-ver').setAttribute('aria-pressed', 'false');
           estado($('#login-estado'), '');
           iniciar();
         } catch (err) {
@@ -662,6 +693,19 @@ if (demo) {
       .adm-login { max-width: 420px; }
       .adm-login fieldset { display: flex; flex-direction: column; align-items: flex-start; gap: 16px; }
       .adm-login label { align-self: stretch; }
+      .clave { position: relative; display: block; }
+      .adm-form .clave input { padding-right: 46px; }
+      .clave-ver {
+        position: absolute; top: 50%; right: 4px; transform: translateY(-50%); display: grid; place-items: center;
+        width: 38px; height: 38px; color: var(--text-dim); background: none; border: 0; border-radius: var(--radius); cursor: pointer;
+      }
+      .clave-ver:hover, .clave-ver[aria-pressed='true'] { color: var(--yellow); }
+      .clave-ver:focus-visible { outline: 2px solid var(--yellow); }
+      .clave-ver[aria-pressed='true'] .tachado { display: none; }
+      .olvido { font-size: 13px; color: var(--text-dim); }
+      .olvido summary { cursor: pointer; color: var(--text-muted); }
+      .olvido summary:hover { color: var(--yellow); }
+      .olvido p { margin: 10px 0 0; line-height: 1.55; }
 
       .adm-main { padding: 32px clamp(16px, 4vw, 48px) 0; max-width: 1100px; width: 100%; }
       .adm-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap; margin-bottom: 24px; }
