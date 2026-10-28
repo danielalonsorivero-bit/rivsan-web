@@ -52,6 +52,9 @@ export function validar(datos) {
   for (const k of ['nombre', 'cargo', 'unidad']) if (!d[k]) errores.push(k);
   if (!ES_EMAIL.test(d.email)) errores.push('email');
   if (datos?.privacidad !== true) errores.push('privacidad');
+  // Fecha preferente: desde mañana (hora de Madrid)
+  const hoy = new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Madrid' });
+  if (d.fecha && d.fecha <= hoy) errores.push('fecha');
   return { d, errores };
 }
 

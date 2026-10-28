@@ -109,7 +109,7 @@ const endpoint = conEnvio ? `${import.meta.env.BASE_URL.replace(/\/?$/, '/')}api
       !curso && (
         <label>
           <span>Fecha preferente</span>
-          <input name="fecha" type="date" />
+          <input name="fecha" type="date" data-fecha />
         </label>
       )
     }
@@ -152,6 +152,21 @@ const endpoint = conEnvio ? `${import.meta.env.BASE_URL.replace(/\/?$/, '/')}api
   document.querySelectorAll<HTMLFormElement>('[data-request-form]').forEach((form) => {
     const status = form.querySelector<HTMLElement>('[data-status]')!;
     const boton = form.querySelector<HTMLButtonElement>('button[type="submit"]')!;
+    const privacidad = form.querySelector<HTMLInputElement>('input[name="privacidad"]')!;
+    const fecha = form.querySelector<HTMLInputElement>('[data-fecha]');
+
+    // El botón se activa al aceptar la privacidad (sin JS el formulario no envía, así que se desactiva aquí)
+    const sincronizar = () => (boton.disabled = !privacidad.checked);
+    privacidad.addEventListener('change', sincronizar);
+    form.addEventListener('reset', () => setTimeout(sincronizar));
+    sincronizar();
+
+    // Fecha preferente: desde mañana. Más adelante se cruzará con las fechas disponibles.
+    if (fecha) {
+      const m = new Date();
+      m.setDate(m.getDate() + 1);
+      fecha.min = `${m.getFullYear()}-${String(m.getMonth() + 1).padStart(2, '0')}-${String(m.getDate()).padStart(2, '0')}`;
+    }
     const aviso = (texto: string, estado: 'ok' | 'error' | '') => {
       status.textContent = texto;
       status.dataset.state = estado;
@@ -193,7 +208,7 @@ const endpoint = conEnvio ? `${import.meta.env.BASE_URL.replace(/\/?$/, '/')}api
       } catch {
         aviso(`No se ha podido enviar. Comprueba la conexión o escríbenos a ${form.dataset.email}.`, 'error');
       } finally {
-        boton.disabled = false;
+        sincronizar();
       }
     });
   });

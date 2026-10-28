@@ -217,6 +217,15 @@ p {
   background: #fff;
 }
 
+.btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.btn-primary:disabled:hover {
+  background: var(--yellow);
+}
+
 .btn-ghost {
   border-color: var(--line-strong);
   color: var(--text);
@@ -282,6 +291,11 @@ p {
 .theme-light .btn-primary:hover {
   background: var(--ink);
   color: #fff;
+}
+
+.theme-light .btn-primary:disabled:hover {
+  background: var(--yellow);
+  color: var(--ink);
 }
 
 /* Etiqueta de estado (plazas, etc.) */
