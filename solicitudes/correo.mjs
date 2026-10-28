@@ -1,5 +1,6 @@
 // Plantillas de los correos de una solicitud: confirmación al cliente y aviso interno.
-// HTML de correo: tablas, estilos en línea y nada de SVG (Gmail no lo muestra). Bebas Neue solo
+// HTML de correo: tablas, estilos en línea y nada de SVG (Gmail no lo muestra): el logo va en PNG
+// (public/email/logo-rivsan.png, servido desde la propia web). Bebas Neue solo
 // carga en algunos clientes (Apple Mail, iOS); el resto cae en Impact / Arial Narrow.
 // `demo`: el remitente es el de pruebas de Resend y todo llega al buzón propio; la confirmación
 // lleva una franja que dice a quién le llegaría.
@@ -42,7 +43,7 @@ export function filas(d) {
   ].filter(([, v]) => v);
 }
 
-function marco({ preheader, demo, contenido, pie }) {
+function marco({ preheader, demo, contenido, pie, origen }) {
   return `<!doctype html>
 <html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="color-scheme" content="dark"><meta name="supported-color-schemes" content="dark">
@@ -57,8 +58,7 @@ ${demo ? `<tr><td style="padding:10px 16px;border:1px dashed ${C.amarillo};font:
 <tr><td style="background:${C.tarjeta};border-top:4px solid ${C.amarillo};">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
 <tr><td style="padding:28px 36px 0;">
-<span style="font:400 34px/1 ${DISPLAY};letter-spacing:2px;color:${C.texto};">RIV<span style="color:${C.amarillo};">SAN</span></span><br>
-<span style="font:600 10px/1.8 ${CUERPO};letter-spacing:3px;color:${C.suave};text-transform:uppercase;">Formación táctica inmersiva</span>
+<img src="${esc(origen)}/email/logo-rivsan.png" width="240" height="51" alt="RIVSAN · Formación táctica inmersiva" style="display:block;border:0;outline:none;width:240px;max-width:100%;height:auto;font:400 28px/1.2 ${DISPLAY};letter-spacing:2px;color:${C.texto};">
 </td></tr>
 ${contenido}
 </table>
@@ -129,6 +129,7 @@ Recibes este correo porque has enviado una solicitud en nuestra web. Usamos tus 
       demo: demo && `Demo · Este correo le llegaría a <span style="text-transform:none;">${esc(d.email)}</span>`,
       contenido,
       pie,
+      origen,
     }),
     texto: [
       `Hola, ${d.nombre.split(' ')[0]}:`,
@@ -157,7 +158,7 @@ ${eyebrow(`Nueva solicitud · ${ref}`)}
 ENVIADA DESDE ${esc(d.pagina || origen)}<br>${esc(new Date().toLocaleString('es-ES', { timeZone: 'Europe/Madrid' }))}${demo ? '<br>MODO DEMO: EL CLIENTE NO HA RECIBIDO NADA' : ''}</td></tr>`;
   return {
     asunto: `${demo ? '[DEMO] ' : ''}Nueva solicitud · ${tema} · ${d.unidad}`,
-    html: marco({ preheader: `${d.nombre} · ${d.unidad}`, demo: '', contenido, pie: 'Aviso interno del formulario de la web de RIVSAN.' }),
+    html: marco({ preheader: `${d.nombre} · ${d.unidad}`, demo: '', contenido, pie: 'Aviso interno del formulario de la web de RIVSAN.', origen }),
     texto: [`Nueva solicitud ${ref}`, '', ...filas(d).map(([k, v]) => `${k}: ${v}`), '', `Página: ${d.pagina || origen}`].join('\n'),
   };
 }
