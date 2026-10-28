@@ -3,6 +3,7 @@ import { defineConfig } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
 import vercel from '@astrojs/vercel';
 import admin from './admin/integration.mjs';
+import solicitudes from './solicitudes/integration.mjs';
 import baseLinks from './integrations/base-links.mjs';
 
 // En Vercel (o con ADMIN_SERVIDOR=1) se activa el adaptador: la web sigue siendo estática,
@@ -20,6 +21,8 @@ export default defineConfig({
   integrations: [
     sitemap({ filter: (page) => !page.includes('/panel-demo/') && !page.includes('/admin/') }),
     admin({ servidor }),
+    // solicitudes(): envío del formulario de solicitud con Resend en /api/solicitud/ (dev y Vercel)
+    solicitudes({ servidor }),
     baseLinks(),
   ],
 });

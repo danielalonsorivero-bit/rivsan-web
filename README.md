@@ -51,6 +51,29 @@ Límites: imágenes de hasta 3 MB por subida (límite de las funciones de Vercel
 La sesión dura 12 horas. Para probar el modo servidor en local: `ADMIN_SERVIDOR=1 ADMIN_PASSWORD=… npm run dev`
 (sin `GITHUB_TOKEN` escribe en los archivos locales; con él, en GitHub).
 
+## Formulario de solicitud (correos con Resend)
+
+En Vercel y en `npm run dev`, el formulario de solicitud (demo general y cursos) envía a `/api/solicitud/`
+(`solicitudes/enviar.mjs`), que manda con [Resend](https://resend.com) dos correos con el estilo de la web
+(`solicitudes/correo.mjs`): la **confirmación al cliente** y el **aviso interno** con todos los datos (responder a
+ese aviso contesta al cliente). No se guarda nada en el repositorio, que es público: el buzón hace de registro.
+En GitHub Pages no hay servidor y el formulario sigue en modo maqueta.
+
+| Variable (Vercel) | Valor |
+| --- | --- |
+| `RESEND_API_KEY` | clave de Resend con permiso *Sending access* |
+| `SOLICITUDES_PARA` | buzón que recibe los avisos (en modo demo, el email de la cuenta de Resend) |
+| `SOLICITUDES_DE` | opcional: remitente, p. ej. `RIVSAN <hola@rivsan.es>`; sin él, `onboarding@resend.dev` |
+
+**Modo demo** (sin `SOLICITUDES_DE`): el remitente de pruebas de Resend solo entrega al email de la propia cuenta,
+así que la confirmación al cliente también llega a `SOLICITUDES_PARA`, con el asunto «[DEMO]» y una franja que dice
+a quién le llegaría. **Definitivo**: verificar el dominio en Resend (registros SPF/DKIM), poner `SOLICITUDES_DE` con
+una dirección de ese dominio y volver a desplegar; la confirmación pasa a ir al email del cliente.
+
+Contra el spam: campo trampa oculto, envíos en menos de 3 s descartados, solo desde la propia web y un máximo de
+5 envíos por IP cada 10 minutos. En local, sin `RESEND_API_KEY` no se envía nada, y los correos se ven con datos de
+ejemplo en `/api/solicitud/vista/?tipo=cliente` y `?tipo=interno`.
+
 ## Versión de muestra (GitHub Pages)
 
 Cada push a `main` publica la web en **https://danielalonsorivero-bit.github.io/rivsan-web/**
