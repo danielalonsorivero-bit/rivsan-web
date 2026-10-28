@@ -7,9 +7,14 @@ import DemoForm from '../components/DemoForm.astro';
 
 import heroImg from '../assets/img/operator-kit.jpg';
 import operador from '../assets/img/operador-anotado.jpg';
-import armaA from '../assets/img/arma-clase-a.jpg';
-import armaB from '../assets/img/arma-clase-b.jpg';
-import armaC from '../assets/img/arma-clase-c.jpg';
+// Armas: vídeo de presentación de cada clase y un fotograma con el producto entero (se ve mientras
+// carga y con «reducir movimiento»)
+import armaA from '../assets/img/video-arma-a.jpg';
+import armaB from '../assets/img/video-arma-b.jpg';
+import armaC from '../assets/img/video-arma-c.jpg';
+import videoArmaA from '../assets/video/arma-a.mp4?url';
+import videoArmaB from '../assets/video/arma-b.mp4?url';
+import videoArmaC from '../assets/video/arma-c.mp4?url';
 import solo from '../assets/img/setup-solo.jpg';
 import equipo from '../assets/img/equipo-4.jpg';
 import remoto from '../assets/img/setup-remoto.jpg';
@@ -42,6 +47,7 @@ const weapons = [
     text: 'Réplica impresa en 3D con elementos conductivos que detectan la posición del dedo en corredera y gatillo.',
     note: 'Ligera, robusta y sin mantenimiento.',
     image: armaA,
+    video: videoArmaA,
     alt: 'Pistola de entrenamiento impresa en 3D en color verde',
   },
   {
@@ -50,6 +56,7 @@ const weapons = [
     text: 'Plataforma airsoft modificada y totalmente funcional: selector de fuego, gatillo y cargador.',
     note: 'Versión con gas (retroceso y recarga) solo en renting anual o compra.',
     image: armaB,
+    video: videoArmaB,
     alt: 'Kit con fusil y pistola de entrenamiento modificados y visor de realidad virtual',
   },
   {
@@ -58,6 +65,7 @@ const weapons = [
     text: 'Adaptamos el sistema sobre el arma real de dotación de la unidad.',
     note: 'C1 airsoft con gas · C2 arma real con Mantis Blackbeard · C3 arma real con fogueo.',
     image: armaC,
+    video: videoArmaC,
     alt: 'Fusil real con el módulo de seguimiento acoplado',
   },
 ];
@@ -251,10 +259,14 @@ const modules = [
       </div>
       <div class="weapons">
         {
-          weapons.map((w) => (
+          weapons.map((w, i) => (
             <article class="weapon reveal">
-              <div class="weapon-media">
-                <Image src={w.image} alt={w.alt} widths={[400, 700]} sizes="(max-width: 960px) 100vw, 33vw" />
+              <div class="weapon-media" data-arma-video>
+                <Image src={w.image} alt={w.alt} widths={[400, 700, 960]} sizes="(max-width: 960px) 100vw, 33vw" />
+                <video muted loop playsinline preload="none" data-src={w.video} aria-hidden="true" />
+                <span class="weapon-cam data" aria-hidden="true">
+                  <i></i> CAM {String(i + 1).padStart(2, '0')} · {w.name.toUpperCase()}
+                </span>
               </div>
               <div class="weapon-body">
                 <span class="weapon-name">{w.name}</span>
@@ -406,6 +418,24 @@ const modules = [
 
   <DemoForm />
 </BaseLayout>
+
+<script>
+  // Vídeos de las armas: se cargan y reproducen solo mientras se ven (sin sonido, en bucle)
+  if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    const io = new IntersectionObserver(
+      (entradas) =>
+        entradas.forEach(({ target, isIntersecting }) => {
+          const caja = target as HTMLElement;
+          const v = caja.querySelector('video')!;
+          if (!isIntersecting) return v.pause();
+          if (!v.src) v.src = v.dataset.src!;
+          v.play().then(() => caja.classList.add('is-playing'), () => {});
+        }),
+      { threshold: 0.4 },
+    );
+    document.querySelectorAll('[data-arma-video]').forEach((c) => io.observe(c));
+  }
+</script>
 
 <script>
   // Secuencia de despliegue: el paso que cruza el centro de la pantalla se activa
@@ -727,15 +757,105 @@ const modules = [
     flex-direction: column;
   }
 
+  /* Vídeo de producto con un velo de señal muy suave: líneas de barrido finas y una banda de luz
+     que baja despacio, sin tapar el material */
   .weapon-media {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    aspect-ratio: 16 / 9;
     background: #e9e9e6;
     border-bottom: 3px solid var(--yellow);
   }
 
-  .weapon-media img {
+  .weapon-media img,
+  .weapon-media video {
+    position: absolute;
+    inset: 0;
     width: 100%;
-    aspect-ratio: 4 / 3;
+    height: 100%;
     object-fit: cover;
+  }
+
+  .weapon-media video {
+    opacity: 0;
+    transition: opacity 0.5s ease;
+  }
+
+  .weapon-media.is-playing video {
+    opacity: 1;
+  }
+
+  .weapon-media::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    background: repeating-linear-gradient(0deg, rgba(20, 20, 20, 0.09) 0 1px, transparent 1px 3px);
+    mix-blend-mode: multiply;
+  }
+
+  .weapon-media::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    height: 30%;
+    z-index: 1;
+    pointer-events: none;
+    background: linear-gradient(180deg, transparent, rgba(255, 255, 255, 0.12) 50%, transparent);
+    transform: translateY(-100%);
+  }
+
+  .weapon-cam {
+    position: absolute;
+    top: 10px;
+    left: 12px;
+    z-index: 2;
+    padding: 3px 7px;
+    font-size: 0.68rem;
+    letter-spacing: 0.12em;
+    color: rgba(35, 31, 32, 0.85);
+    background: rgba(255, 255, 255, 0.6);
+  }
+
+  .weapon-cam i {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    margin-right: 5px;
+    border-radius: 50%;
+    background: #ff5a5f;
+    vertical-align: 1px;
+    opacity: 0.4;
+  }
+
+  .weapon-media.is-playing .weapon-cam i {
+    opacity: 1;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .weapon-media::after {
+      animation: weapon-band 7s linear infinite;
+    }
+
+    .weapon-media.is-playing .weapon-cam i {
+      animation: rec 1.2s steps(2) infinite;
+    }
+  }
+
+  @keyframes weapon-band {
+    to {
+      transform: translateY(440%);
+    }
+  }
+
+  @keyframes rec {
+    50% {
+      opacity: 0.25;
+    }
   }
 
   .weapon-body {
