@@ -7,7 +7,8 @@
 // cada componente decide con CSS qué mostrar. Con «reducir movimiento», ahorro de datos o sin
 // autoplay se queda el fotograma.
 // Cortes de señal: en la costura del bucle (tapa el salto al primer fotograma), al arrancar y al
-// azar cada pocos segundos. El encuadre lo marcan las variables CSS --media-x y --media-shift de `caja`.
+// azar cada pocos segundos. El encuadre lo marcan las variables CSS --media-x, --media-y (fracción
+// desde arriba, como object-position) y --media-shift de `caja`.
 import { senalShader } from './senal-shader';
 
 // `hdDesde`: ancho de la caja en píxeles reales a partir del que se carga la versión HD
@@ -62,7 +63,7 @@ function iniciarGL(caja: HTMLElement, video: HTMLVideoElement, canvas: HTMLCanva
   const u = (n: string) => gl.getUniformLocation(prog, n);
   const [uRes, uVid, uPos, uShift, uTime, uGlitch] = ['uRes', 'uVid', 'uPos', 'uShift', 'uTime', 'uGlitch'].map(u);
 
-  // Encuadre: lo marcan las variables CSS --media-x y --media-shift (cambian con el ancho, ver estilos)
+  // Encuadre: lo marcan las variables CSS --media-x, --media-y y --media-shift (cambian con el ancho, ver estilos)
   const medir = () => {
     const r = Math.min(devicePixelRatio, 1.5);
     canvas.width = Math.min(Math.round(caja.clientWidth * r), 2200);
@@ -70,7 +71,9 @@ function iniciarGL(caja: HTMLElement, video: HTMLVideoElement, canvas: HTMLCanva
     gl.viewport(0, 0, canvas.width, canvas.height);
     const css = getComputedStyle(caja);
     gl.uniform2f(uRes, canvas.width, canvas.height);
-    gl.uniform2f(uPos, parseFloat(css.getPropertyValue('--media-x')) || 0.5, 0.5);
+    const y = parseFloat(css.getPropertyValue('--media-y'));
+    // El shader mide la altura desde abajo
+    gl.uniform2f(uPos, parseFloat(css.getPropertyValue('--media-x')) || 0.5, Number.isFinite(y) ? 1 - y : 0.5);
     gl.uniform1f(uShift, parseFloat(css.getPropertyValue('--media-shift')) || 0);
   };
   new ResizeObserver(medir).observe(caja);

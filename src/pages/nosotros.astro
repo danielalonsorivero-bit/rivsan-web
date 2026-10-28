@@ -5,7 +5,10 @@ import Partner from '../components/home/Partner.astro';
 import DemoForm from '../components/DemoForm.astro';
 import { site } from '../data/site';
 
-import espana from '../assets/img/espana-noche.jpg';
+import SignalFx from '../components/SignalFx.astro';
+import posterMapa from '../assets/img/video-nosotros.jpg';
+import mapaSd from '../assets/video/nosotros-sd.mp4?url';
+import mapaHd from '../assets/video/nosotros-hd.mp4?url';
 import sede from '../assets/img/relion-sede.jpg';
 import operadores from '../assets/img/relion-operadores.jpg';
 
@@ -67,7 +70,14 @@ const alliances = [
       </p>
     </div>
   </section>
-  <Image src={espana} alt="Mapa nocturno de la península ibérica con el logotipo de RIVSAN" class="map-band" widths={[800, 1536]} sizes="100vw" loading="eager" fetchpriority="high" />
+  <!-- Vídeo del logotipo sobre la península con el shader de señal del hero (scripts/senal.ts) -->
+  <div class="map-band" data-senal>
+    <Image src={posterMapa} alt="Vista nocturna de la península ibérica en la que aparece el logotipo de RIVSAN" class="map-media poster" widths={[800, 1400, 1920]} sizes="100vw" loading="eager" fetchpriority="high" />
+    <video class="map-media" data-senal-video data-src-sd={mapaSd} data-src-hd={mapaHd} muted loop playsinline preload="none" aria-hidden="true"></video>
+    <canvas class="map-media" data-senal-gl aria-hidden="true"></canvas>
+    <SignalFx />
+    <p class="map-readout data" aria-hidden="true"><span><i></i> ENLACE ACTIVO</span><span>COBERTURA · ESPAÑA</span></p>
+  </div>
 
   <!-- Qué nos diferencia -->
   <section class="section">
@@ -168,6 +178,12 @@ const alliances = [
   <DemoForm />
 </BaseLayout>
 
+<script>
+  import { videoConSenal } from '../scripts/senal';
+  // La versión SD ya mide 1280 px: HD solo en pantallas grandes
+  document.querySelectorAll<HTMLElement>('[data-senal]').forEach((caja) => videoConSenal(caja, { hdDesde: 1500 }));
+</script>
+
 <style>
   .about-hero {
     padding: calc(var(--header-h) + clamp(56px, 8vw, 104px)) 0 clamp(40px, 5vw, 64px);
@@ -176,13 +192,98 @@ const alliances = [
       var(--bg);
   }
 
+  /* Encuadre del vídeo: el logotipo queda algo por encima del centro */
   .map-band {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    aspect-ratio: 21 / 9;
+    max-height: 78vh;
     width: 100%;
-    height: auto;
-    aspect-ratio: 1536 / 407;
-    min-height: 200px;
-    object-fit: cover;
     border-block: 1px solid var(--line);
+    --media-x: 0.5;
+    --media-y: 0.4;
+  }
+
+  .map-media {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 50% 40%;
+    z-index: -2;
+  }
+
+  .map-band video,
+  .map-band canvas {
+    opacity: 0;
+  }
+
+  .map-band.is-video video,
+  .map-band.is-gl canvas {
+    opacity: 1;
+  }
+
+  .map-band.is-video .poster,
+  .map-band.is-gl .poster {
+    visibility: hidden;
+  }
+
+  /* Funde los bordes con la página */
+  .map-band::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(180deg, var(--bg) 0%, transparent 14%, transparent 86%, var(--bg) 100%);
+  }
+
+  .map-readout {
+    position: absolute;
+    right: var(--gutter);
+    bottom: 18px;
+    margin: 0;
+    display: grid;
+    justify-items: end;
+    gap: 4px;
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    color: rgba(242, 242, 240, 0.7);
+    z-index: 1;
+  }
+
+  .map-readout i {
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--yellow);
+    margin-right: 6px;
+    animation: enlace 1.2s steps(2) infinite;
+  }
+
+  @keyframes enlace {
+    50% {
+      opacity: 0.2;
+    }
+  }
+
+  @media (max-width: 700px) {
+    .map-band {
+      aspect-ratio: 4 / 3;
+      --media-y: 0.38;
+    }
+
+    .map-readout {
+      display: none;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .map-readout i {
+      animation: none;
+    }
   }
 
   .content h1 {
