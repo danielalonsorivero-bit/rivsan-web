@@ -13,11 +13,17 @@ import { correoCliente, correoInterno } from './correo.mjs';
 const REMITENTE_PRUEBAS = 'RIVSAN <onboarding@resend.dev>';
 const LARGO = { nombre: 120, cargo: 120, unidad: 160, email: 160, telefono: 40, interes: 120, curso: 160, convocatoria: 120, agentes: 6, fecha: 10, mensaje: 3000, pagina: 300 };
 
+const ES_EMAIL = /^[^\s@<>",;']+@[^\s@<>",;']+\.[^\s@<>",;']+$/;
+// Al pegar valores en Vercel es fácil que se cuelen espacios, comillas o «Nombre <email>»: se queda solo la dirección
+const extraerEmail = (v) => String(v ?? '').match(new RegExp(ES_EMAIL.source.slice(1, -1)))?.[0] ?? '';
+
 export function configSolicitudes(env) {
-  const de = env.SOLICITUDES_DE || REMITENTE_PRUEBAS;
+  const de = String(env.SOLICITUDES_DE ?? '').trim() || REMITENTE_PRUEBAS;
+  const para = extraerEmail(env.SOLICITUDES_PARA);
   return {
-    clave: env.RESEND_API_KEY,
-    para: env.SOLICITUDES_PARA,
+    clave: String(env.RESEND_API_KEY ?? '').trim(),
+    para,
+    paraMal: !para && !!String(env.SOLICITUDES_PARA ?? '').trim(),
     de,
     demo: de.includes('@resend.dev'),
     api: env.RESEND_API_URL || 'https://api.resend.com',
@@ -44,7 +50,7 @@ export function validar(datos) {
   if (d.agentes && !/^\d+$/.test(d.agentes)) d.agentes = '';
   const errores = [];
   for (const k of ['nombre', 'cargo', 'unidad']) if (!d[k]) errores.push(k);
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(d.email)) errores.push('email');
+  if (!ES_EMAIL.test(d.email)) errores.push('email');
   if (datos?.privacidad !== true) errores.push('privacidad');
   return { d, errores };
 }
@@ -60,6 +66,7 @@ export async function responderSolicitud(peticion, { config, empresa }) {
   // Solo desde la propia web (el navegador manda Origin en los POST)
   const origen = peticion.cabecera('origin');
   if (origen && URL.parse(origen)?.host !== peticion.url.host) return json(403, { error: 'Origen no permitido' });
+  if (config.paraMal) console.error('SOLICITUDES_PARA no es un email válido: revisa el valor en Vercel (solo la dirección, sin comillas ni nombre)');
   if (!config.clave || !config.para) return json(503, { error: 'El envío no está configurado' });
 
   let datos;
