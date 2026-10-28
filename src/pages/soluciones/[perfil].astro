@@ -5,6 +5,7 @@ import DemoForm from '../../components/DemoForm.astro';
 import ForceDemo from '../../components/ForceDemo.astro';
 import CounterDroneDemo from '../../components/CounterDroneDemo.astro';
 import { perfiles, type Perfil } from '../../data/perfiles';
+import { videoPerfil } from '../../data/videos';
 
 export function getStaticPaths() {
   return perfiles.map((p) => ({ params: { perfil: p.slug }, props: { p } }));
@@ -15,7 +16,7 @@ const otros = perfiles.filter((o) => o.slug !== p.slug);
 ---
 
 <BaseLayout title={p.label} description={p.lead} image={p.image}>
-  <PageHero eyebrow={p.eyebrow} title={p.title} lead={p.lead} image={p.image} alt={p.alt}>
+  <PageHero eyebrow={p.eyebrow} title={p.title} lead={p.lead} image={p.image} alt={p.alt} video={videoPerfil(p.slug)}>
     <a href={`?interes=${p.interest}#contacto`} class="btn btn-primary">Solicitar demostración <span class="arrow">→</span></a>
     <a href="#servicios" class="btn btn-ghost">Qué te ofrecemos</a>
   </PageHero>

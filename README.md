@@ -135,6 +135,7 @@ Para quitarlo de la versión final: borrar el enlace en `src/components/Footer.a
 - `src/components/CounterDroneDemo.astro`: ejercicio de 30 s en un radar con identificación (hostil / propio), munición y recarga, y evaluación apto / no apto; en el perfil de Defensa
 - Estilo: `--font-data` (IBM Plex Mono) para antetítulos y cifras; clase `.theme-light` para secciones en claro; las cifras con `data-count` se animan al aparecer
 - `src/components/home/`: secciones de la home
+- Vídeos con efecto de señal (`src/scripts/senal.ts` + `senal-shader.ts`): el del hero y los de los perfiles. Los de perfil van por nombre (`src/data/videos.ts`): `src/assets/video/perfil-<slug>-sd.mp4` (640 px, tarjetas de la home al pasar el cursor), `perfil-<slug>-hd.mp4` (1280 px, cabecera de la página) y su primer fotograma en `src/assets/img/video-<slug>.jpg`. Sin vídeo, se usa la imagen del perfil
 - `src/components/`: cabecera, pie, logo y formulario de contacto
 - `src/data/site.ts`: datos de empresa y navegación con desplegables (los editables, en `src/data/empresa.json`)
 - `src/components/PageHero.astro`: cabecera común de las páginas interiores nuevas

@@ -1,7 +1,10 @@
 ---
 // Cabecera de páginas interiores: texto a la izquierda e imagen opcional a la derecha.
+// Con `video`, en lugar de la imagen va el vídeo con el shader de señal del hero (scripts/senal.ts).
 // Los botones van en el slot.
 import { Image } from 'astro:assets';
+import SignalFx from './SignalFx.astro';
+import type { VideoPerfil } from '../data/videos';
 
 interface Props {
   eyebrow: string;
@@ -10,8 +13,9 @@ interface Props {
   lead: string;
   image?: ImageMetadata;
   alt?: string;
+  video?: VideoPerfil;
 }
-const { eyebrow, title, lead, image, alt = '' } = Astro.props;
+const { eyebrow, title, lead, image, alt = '', video } = Astro.props;
 ---
 
 <section class:list={['page-hero', { 'page-hero--text': !image }]}>
@@ -23,7 +27,14 @@ const { eyebrow, title, lead, image, alt = '' } = Astro.props;
       {Astro.slots.has('default') && <div class="actions"><slot /></div>}
     </div>
     {
-      image && (
+      video ? (
+        <div class="hero-media hud con-video" data-senal>
+          <Image src={video.poster} alt={alt} class="media poster" widths={[500, 900]} sizes="(max-width: 960px) 100vw, 40vw" loading="eager" fetchpriority="high" />
+          <video class="media" data-senal-video data-src-sd={video.sd} data-src-hd={video.hd} muted loop playsinline preload="none" aria-hidden="true" />
+          <canvas class="media" data-senal-gl aria-hidden="true" />
+          <SignalFx />
+        </div>
+      ) : image && (
         <div class="hero-media hud">
           <Image src={image} alt={alt} widths={[500, 900]} sizes="(max-width: 960px) 100vw, 40vw" loading="eager" fetchpriority="high" />
         </div>
@@ -31,6 +42,12 @@ const { eyebrow, title, lead, image, alt = '' } = Astro.props;
     }
   </div>
 </section>
+
+<script>
+  import { videoConSenal } from '../scripts/senal';
+  // La versión SD mide 640 px: por encima de eso se nota, así que pronto pasa a HD
+  document.querySelectorAll<HTMLElement>('[data-senal]').forEach((caja) => videoConSenal(caja, { hdDesde: 760 }));
+</script>
 
 <style>
   .page-hero {
@@ -70,6 +87,39 @@ const { eyebrow, title, lead, image, alt = '' } = Astro.props;
     object-fit: cover;
     object-position: 50% 30%;
     filter: saturate(0.8);
+  }
+
+  /* Con vídeo: fotograma → vídeo → canvas del shader, apilados en la misma caja */
+  .con-video {
+    aspect-ratio: 4 / 3;
+    isolation: isolate;
+    overflow: hidden;
+    --media-x: 0.5;
+  }
+
+  .con-video .media {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    aspect-ratio: auto;
+    object-fit: cover;
+    z-index: -2;
+  }
+
+  .con-video video,
+  .con-video canvas {
+    opacity: 0;
+  }
+
+  .con-video.is-video video,
+  .con-video.is-gl canvas {
+    opacity: 1;
+  }
+
+  .con-video.is-video .poster,
+  .con-video.is-gl .poster {
+    visibility: hidden;
   }
 
   @media (max-width: 960px) {

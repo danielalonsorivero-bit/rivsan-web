@@ -25,7 +25,7 @@ const stats = h.cifras.map((c) => ({ ...c, animar: c.animar && /^\d+$/.test(c.va
   />
   <video
     class="hero-bg hero-video"
-    data-hero-video
+    data-senal-video
     data-src-sd={video720}
     data-src-hd={video1080}
     muted
@@ -33,7 +33,7 @@ const stats = h.cifras.map((c) => ({ ...c, animar: c.animar && /^\d+$/.test(c.va
     playsinline
     preload="none"
     aria-hidden="true"></video>
-  <canvas class="hero-bg hero-gl" data-hero-gl aria-hidden="true"></canvas>
+  <canvas class="hero-bg hero-gl" data-senal-gl aria-hidden="true"></canvas>
   <div class="hero-shade" aria-hidden="true"></div>
   <SignalFx />
   <p class="hero-readout data" aria-hidden="true">
@@ -70,125 +70,16 @@ const stats = h.cifras.map((c) => ({ ...c, animar: c.animar && /^\d+$/.test(c.va
 </section>
 
 <script>
-  import { heroShader } from './hero-shader';
+  import { videoConSenal } from '../../scripts/senal';
 
-  // Vídeo del hero: se carga tras el fotograma inicial y se pinta con el shader de señal (ver hero-shader.ts).
-  // Cortes de señal: en la costura del bucle (tapa el salto al primer fotograma), al arrancar y al azar cada pocos segundos.
+  // Vídeo del hero con el shader de señal (ver scripts/senal.ts). En la costura del bucle la
+  // lectura del visor avisa de que se resincroniza.
   const hero = document.querySelector<HTMLElement>('.hero');
-  const video = document.querySelector<HTMLVideoElement>('[data-hero-video]');
-  const canvas = document.querySelector<HTMLCanvasElement>('[data-hero-gl]');
   const status = document.querySelector('[data-hero-status]');
-  const quieto = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const ahorro = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData;
-
-  if (hero && video && canvas && !quieto && !ahorro) {
-    video.src = (innerWidth * devicePixelRatio > 1600 ? video.dataset.srcHd : video.dataset.srcSd) ?? '';
-    video.play().then(
-      () => {
-        const gl = iniciarGL(hero, video, canvas);
-        hero.classList.add(gl ? 'is-gl' : 'is-video');
-      },
-      () => {}, // sin autoplay (p. ej. modo de bajo consumo): se queda el fotograma
-    );
-  }
-
-  function iniciarGL(hero: HTMLElement, video: HTMLVideoElement, canvas: HTMLCanvasElement) {
-    const gl = canvas.getContext('webgl', { alpha: false, antialias: false, powerPreference: 'low-power' });
-    if (!gl) return false;
-    const shader = (tipo: number, src: string) => {
-      const s = gl.createShader(tipo)!;
-      gl.shaderSource(s, src);
-      gl.compileShader(s);
-      return gl.getShaderParameter(s, gl.COMPILE_STATUS) ? s : null;
-    };
-    const vs = shader(gl.VERTEX_SHADER, heroShader.vertex);
-    const fs = shader(gl.FRAGMENT_SHADER, heroShader.fragment);
-    if (!vs || !fs) return false;
-    const prog = gl.createProgram()!;
-    gl.attachShader(prog, vs);
-    gl.attachShader(prog, fs);
-    gl.linkProgram(prog);
-    if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) return false;
-    gl.useProgram(prog);
-
-    gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
-    const aPos = gl.getAttribLocation(prog, 'aPos');
-    gl.enableVertexAttribArray(aPos);
-    gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0);
-
-    gl.bindTexture(gl.TEXTURE_2D, gl.createTexture());
-    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
-    for (const [k, v] of [
-      [gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE],
-      [gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE],
-      [gl.TEXTURE_MIN_FILTER, gl.LINEAR],
-      [gl.TEXTURE_MAG_FILTER, gl.LINEAR],
-    ])
-      gl.texParameteri(gl.TEXTURE_2D, k, v);
-
-    const u = (n: string) => gl.getUniformLocation(prog, n);
-    const [uRes, uVid, uPos, uShift, uTime, uGlitch] = ['uRes', 'uVid', 'uPos', 'uShift', 'uTime', 'uGlitch'].map(u);
-
-    // Encuadre: lo marcan las variables CSS --media-x y --media-shift (cambian con el ancho, ver estilos)
-    const medir = () => {
-      const r = Math.min(devicePixelRatio, 1.5);
-      canvas.width = Math.min(Math.round(hero.clientWidth * r), 2200);
-      canvas.height = Math.round(hero.clientHeight * (canvas.width / hero.clientWidth));
-      gl.viewport(0, 0, canvas.width, canvas.height);
-      const css = getComputedStyle(hero);
-      gl.uniform2f(uRes, canvas.width, canvas.height);
-      gl.uniform2f(uPos, parseFloat(css.getPropertyValue('--media-x')) || 0.5, 0.5);
-      gl.uniform1f(uShift, parseFloat(css.getPropertyValue('--media-shift')) || 0);
-    };
-    new ResizeObserver(medir).observe(hero);
-
-    const inicio = performance.now();
-    let rafaga = { desde: 0, hasta: 0.7, fuerza: 1 }; // corte fuerte al aparecer el vídeo
-    let proxima = 3;
-    let visible = true;
-    let pintando = false;
-
-    const frame = (ahora: number) => {
-      if (!visible || document.hidden) return (pintando = false);
-      const t = (ahora - inicio) / 1000;
-      if (t > proxima) {
-        rafaga = { desde: t, hasta: t + 0.12 + Math.random() * 0.25, fuerza: 0.3 + Math.random() * 0.4 };
-        proxima = t + 2.5 + Math.random() * 3;
-      }
-      const enRafaga = t >= rafaga.desde && t < rafaga.hasta ? rafaga.fuerza * (1 - (t - rafaga.desde) / (rafaga.hasta - rafaga.desde)) : 0;
-      // Costura del bucle: sube en los últimos 0,35 s y baja en los primeros 0,25 s
-      const d = video.duration ? Math.min(video.duration - video.currentTime, video.currentTime * 1.4) : 1;
-      const costura = Math.max(0, 1 - d / 0.35) ** 1.5;
-      const g = Math.min(1, Math.max(enRafaga, costura));
-      if (status) status.textContent = costura > 0.4 ? 'SEÑAL · RESYNC' : 'SIM ACTIVO';
-
-      if (video.readyState >= 2) {
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, video);
-        gl.uniform2f(uVid, video.videoWidth, video.videoHeight);
-      }
-      gl.uniform1f(uTime, t);
-      gl.uniform1f(uGlitch, g);
-      gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-      requestAnimationFrame(frame);
-    };
-    const arrancar = () => {
-      if (visible && !document.hidden && !pintando) {
-        pintando = true;
-        requestAnimationFrame(frame);
-      }
-    };
-
-    // Fuera de pantalla se para todo, también el vídeo
-    new IntersectionObserver(([e]) => {
-      visible = e.isIntersecting;
-      visible ? (video.play().catch(() => {}), arrancar()) : video.pause();
-    }).observe(hero);
-    document.addEventListener('visibilitychange', arrancar);
-    medir();
-    arrancar();
-    return true;
-  }
+  if (hero)
+    videoConSenal(hero, {
+      alCorte: (corte) => status && (status.textContent = corte ? 'SEÑAL · RESYNC' : 'SIM ACTIVO'),
+    });
 </script>
 
 <script>
@@ -226,7 +117,7 @@ const stats = h.cifras.map((c) => ({ ...c, animar: c.animar && /^\d+$/.test(c.va
 
   /* Encuadre del vídeo, centrado para no cortar el arma del agente de la derecha.
      --media-shift (fracción del ancho) lo desplazaría a la derecha, fundiendo el borde a negro.
-     El shader lee las mismas variables (Hero.astro, iniciarGL). */
+     El shader lee las mismas variables (scripts/senal.ts). */
   .hero {
     --fx-cycle: 7s;
     --media-x: 0.5;

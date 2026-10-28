@@ -1,8 +1,8 @@
-// Shader del vídeo del hero: señal analógica NTSC.
+// Shader de los vídeos con señal analógica NTSC (ver senal.ts).
 // Siempre: luma nítida con croma sangrada en horizontal, leve desplazamiento R/B y ondulación de cinta.
 // Con uGlitch (0–1): desgarros por bandas, salto vertical, franjas amarillas de marca, estática y líneas perdidas.
 // uShift desplaza la imagen a la derecha (fracción del ancho) para dejar a los agentes fuera del texto.
-export const heroShader = {
+export const senalShader = {
   vertex: `
 attribute vec2 aPos;
 varying vec2 vUv;
