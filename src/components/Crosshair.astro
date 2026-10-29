@@ -4,6 +4,8 @@
 // Dentro de una ventana modal (<dialog>) se usa el cursor normal: la ventana se pinta por
 // encima de todo y taparía la mira.
 // Con "reducir movimiento" se mantiene la mira pero sin estela ni animaciones.
+// Con "más contraste" o colores forzados no se activa: quien los usa suele llevar además un cursor
+// del sistema más grande o de otro color, que la mira ocultaría.
 ---
 
 <canvas class="xh-trail" aria-hidden="true" data-xh-trail></canvas>
@@ -19,6 +21,7 @@
 <script>
   const fine = window.matchMedia('(hover: hover) and (pointer: fine)');
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const contrast = window.matchMedia('(prefers-contrast: more), (forced-colors: active)');
 
   // Elementos sobre los que la mira "fija el blanco"
   const INTERACTIVE = 'a, button, select, summary, label, [role="button"], [data-open-request], input[type="checkbox"], input[type="radio"], input[type="submit"]';
@@ -143,7 +146,7 @@
     });
   };
 
-  if (fine.matches) init();
+  if (fine.matches && !contrast.matches) init();
 </script>
 
 <style is:global>

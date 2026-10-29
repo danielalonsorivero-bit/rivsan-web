@@ -102,10 +102,14 @@ const shareUrl = new URL(share.src, Astro.site);
             const el = e.target as HTMLElement;
             const target = Number(el.dataset.count);
             const start = performance.now();
+            // Se reserva el ancho de la cifra final: al pasar de 1 a 2 dígitos no se mueve lo de alrededor
+            el.style.display = 'inline-block';
+            el.style.minWidth = `${el.getBoundingClientRect().width}px`;
             const step = (now: number) => {
               const k = Math.min(1, (now - start) / 1200);
               el.textContent = String(Math.round(target * (1 - Math.pow(1 - k, 3))));
               if (k < 1) requestAnimationFrame(step);
+              else el.style.removeProperty('min-width');
             };
             el.textContent = '0';
             requestAnimationFrame(step);

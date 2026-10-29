@@ -64,7 +64,7 @@ const endpoint = conEnvio ? `${import.meta.env.BASE_URL.replace(/\/?$/, '/')}api
     </label>
     <label class="f-cargo">
       <span>Cargo *</span>
-      <input name="cargo" placeholder="Ej. Intendente, Jefe de formación" required />
+      <input name="cargo" autocomplete="organization-title" placeholder="Ej. Intendente, Jefe de formación…" required />
     </label>
   </div>
 
@@ -76,7 +76,7 @@ const endpoint = conEnvio ? `${import.meta.env.BASE_URL.replace(/\/?$/, '/')}api
   <div class="row">
     <label class="f-email">
       <span>Email profesional *</span>
-      <input name="email" type="email" autocomplete="email" required />
+      <input name="email" type="email" autocomplete="email" spellcheck="false" required />
     </label>
     <label class="f-tel">
       <span>Teléfono</span>
