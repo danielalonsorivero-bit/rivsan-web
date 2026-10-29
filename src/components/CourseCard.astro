@@ -125,4 +125,11 @@ const href = `/formacion/${curso.id}/`;
   .link-arrow {
     margin-top: auto;
   }
+
+  /* En móvil la foto pasa a panorámica: la lista de cursos se acorta sin perder la imagen */
+  @media (max-width: 640px) {
+    .media img {
+      aspect-ratio: 21 / 9;
+    }
+  }
 </style>
