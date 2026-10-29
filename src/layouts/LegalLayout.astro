@@ -55,9 +55,7 @@ const current = Astro.url.pathname.replace(/\/?$/, '/');
   .legal-hero {
     padding: calc(var(--header-h) + clamp(48px, 6vw, 88px)) 0 40px;
     border-bottom: 1px solid var(--line);
-    background:
-      radial-gradient(ellipse at 85% 0%, rgba(247, 196, 0, 0.08), transparent 55%),
-      var(--bg);
+    background: var(--bg);
   }
 
   .legal-hero h1 {
@@ -168,7 +166,7 @@ const current = Astro.url.pathname.replace(/\/?$/, '/');
   }
 
   .prose :global(li::marker) {
-    color: var(--yellow);
+    color: var(--text-dim);
   }
 
   .prose :global(dl) {
@@ -215,8 +213,9 @@ const current = Astro.url.pathname.replace(/\/?$/, '/');
   }
 
   @media (max-width: 860px) {
+    /* minmax(0, …): una palabra larga (un email, una URL) no puede ensanchar la columna */
     .layout {
-      grid-template-columns: 1fr;
+      grid-template-columns: minmax(0, 1fr);
     }
 
     .legal-nav {
@@ -243,8 +242,19 @@ const current = Astro.url.pathname.replace(/\/?$/, '/');
     }
 
     .prose :global(dl) {
-      grid-template-columns: 1fr;
+      grid-template-columns: minmax(0, 1fr);
       gap: 2px;
+    }
+
+    .prose :global(dd) {
+      overflow-wrap: anywhere;
+    }
+
+    /* La tabla de finalidades no cabe en un móvil estrecho: se desplaza dentro de su hueco */
+    .prose :global(table) {
+      display: block;
+      max-width: 100%;
+      overflow-x: auto;
     }
 
     .prose :global(dd) {

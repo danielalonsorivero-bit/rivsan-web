@@ -6,7 +6,8 @@ import jornadas from '../../assets/img/policia-pabellon.jpg';
 import auxilios from '../../assets/img/form-auxilios.jpg';
 import defensa from '../../assets/img/form-defensa.jpg';
 
-const proximas = calendario(await getCollection('cursos')).slice(0, 4);
+const abiertas = calendario(await getCollection('cursos'));
+const proximas = abiertas.slice(0, 4);
 
 // `interest` coincide con los valores del selector del formulario de contacto.
 // `categoria` enlaza con el catálogo filtrado en /formacion/#<categoria>.
@@ -84,6 +85,9 @@ const lines = [
     {
       proximas.length > 0 && (
         <div class="calendar reveal">
+          <p class="calendar-readout readout" aria-hidden="true">
+            <span><i class="rec rec--link"></i> CONVOCATORIAS ABIERTAS · <b>{abiertas.length}</b></span>
+          </p>
           <div class="calendar-head">
             <h3 class="h-md">Próximas convocatorias</h3>
             <a href="/formacion/#calendario" class="link-arrow">
@@ -144,7 +148,7 @@ const lines = [
 
   .card-media {
     overflow: hidden;
-    border-bottom: 3px solid var(--yellow);
+    border-bottom: 1px solid var(--line);
   }
 
   .card-media img {
@@ -167,7 +171,7 @@ const lines = [
     letter-spacing: 0.18em;
     text-transform: uppercase;
     font-size: 0.8rem;
-    color: var(--yellow);
+    color: var(--text-muted);
     margin-bottom: 8px;
   }
 
@@ -194,7 +198,7 @@ const lines = [
     content: '›';
     position: absolute;
     left: 4px;
-    color: var(--yellow);
+    color: var(--text-dim);
     font-weight: 600;
   }
 
@@ -220,6 +224,10 @@ const lines = [
     margin-top: 56px;
   }
 
+  .calendar-readout {
+    margin-bottom: 10px;
+  }
+
   .calendar-head {
     display: flex;
     justify-content: space-between;
@@ -227,7 +235,7 @@ const lines = [
     gap: 16px;
     flex-wrap: wrap;
     padding-bottom: 14px;
-    border-bottom: 2px solid var(--yellow);
+    border-bottom: 1px solid var(--line-strong);
   }
 
   .calendar ul {
@@ -321,7 +329,7 @@ const lines = [
 
     .card-media {
       border-bottom: 0;
-      border-right: 3px solid var(--yellow);
+      border-right: 1px solid var(--line);
     }
 
     .card-media img {
@@ -337,7 +345,7 @@ const lines = [
 
     .card-media {
       border-right: 0;
-      border-bottom: 3px solid var(--yellow);
+      border-bottom: 1px solid var(--line);
     }
 
     .card-media img {

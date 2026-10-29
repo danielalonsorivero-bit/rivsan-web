@@ -208,9 +208,7 @@ const hayEjemplos = cursos.some((c) => c.data.ejemplo);
 
   .page-hero {
     padding: calc(var(--header-h) + clamp(56px, 8vw, 104px)) 0 clamp(40px, 5vw, 64px);
-    background:
-      radial-gradient(ellipse at 85% 0%, rgba(247, 196, 0, 0.12), transparent 55%),
-      var(--bg);
+    background: var(--bg);
     border-bottom: 1px solid var(--line);
   }
 
@@ -285,9 +283,9 @@ const hayEjemplos = cursos.some((c) => c.data.ejemplo);
     font-weight: 600;
     letter-spacing: 0.22em;
     font-size: 0.9rem;
-    color: var(--yellow);
+    color: var(--text);
     padding-bottom: 12px;
-    border-bottom: 2px solid var(--yellow);
+    border-bottom: 1px solid var(--line-strong);
   }
 
   .rows {

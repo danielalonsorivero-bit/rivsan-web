@@ -16,6 +16,9 @@ import photo from '../assets/img/agente-fusil.jpg';
       <div class="aside-media hud">
         <Image src={photo} alt="Agente con visor de realidad virtual apuntando con un fusil simulado" widths={[400, 700]} sizes="(max-width: 960px) 100vw, 35vw" />
       </div>
+      <p class="direct-readout readout" aria-hidden="true">
+        <span><i class="rec rec--link"></i> CANAL ABIERTO · RESPUESTA EN <b>48 H</b> LABORABLES</span>
+      </p>
       <ul class="direct">
         <li><span>Email</span><a href={`mailto:${site.email}`}>{site.email}</a></li>
         <li><span>Teléfono</span><a href={`tel:${site.phoneHref}`}>{site.phone}</a></li>
@@ -78,6 +81,10 @@ import photo from '../assets/img/agente-fusil.jpg';
     aspect-ratio: 16 / 10;
     object-fit: cover;
     object-position: 50% 30%;
+  }
+
+  .direct-readout {
+    margin-bottom: 16px;
   }
 
   .direct {

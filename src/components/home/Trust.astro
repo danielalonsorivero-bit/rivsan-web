@@ -26,7 +26,12 @@ const { clientes: clients, compromisos: pledges, testimonios } = datos;
     </div>
 
     <div class="clients reveal">
-      <p class="clients-title">Lo utilizan</p>
+      <div class="clients-head">
+        <p class="clients-title">Lo utilizan</p>
+        <p class="readout" aria-hidden="true">
+          <span><i class="rec rec--link"></i> EN SERVICIO · <b>{clients.length}</b> ORGANISMOS</span>
+        </p>
+      </div>
       <ul>
         {clients.map((c) => <li>{c}</li>)}
       </ul>
@@ -134,6 +139,15 @@ const { clientes: clients, compromisos: pledges, testimonios } = datos;
     letter-spacing: 0.24em;
     text-transform: uppercase;
     color: var(--text-dim);
+    margin: 0;
+  }
+
+  .clients-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 8px 24px;
     margin-bottom: 20px;
   }
 

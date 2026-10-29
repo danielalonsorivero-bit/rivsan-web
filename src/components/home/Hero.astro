@@ -36,8 +36,8 @@ const stats = h.cifras.map((c) => ({ ...c, animar: c.animar && /^\d+$/.test(c.va
   <canvas class="hero-bg hero-gl" data-senal-gl aria-hidden="true"></canvas>
   <div class="hero-shade" aria-hidden="true"></div>
   <SignalFx />
-  <p class="hero-readout data" aria-hidden="true">
-    <span><i></i> <b data-hero-status>SIM ACTIVO</b></span>
+  <p class="hero-readout readout readout--stack" aria-hidden="true">
+    <span><i class="rec"></i> <b data-hero-status>SIM ACTIVO</b></span>
     <span data-hero-clock>T+00:00.000</span>
     <span>ESCENARIO 01 · BINOMIO</span>
   </p>
@@ -276,40 +276,11 @@ const stats = h.cifras.map((c) => ({ ...c, animar: c.animar && /^\d+$/.test(c.va
     position: absolute;
     top: calc(var(--header-h) + 24px);
     right: var(--gutter);
-    margin: 0;
-    display: grid;
-    justify-items: end;
-    gap: 4px;
-    font-size: 0.75rem;
-    letter-spacing: 0.12em;
-    color: rgba(242, 242, 240, 0.7);
-  }
-
-  .hero-readout i {
-    display: inline-block;
-    width: 7px;
-    height: 7px;
-    border-radius: 50%;
-    background: #ff5a5f;
-    margin-right: 6px;
-    animation: rec 1.2s steps(2) infinite;
-  }
-
-  @keyframes rec {
-    50% {
-      opacity: 0.2;
-    }
   }
 
   @media (max-width: 960px) {
     .hero-readout {
       display: none;
-    }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .hero-readout i {
-      animation: none;
     }
   }
 

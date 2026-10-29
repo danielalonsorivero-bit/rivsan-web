@@ -90,7 +90,7 @@ const factors = [
       <rect class="layer dark" data-layer="noche" width="600" height="340" mask="url(#live-dark)" />
     </svg>
 
-    <ul class="readout data">
+    <ul class="live-readout data">
       <li><span>Fase</span><strong data-live-phase>Aproximación</strong></li>
       <li><span>Tiempo</span><strong data-live-time>0,0 s</strong></li>
       <li><span>Último control</span><strong data-live-last>—</strong></li>
@@ -471,7 +471,7 @@ const factors = [
     opacity: 0;
   }
 
-  .readout {
+  .live-readout {
     list-style: none;
     margin: 0;
     padding: 0;
@@ -480,30 +480,30 @@ const factors = [
     border-top: 1px solid var(--line);
   }
 
-  .readout li {
+  .live-readout li {
     padding: 10px 16px;
     display: grid;
     gap: 2px;
   }
 
-  .readout li + li {
+  .live-readout li + li {
     border-left: 1px solid var(--line);
   }
 
-  .readout span {
+  .live-readout span {
     font-size: 0.6875rem;
     letter-spacing: 0.12em;
     text-transform: uppercase;
     color: var(--text-dim);
   }
 
-  .readout strong {
+  .live-readout strong {
     font-weight: 500;
     font-size: 0.95rem;
     color: var(--yellow);
   }
 
-  .is-wait .readout li:first-child strong {
+  .is-wait .live-readout li:first-child strong {
     color: #ff5a5f;
   }
 

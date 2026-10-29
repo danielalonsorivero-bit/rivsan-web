@@ -6,6 +6,7 @@ import team from '../../assets/img/equipo-4.jpg';
 import aar from '../../assets/img/aar-pantalla.jpg';
 
 // Resumen del simulador. El detalle (armas, configuraciones, módulos) está en /simulador/.
+// La demo del AAR va primero y las tres capacidades quedan debajo en una franja compacta.
 const features = [
   {
     tag: 'Sistema SuitUp',
@@ -50,23 +51,7 @@ const features = [
       </div>
     </div>
 
-    <div class="cards">
-      {
-        features.map((f) => (
-          <article class="card reveal">
-            <div class="card-media hud">
-              <Image src={f.image} alt={f.alt} widths={[480, 800]} sizes="(max-width: 960px) 100vw, 33vw" />
-            </div>
-            <span class="tag">{f.tag}</span>
-            <h3>
-              <a href={f.href}>{f.title}</a>
-            </h3>
-            <p class="muted">{f.text}</p>
-          </article>
-        ))
-      }
-    </div>
-
+    <!-- La demo del After-Action Review abre la sección: es lo que más se parece a usar el sistema -->
     <div class="try">
       <div class="try-text reveal">
         <p class="eyebrow">Pruébalo</p>
@@ -80,6 +65,24 @@ const features = [
         <AarDemo />
       </div>
     </div>
+
+    <!-- Las tres capacidades, en una franja compacta bajo la demo -->
+    <ul class="features">
+      {
+        features.map((f) => (
+          <li class="feature reveal">
+            <Image src={f.image} alt={f.alt} widths={[240, 400]} sizes="(max-width: 960px) 30vw, 140px" />
+            <div>
+              <span class="tag">{f.tag}</span>
+              <h3>
+                <a href={f.href}>{f.title}</a>
+              </h3>
+              <p class="muted">{f.text}</p>
+            </div>
+          </li>
+        ))
+      }
+    </ul>
   </div>
 </section>
 
@@ -96,51 +99,9 @@ const features = [
     margin-bottom: 1rem;
   }
 
-  .cards {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: clamp(20px, 3vw, 40px);
-  }
-
-  .card-media {
-    margin-bottom: 24px;
-  }
-
-  .card-media img {
-    width: 100%;
-    aspect-ratio: 4 / 3;
-    object-fit: cover;
-    filter: saturate(0.85) contrast(1.05);
-  }
-
-  .tag {
-    font-family: var(--font-label);
-    font-weight: 600;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    font-size: 0.8rem;
-    color: var(--text-muted);
-  }
-
-  .card h3 {
-    font-size: clamp(1.75rem, 2.6vw, 2.25rem);
-    margin: 8px 0 12px;
-  }
-
-  .card h3 a {
-    text-decoration: none;
-  }
-
-  .card h3 a:hover {
-    color: var(--yellow);
-  }
-
   .try {
-    margin-top: clamp(64px, 8vw, 112px);
-    padding-top: clamp(40px, 5vw, 64px);
-    border-top: 1px solid var(--line);
     display: grid;
-    grid-template-columns: 1fr 2fr;
+    grid-template-columns: 1fr 2.3fr;
     gap: clamp(32px, 5vw, 64px);
     align-items: center;
   }
@@ -150,15 +111,80 @@ const features = [
     margin-bottom: 1rem;
   }
 
+  .features {
+    list-style: none;
+    margin: clamp(56px, 7vw, 96px) 0 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    border-top: 1px solid var(--line-strong);
+  }
+
+  .feature {
+    display: grid;
+    grid-template-columns: 112px 1fr;
+    gap: 20px;
+    align-items: start;
+    padding: 28px 24px 0;
+  }
+
+  .feature:first-child {
+    padding-left: 0;
+  }
+
+  .feature + .feature {
+    border-left: 1px solid var(--line);
+  }
+
+  .feature img {
+    width: 100%;
+    aspect-ratio: 1;
+    object-fit: cover;
+    filter: saturate(0.85) contrast(1.05);
+  }
+
+  .tag {
+    font-family: var(--font-label);
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+  }
+
+  .feature h3 {
+    font-size: clamp(1.4rem, 1.9vw, 1.75rem);
+    margin: 6px 0 8px;
+  }
+
+  .feature h3 a {
+    text-decoration: none;
+  }
+
+  .feature h3 a:hover {
+    color: var(--yellow);
+  }
+
+  .feature p {
+    margin: 0;
+    font-size: 0.95rem;
+  }
+
   @media (max-width: 960px) {
     .try,
     .head,
-    .cards {
+    .features {
       grid-template-columns: 1fr;
     }
 
-    .cards {
-      gap: 48px;
+    .feature,
+    .feature:first-child {
+      padding: 24px 0;
+    }
+
+    .feature + .feature {
+      border-left: 0;
+      border-top: 1px solid var(--line);
     }
   }
 </style>

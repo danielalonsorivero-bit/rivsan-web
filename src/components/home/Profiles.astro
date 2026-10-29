@@ -3,9 +3,10 @@ import { Image } from 'astro:assets';
 import { perfiles } from '../../data/perfiles';
 import { videoPerfil } from '../../data/videos';
 
-// Con vídeo, la tarjeta muestra su primer fotograma y lo reproduce al pasar el cursor
-// (en pantallas táctiles, mientras la tarjeta está centrada en pantalla).
-const tarjetas = perfiles.map((p) => ({ ...p, video: videoPerfil(p.slug) }));
+// Muro de monitores: una pantalla grande con el vídeo del perfil activo y, al lado, los perfiles
+// como canales. Al pasar el cursor o el foco por un canal, la pantalla cambia a ese perfil.
+// En pantallas estrechas no hay pantalla grande: cada canal lleva su fotograma.
+const canales = perfiles.map((p, i) => ({ ...p, video: videoPerfil(p.slug), cam: String(i + 1).padStart(2, '0') }));
 ---
 
 <section class="section profiles" id="perfiles">
@@ -15,68 +16,100 @@ const tarjetas = perfiles.map((p) => ({ ...p, video: videoPerfil(p.slug) }));
       <h2 class="h-lg">Cada unidad tiene <span class="accent">su misión</span></h2>
     </div>
 
-    <div class="cards">
-      {
-        tarjetas.map((p) => (
-          <article class="card reveal" data-card-video={p.video ? '' : undefined}>
-            <Image src={p.video?.poster ?? p.image} alt="" widths={[480, 800]} sizes="(max-width: 820px) 100vw, 33vw" />
-            {p.video && <video muted loop playsinline preload="none" data-src={p.video.sd} aria-hidden="true" />}
-            <div class="card-body">
-              <h3>
-                <a href={`/soluciones/${p.slug}/`} class="stretched">
-                  {p.label}
-                </a>
-              </h3>
-              <p>{p.short}</p>
-              <span class="link-arrow" aria-hidden="true">
-                Ver solución →
-              </span>
+    <div class="wall reveal" data-wall>
+      <div class="screen hud" aria-hidden="true">
+        {
+          canales.map((c, i) => (
+            <div class:list={['feed', { 'is-active': i === 0 }]} data-feed={c.slug}>
+              <Image src={c.video?.poster ?? c.image} alt="" widths={[640, 1100]} sizes="(max-width: 900px) 0px, 60vw" />
+              {c.video && <video muted loop playsinline preload="none" data-src={c.video.sd} />}
             </div>
-          </article>
-        ))
-      }
+          ))
+        }
+        <p class="screen-readout readout">
+          <span><i class="rec"></i> <b data-wall-cam>CAM {canales[0].cam}</b></span>
+        </p>
+        <div class="screen-caption">
+          <p class="screen-title" data-wall-title>{canales[0].label}</p>
+          <p class="screen-short" data-wall-short>{canales[0].short}</p>
+        </div>
+      </div>
+
+      <ol class="channels">
+        {
+          canales.map((c, i) => (
+            <li class:list={['channel', { 'is-active': i === 0 }]} data-channel={c.slug} data-cam={c.cam} data-label={c.label} data-short={c.short}>
+              <a href={`/soluciones/${c.slug}/`}>
+                <span class="channel-cam data" aria-hidden="true">CAM {c.cam}</span>
+                <span class="channel-thumb" aria-hidden="true">
+                  <Image src={c.video?.poster ?? c.image} alt="" widths={[480]} sizes="(max-width: 900px) 100vw, 0px" />
+                </span>
+                <span class="channel-label">{c.label}</span>
+                <span class="channel-short">{c.short}</span>
+                <span class="channel-go">Ver solución <span aria-hidden="true">→</span></span>
+              </a>
+            </li>
+          ))
+        }
+      </ol>
     </div>
   </div>
 </section>
 
 <script>
-  // Reproducción al pasar el cursor; cada arranque empieza con un corte de señal breve
-  const quieto = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const tactil = matchMedia('(hover: none)').matches;
-  const tarjetas = [...document.querySelectorAll<HTMLElement>('[data-card-video]')];
+  // La pantalla sigue al canal señalado; el vídeo activo se reproduce mientras el muro está a la vista.
+  // Cada cambio de canal entra con un corte de señal breve. Con «reducir movimiento» solo cambia el fotograma.
+  const wall = document.querySelector<HTMLElement>('[data-wall]');
+  if (wall) {
+    const quieto = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const feeds = [...wall.querySelectorAll<HTMLElement>('[data-feed]')];
+    const canales = [...wall.querySelectorAll<HTMLElement>('[data-channel]')];
+    const cam = wall.querySelector('[data-wall-cam]')!;
+    const title = wall.querySelector('[data-wall-title]')!;
+    const short = wall.querySelector('[data-wall-short]')!;
+    const screen = wall.querySelector<HTMLElement>('.screen')!;
+    let visible = false;
+    let activo = feeds[0];
 
-  const reproducir = (card: HTMLElement) => {
-    const v = card.querySelector('video')!;
-    if (!v.src) v.src = v.dataset.src!;
-    v.play().then(
-      () => {
-        card.classList.add('is-playing', 'is-cortando');
-        setTimeout(() => card.classList.remove('is-cortando'), 380);
+    const reproducir = () => {
+      const v = activo.querySelector('video');
+      if (!v || quieto || !visible) return;
+      if (!v.src) v.src = v.dataset.src!;
+      v.play().then(() => activo.classList.add('is-playing'), () => {});
+    };
+
+    const sintonizar = (canal: HTMLElement) => {
+      const feed = feeds.find((f) => f.dataset.feed === canal.dataset.channel)!;
+      if (feed === activo) return;
+      activo.querySelector('video')?.pause();
+      activo.classList.remove('is-active', 'is-playing');
+      canales.forEach((c) => c.classList.toggle('is-active', c === canal));
+      activo = feed;
+      activo.classList.add('is-active');
+      cam.textContent = `CAM ${canal.dataset.cam}`;
+      title.textContent = canal.dataset.label!;
+      short.textContent = canal.dataset.short!;
+      if (!quieto) {
+        screen.classList.remove('is-cortando');
+        void screen.offsetWidth; // reinicia la animación del corte
+        screen.classList.add('is-cortando');
+      }
+      reproducir();
+    };
+
+    canales.forEach((c) => {
+      c.addEventListener('pointerenter', () => sintonizar(c));
+      c.addEventListener('focusin', () => sintonizar(c));
+    });
+
+    new IntersectionObserver(
+      ([e]) => {
+        visible = e.isIntersecting;
+        if (visible) reproducir();
+        else activo.querySelector('video')?.pause();
       },
-      () => {},
-    );
-  };
-  const parar = (card: HTMLElement) => {
-    card.classList.remove('is-playing');
-    card.querySelector('video')!.pause();
-  };
-
-  if (!quieto) {
-    if (tactil) {
-      // Sin cursor: se reproduce la tarjeta que está en el centro de la pantalla
-      const io = new IntersectionObserver(
-        (entradas) => entradas.forEach((e) => (e.isIntersecting ? reproducir : parar)(e.target as HTMLElement)),
-        { rootMargin: '-35% 0px -35% 0px' },
-      );
-      tarjetas.forEach((c) => io.observe(c));
-    } else {
-      tarjetas.forEach((c) => {
-        c.addEventListener('pointerenter', () => reproducir(c));
-        c.addEventListener('pointerleave', () => parar(c));
-        c.addEventListener('focusin', () => reproducir(c));
-        c.addEventListener('focusout', () => parar(c));
-      });
-    }
+      { threshold: 0.35 },
+    ).observe(screen);
   }
 </script>
 
@@ -86,79 +119,94 @@ const tarjetas = perfiles.map((p) => ({ ...p, video: videoPerfil(p.slug) }));
     margin-bottom: 48px;
   }
 
-  .cards {
+  .wall {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: minmax(0, 1.65fr) minmax(0, 1fr);
     gap: 20px;
+    align-items: stretch;
   }
 
-  .card {
+  /* Pantalla grande */
+  .screen {
     position: relative;
     isolation: isolate;
-    min-height: 420px;
-    display: flex;
-    align-items: flex-end;
     overflow: hidden;
+    aspect-ratio: 16 / 10;
+    background: #050505;
     border: 1px solid var(--line);
   }
 
-  .card img {
+  .feed {
+    position: absolute;
+    inset: 0;
+    z-index: -3;
+    opacity: 0;
+    transition: opacity 0.25s;
+  }
+
+  .feed.is-active {
+    opacity: 1;
+  }
+
+  .feed img,
+  .feed video {
     position: absolute;
     inset: 0;
     width: 100%;
     height: 100%;
     object-fit: cover;
-    z-index: -2;
-    filter: grayscale(0.4);
-    transition: transform 0.6s ease, filter 0.6s ease;
   }
 
-  .card::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    z-index: -1;
-    background: linear-gradient(0deg, rgba(11, 11, 11, 0.95) 25%, rgba(11, 11, 11, 0.2) 75%);
-  }
-
-  .card:hover img {
-    transform: scale(1.04);
-    filter: grayscale(0);
-  }
-
-  .card video {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    z-index: -2;
+  .feed video {
     opacity: 0;
     transition: opacity 0.35s ease;
   }
 
-  .card.is-playing video {
+  .feed.is-playing video {
     opacity: 1;
   }
 
-  /* Líneas de barrido sobre el vídeo, como en el hero */
-  .card[data-card-video]::before {
+  /* Líneas de barrido y sombra para leer el pie de pantalla */
+  .screen::after {
     content: '';
     position: absolute;
     inset: 0;
     z-index: -1;
     pointer-events: none;
-    background: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.25) 0 1px, transparent 1px 3px);
-    opacity: 0;
-    transition: opacity 0.35s ease;
+    background:
+      linear-gradient(0deg, rgba(11, 11, 11, 0.92) 0%, rgba(11, 11, 11, 0) 45%),
+      repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.25) 0 1px, transparent 1px 3px);
   }
 
-  .card.is-playing::before {
-    opacity: 0.6;
+  .screen-readout {
+    position: absolute;
+    top: 18px;
+    left: 36px;
   }
 
-  /* Corte de señal al arrancar: tirón horizontal y desdoble de color */
-  .card.is-cortando video {
+  .screen-caption {
+    position: absolute;
+    left: 28px;
+    right: 28px;
+    bottom: 24px;
+  }
+
+  .screen-title {
+    margin: 0 0 6px;
+    font-family: var(--font-display);
+    font-size: clamp(2.5rem, 4.4vw, 4rem);
+    line-height: 0.95;
+    text-transform: uppercase;
+  }
+
+  .screen-short {
+    margin: 0;
+    max-width: 46ch;
+    color: #d6d6d0;
+  }
+
+  /* Corte de señal al cambiar de canal: tirón horizontal y desdoble de color */
+  .screen.is-cortando .feed.is-active {
     animation: corte 0.38s steps(1, end);
   }
 
@@ -185,42 +233,131 @@ const tarjetas = perfiles.map((p) => ({ ...p, video: videoPerfil(p.slug) }));
     }
   }
 
-  .card:hover {
-    border-color: rgba(247, 196, 0, 0.5);
+  /* Canales */
+  .channels {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-auto-rows: 1fr;
+    gap: 12px;
   }
 
-  .card-body {
-    padding: 28px;
-  }
-
-  .card h3 {
-    font-size: clamp(2rem, 3vw, 2.5rem);
-    margin-bottom: 10px;
-  }
-
-  .card h3 a {
+  .channel a {
+    position: relative;
+    height: 100%;
+    display: grid;
+    grid-template-areas:
+      'cam'
+      'label'
+      'short'
+      'go';
+    align-content: center;
+    gap: 4px;
+    padding: 20px 24px;
     text-decoration: none;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--line-strong);
+    transition: border-color 0.2s, background-color 0.2s;
   }
 
-  /* El enlace del título cubre toda la tarjeta */
-  .stretched::after {
-    content: '';
-    position: absolute;
-    inset: 0;
+  .channel.is-active a {
+    background: var(--surface-2);
+    border-color: var(--line-strong);
+    border-left-color: var(--yellow);
   }
 
-  .card p {
-    color: #d6d6d0;
-    margin-bottom: 18px;
+  .channel-cam {
+    grid-area: cam;
+    font-size: 0.75rem;
+    letter-spacing: 0.14em;
+    color: var(--text-dim);
   }
 
-  @media (max-width: 960px) {
-    .cards {
+  .channel.is-active .channel-cam {
+    color: var(--yellow);
+  }
+
+  .channel-thumb {
+    display: none;
+  }
+
+  .channel-label {
+    grid-area: label;
+    font-family: var(--font-display);
+    font-size: clamp(1.75rem, 2.4vw, 2.25rem);
+    line-height: 1;
+    text-transform: uppercase;
+  }
+
+  .channel-short {
+    grid-area: short;
+    font-size: 0.95rem;
+    color: var(--text-muted);
+  }
+
+  .channel-go {
+    grid-area: go;
+    margin-top: 6px;
+    font-family: var(--font-label);
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    font-size: 0.8125rem;
+    color: var(--yellow);
+  }
+
+  .channel a:hover .channel-label {
+    color: var(--yellow);
+  }
+
+  /* Pantallas estrechas: sin pantalla grande; cada canal muestra su fotograma */
+  @media (max-width: 900px) {
+    .wall {
       grid-template-columns: 1fr;
     }
 
-    .card {
-      min-height: 300px;
+    .screen {
+      display: none;
+    }
+
+    .channels {
+      gap: 32px;
+    }
+
+    .channel a {
+      grid-template-areas:
+        'thumb'
+        'cam'
+        'label'
+        'short'
+        'go';
+      padding: 0 0 24px;
+      background: none;
+      border: 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .channel.is-active a {
+      background: none;
+    }
+
+    .channel-thumb {
+      grid-area: thumb;
+      display: block;
+      margin-bottom: 12px;
+      border-bottom: 1px solid var(--line-strong);
+    }
+
+    .channel-thumb img {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      object-fit: cover;
+    }
+
+    .channel-cam {
+      color: var(--yellow);
     }
   }
 </style>

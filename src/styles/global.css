@@ -143,7 +143,7 @@ p {
   content: '';
   width: 28px;
   height: 2px;
-  background: var(--yellow);
+  background: var(--line-strong);
 }
 
 .h-xl {
@@ -379,6 +379,61 @@ p {
   border-block: 5px solid transparent;
   border-inline: 8px solid var(--yellow);
   border-inline-end: 0;
+}
+
+/* Lecturas del visor: una sola voz para todas las líneas de telemetría de la web.
+   Formato «ETIQUETA · VALOR»; el valor que importa va en <b> (amarillo).
+   El punto indica el estado: .rec rojo = grabando, .rec.rec--link amarillo = enlace activo.
+   Son decorativas: llevan aria-hidden y lo que dicen se cuenta también en el texto. */
+.readout {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  font-family: var(--font-data);
+  font-weight: 400;
+  font-size: 0.75rem;
+  line-height: 1.5;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(242, 242, 240, 0.72);
+}
+
+/* Varias líneas apiladas, alineadas a la derecha (esquinas de imágenes y vídeos) */
+.readout--stack {
+  display: grid;
+  justify-items: end;
+}
+
+.readout b {
+  font-weight: 500;
+  color: var(--yellow);
+}
+
+.readout .rec {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-right: 6px;
+  border-radius: 50%;
+  background: #ff5a5f;
+  vertical-align: 1px;
+}
+
+.readout .rec--link {
+  background: var(--yellow);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .readout .rec {
+    animation: readout-rec 1.2s steps(2) infinite;
+  }
+}
+
+@keyframes readout-rec {
+  50% {
+    opacity: 0.2;
+  }
 }
 
 /* Esquinas tipo visor (HUD) */

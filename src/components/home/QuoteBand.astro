@@ -8,7 +8,7 @@ import { cita } from '../../data/contenido/home.json'; // editable desde el pane
 <section class="quote-band" aria-label="Nuestra filosofía">
   <Image src={photo} alt="" class="bg" widths={[800, 1400, 2200]} sizes="100vw" />
   <div class="container inner">
-    <p class="readout data" aria-hidden="true">REC ● ESCENARIO 07 · INTENTO 100</p>
+    <p class="quote-readout readout" aria-hidden="true"><span><i class="rec"></i> REC · ESCENARIO 07 · INTENTO <b>100</b></span></p>
     <blockquote class="reveal">
       {cita.antes} {cita.destacado && <span>{cita.destacado}</span>} {cita.despues}
     </blockquote>
@@ -46,10 +46,7 @@ import { cita } from '../../data/contenido/home.json'; // editable desde el pane
       repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.03) 0 1px, transparent 1px 4px);
   }
 
-  .readout {
-    font-size: 0.8125rem;
-    color: var(--yellow);
-    letter-spacing: 0.14em;
+  .quote-readout {
     margin-bottom: 24px;
   }
 

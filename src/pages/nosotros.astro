@@ -76,7 +76,7 @@ const alliances = [
     <video class="map-media" data-senal-video data-src-sd={mapaSd} data-src-hd={mapaHd} muted loop playsinline preload="none" aria-hidden="true"></video>
     <canvas class="map-media" data-senal-gl aria-hidden="true"></canvas>
     <SignalFx />
-    <p class="map-readout data" aria-hidden="true"><span><i></i> ENLACE ACTIVO</span><span>COBERTURA · ESPAÑA</span></p>
+    <p class="map-readout readout readout--stack" aria-hidden="true"><span><i class="rec rec--link"></i> ENLACE ACTIVO</span><span>COBERTURA · <b>ESPAÑA</b></span></p>
   </div>
 
   <!-- Qué nos diferencia -->
@@ -187,9 +187,7 @@ const alliances = [
 <style>
   .about-hero {
     padding: calc(var(--header-h) + clamp(56px, 8vw, 104px)) 0 clamp(40px, 5vw, 64px);
-    background:
-      radial-gradient(ellipse at 85% 0%, rgba(247, 196, 0, 0.1), transparent 55%),
-      var(--bg);
+    background: var(--bg);
   }
 
   /* Encuadre del vídeo: el logotipo queda algo por encima del centro */
@@ -245,30 +243,7 @@ const alliances = [
     position: absolute;
     right: var(--gutter);
     bottom: 18px;
-    margin: 0;
-    display: grid;
-    justify-items: end;
-    gap: 4px;
-    font-size: 0.72rem;
-    letter-spacing: 0.12em;
-    color: rgba(242, 242, 240, 0.7);
     z-index: 1;
-  }
-
-  .map-readout i {
-    display: inline-block;
-    width: 7px;
-    height: 7px;
-    border-radius: 50%;
-    background: var(--yellow);
-    margin-right: 6px;
-    animation: enlace 1.2s steps(2) infinite;
-  }
-
-  @keyframes enlace {
-    50% {
-      opacity: 0.2;
-    }
   }
 
   @media (max-width: 700px) {
@@ -279,12 +254,6 @@ const alliances = [
 
     .map-readout {
       display: none;
-    }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .map-readout i {
-      animation: none;
     }
   }
 
@@ -319,7 +288,7 @@ const alliances = [
     padding: 28px 24px;
     background: var(--bg-2);
     border: 1px solid var(--line);
-    border-top: 3px solid var(--yellow);
+    border-top: 3px solid var(--line-strong);
   }
 
   .pillar-n {
@@ -327,7 +296,7 @@ const alliances = [
     font-size: 3rem;
     line-height: 1;
     color: transparent;
-    -webkit-text-stroke: 1px var(--yellow);
+    -webkit-text-stroke: 1px var(--text-dim);
   }
 
   .pillar h3 {
@@ -487,7 +456,7 @@ const alliances = [
     letter-spacing: 0.18em;
     text-transform: uppercase;
     font-size: 0.8rem;
-    color: var(--yellow);
+    color: var(--text-muted);
   }
 
   .alliance-name {

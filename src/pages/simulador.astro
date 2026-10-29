@@ -264,8 +264,8 @@ const modules = [
               <div class="weapon-media" data-arma-video>
                 <Image src={w.image} alt={w.alt} widths={[400, 700, 960]} sizes="(max-width: 960px) 100vw, 33vw" />
                 <video muted loop playsinline preload="none" data-src={w.video} aria-hidden="true" />
-                <span class="weapon-cam data" aria-hidden="true">
-                  <i></i> CAM {String(i + 1).padStart(2, '0')} · {w.name.toUpperCase()}
+                <span class="weapon-cam readout" aria-hidden="true">
+                  <span><i class="rec"></i> CAM {String(i + 1).padStart(2, '0')} · {w.name}</span>
                 </span>
               </div>
               <div class="weapon-body">
@@ -467,9 +467,7 @@ const modules = [
   /* Hero */
   .sim-hero {
     padding-top: calc(var(--header-h) + clamp(40px, 6vw, 88px));
-    background:
-      radial-gradient(ellipse at 80% 20%, rgba(247, 196, 0, 0.1), transparent 55%),
-      var(--bg);
+    background: var(--bg);
   }
 
   .hero-grid {
@@ -571,7 +569,7 @@ const modules = [
     content: '✓';
     position: absolute;
     left: 0;
-    color: var(--yellow);
+    color: var(--text);
     font-weight: 600;
   }
 
@@ -765,7 +763,6 @@ const modules = [
     overflow: hidden;
     aspect-ratio: 16 / 9;
     background: #e9e9e6;
-    border-bottom: 3px solid var(--yellow);
   }
 
   .weapon-media img,
@@ -814,25 +811,19 @@ const modules = [
     top: 10px;
     left: 12px;
     z-index: 2;
-    padding: 3px 7px;
-    font-size: 0.68rem;
-    letter-spacing: 0.12em;
+    padding: 3px 8px;
+    /* Lectura común (.readout) en tinta sobre un chip claro: el fondo del producto es blanco */
     color: rgba(35, 31, 32, 0.85);
     background: rgba(255, 255, 255, 0.6);
   }
 
-  .weapon-cam i {
-    display: inline-block;
-    width: 6px;
-    height: 6px;
-    margin-right: 5px;
-    border-radius: 50%;
-    background: #ff5a5f;
-    vertical-align: 1px;
+  /* Solo «graba» mientras el vídeo se reproduce */
+  .weapon-cam :global(.rec) {
     opacity: 0.4;
+    animation: none;
   }
 
-  .weapon-media.is-playing .weapon-cam i {
+  .weapon-media.is-playing .weapon-cam :global(.rec) {
     opacity: 1;
   }
 
@@ -841,8 +832,8 @@ const modules = [
       animation: weapon-band 7s linear infinite;
     }
 
-    .weapon-media.is-playing .weapon-cam i {
-      animation: rec 1.2s steps(2) infinite;
+    .weapon-media.is-playing .weapon-cam :global(.rec) {
+      animation: readout-rec 1.2s steps(2) infinite;
     }
   }
 
@@ -852,11 +843,6 @@ const modules = [
     }
   }
 
-  @keyframes rec {
-    50% {
-      opacity: 0.25;
-    }
-  }
 
   .weapon-body {
     padding: 24px;
@@ -870,7 +856,7 @@ const modules = [
     font-family: var(--font-display);
     font-size: 2.5rem;
     line-height: 1;
-    color: var(--yellow);
+    color: var(--text);
   }
 
   .weapon-level {
@@ -924,7 +910,7 @@ const modules = [
     letter-spacing: 0.18em;
     text-transform: uppercase;
     font-size: 0.8rem;
-    color: var(--yellow);
+    color: var(--text-muted);
   }
 
   .setup h3 {
@@ -955,7 +941,7 @@ const modules = [
     letter-spacing: 0.22em;
     text-transform: uppercase;
     font-size: 0.85rem;
-    color: var(--yellow);
+    color: var(--text-muted);
     padding-bottom: 16px;
   }
 
@@ -972,7 +958,7 @@ const modules = [
     font-weight: 400;
     font-size: 1.6rem;
     letter-spacing: 0.02em;
-    border-bottom: 2px solid var(--yellow);
+    border-bottom: 2px solid var(--line-strong);
   }
 
   .compare tbody th {
@@ -986,7 +972,7 @@ const modules = [
   }
 
   .compare tbody td:nth-child(2) {
-    color: var(--yellow);
+    color: var(--text);
   }
 
   /* Instructor */
@@ -1047,7 +1033,7 @@ const modules = [
     font-family: var(--font-label);
     font-weight: 600;
     letter-spacing: 0.2em;
-    color: var(--yellow);
+    color: var(--text-dim);
     font-size: 0.9rem;
   }
 
@@ -1076,15 +1062,13 @@ const modules = [
 
   .module-req li::before {
     content: '▸ ';
-    color: var(--yellow);
+    color: var(--text-dim);
   }
 
   /* Banda contratación */
   .band {
     padding-block: 56px;
-    background:
-      repeating-linear-gradient(135deg, rgba(247, 196, 0, 0.06) 0 2px, transparent 2px 14px),
-      var(--bg);
+    background: var(--bg);
   }
 
   .band-inner {
