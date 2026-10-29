@@ -12,3 +12,6 @@ entregables/
 
 # Salida del adaptador de Vercel
 .vercel/
+
+# Foto de referencia del especialista (persona real): no se publica
+src/assets/sprites/reference.png

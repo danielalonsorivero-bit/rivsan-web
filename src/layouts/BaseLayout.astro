@@ -19,12 +19,14 @@ interface Props {
   image?: ImageMetadata;
   /** Datos estructurados adicionales de la página (schema.org) */
   jsonLd?: Record<string, unknown>;
+  /** Fuera de los buscadores aunque la web sea indexable (p. ej. la página 404) */
+  noindex?: boolean;
 }
 // Título y descripción editables desde el panel (Buscadores) para las páginas fijas; si están vacíos,
 // los que pasa la página. La comparación ignora la subcarpeta de publicación (BASE_PATH).
 const ruta = '/' + Astro.url.pathname.slice(import.meta.env.BASE_URL.replace(/\/?$/, '/').length);
 const seo = seoPaginas.find((p) => p.ruta === ruta);
-const { image = defaultShare, jsonLd } = Astro.props;
+const { image = defaultShare, jsonLd, noindex } = Astro.props;
 const title = seo?.titulo || Astro.props.title;
 const description = seo?.descripcion || Astro.props.description || site.description;
 const fullTitle = title ? `${title} · ${site.name}` : `${site.name} · ${site.tagline}`;
@@ -62,7 +64,7 @@ const shareUrl = new URL(share.src, Astro.site);
     <meta property="og:image:height" content="630" />
     <meta name="twitter:card" content="summary_large_image" />
 
-    {!indexable && <meta name="robots" content="noindex, nofollow" />}
+    {(!indexable || noindex) && <meta name="robots" content="noindex, nofollow" />}
 
     <script type="application/ld+json" set:html={JSON.stringify(organizationLd)} />
     {jsonLd && <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />}

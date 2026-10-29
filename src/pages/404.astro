@@ -1,0 +1,1859 @@
+---
+// Página 404 con minijuego: un especialista con visor de realidad virtual neutraliza el «404».
+// - El número está hecho de bloques (vóxeles) que se rompen con cada impacto. Si un trozo queda
+//   sin apoyo en el suelo, se desploma entero.
+// - Pasado un tiempo, el número se regenera desde los bloques que siguen en pie: para ganar hay que
+//   limpiarlo entero antes de que se recupere.
+// - Teclado: ← → (o A D) mover, ↑ ↓ (o W S) apuntar, Espacio disparar, G granada (cuanto más tiempo
+//   se mantiene, más lejos llega; se lanza al soltar), R reiniciar.
+//   El especialista avanza hasta topar con los bloques en pie.
+//   Con ratón se apunta con el puntero y se dispara con clic; en táctil, tocando la pantalla.
+// - Reiniciar «rematerializa» el número de abajo arriba, como al recargar un escenario del simulador.
+// El especialista son sprites de cuerpo completo generados con PixelLab (src/assets/sprites/operador.png);
+// sus puntos de referencia están en operador.json.
+// Sonidos sintetizados con Web Audio; respetan el interruptor de sonido de la web (Sound.astro).
+// Con «reducir movimiento» no hay temblor de pantalla ni destellos.
+import BaseLayout from '../layouts/BaseLayout.astro';
+import SignalFx from '../components/SignalFx.astro';
+import operador from '../assets/sprites/operador.png';
+
+const MAG = 30;
+const GRENADES = 3;
+---
+
+<BaseLayout
+  title="Página no encontrada"
+  description="La página que buscas no existe o ha cambiado de dirección."
+  noindex
+>
+  <section class="e404" data-e404 data-mag={MAG} data-grenades={GRENADES} data-sprite={operador.src} aria-labelledby="e404-title">
+    <canvas class="e404-canvas" data-e404-canvas aria-hidden="true"></canvas>
+    <SignalFx />
+    <div class="e404-visor" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+
+    <div class="container e404-top" data-e404-top>
+      <div class="e404-intro">
+        <p class="readout" aria-hidden="true">
+          <span><span class="rec"></span>Simulación · escenario <b>404</b></span>
+          <span>Ruta <b data-e404-path>desconocida</b></span>
+        </p>
+        <h1 id="e404-title" class="e404-title">Página <span class="accent">no encontrada</span></h1>
+        <p class="e404-lead">
+          La dirección que buscas no existe o ha cambiado. Ya que estás aquí, el especialista tiene el visor
+          puesto: neutraliza el objetivo antes de que se regenere.
+        </p>
+        <div class="e404-actions">
+          <a href="/" class="btn btn-primary">Volver al inicio <span class="arrow">→</span></a>
+          <a href="/simulador/" class="link-arrow">Conoce el simulador <span aria-hidden="true">→</span></a>
+        </div>
+      </div>
+
+      <div class="e404-stats readout readout--stack" aria-hidden="true">
+        <span>Integridad del objetivo <b data-e404-integrity>100 %</b></span>
+        <span>Cargador <b data-e404-ammo>{MAG}/{MAG}</b></span>
+        <span>Granadas <b data-e404-grenades>{GRENADES}</b></span>
+        <span>Precisión <b data-e404-acc>—</b></span>
+        <span>Regeneración <b data-e404-regen>en espera</b></span>
+        <span>Tiempo <b data-e404-time>00:00.0</b></span>
+      </div>
+    </div>
+
+    <div class="e404-bottom" data-e404-bottom>
+      <p class="e404-keys e404-keys--desk data">
+        <span><kbd>←</kbd><kbd>→</kbd> Mover</span>
+        <span><kbd>↑</kbd><kbd>↓</kbd> Apuntar</span>
+        <span><kbd>Espacio</kbd> Disparar</span>
+        <span><kbd>G</kbd> Granada (mantén: más lejos)</span>
+        <span><kbd>R</kbd> Reiniciar</span>
+      </p>
+      <p class="e404-keys e404-keys--touch data">Toca para disparar · mantén para ráfaga · mantén Granada para más alcance</p>
+      <div class="e404-buttons">
+        <button type="button" class="e404-btn data" data-e404-grenade>Granada <kbd>G</kbd></button>
+        <button type="button" class="e404-btn data" data-e404-reset>Reiniciar <kbd>R</kbd></button>
+      </div>
+    </div>
+
+    <div class="e404-done" data-e404-done hidden>
+      <p class="readout" aria-hidden="true"><span><span class="rec rec--link"></span>Informe · escenario <b>404</b></span></p>
+      <p class="e404-done-title">Objetivo neutralizado</p>
+      <dl class="e404-report data">
+        <div><dt>Tiempo</dt><dd data-e404-r-time>—</dd></div>
+        <div><dt>Disparos</dt><dd data-e404-r-shots>—</dd></div>
+        <div><dt>Precisión</dt><dd data-e404-r-acc>—</dd></div>
+        <div><dt>Granadas</dt><dd data-e404-r-gren>—</dd></div>
+      </dl>
+      <div class="e404-actions">
+        <button type="button" class="btn btn-primary" data-e404-again>Reiniciar simulación</button>
+        <a href="/" class="btn btn-ghost">Volver al inicio</a>
+      </div>
+    </div>
+
+    <p class="visually-hidden" aria-live="polite" data-e404-live></p>
+  </section>
+</BaseLayout>
+
+<script>
+  import atlas from '../assets/sprites/operador.json';
+
+  type Part = {
+    k: number; // tipo (ver constantes)
+    x: number;
+    y: number;
+    vx: number;
+    vy: number;
+    life: number;
+    max: number;
+    s: number; // tamaño
+    c: string; // color
+    a: number; // giro
+    va: number;
+    rest: boolean;
+  };
+  type Bullet = { x: number; y: number; vx: number; vy: number; life: number };
+  type Grenade = { x: number; y: number; vx: number; vy: number; t: number; a: number };
+  type Light = { x: number; y: number; r: number; life: number; max: number; c: string };
+  type Ring = { x: number; y: number; r: number; max: number; life: number };
+
+  const SPARK = 0;
+  const DEBRIS = 1;
+  const SMOKE = 2;
+  const FIRE = 3;
+  const SHELL = 4;
+  const EMBER = 5;
+  const DUST = 6;
+
+  const YELLOW = '#f7c400';
+  const DEBRIS_COLORS = ['#f7c400', '#e3b400', '#caa000', '#ffd84a'];
+  const GRAVITY = 1900;
+  const BULLET_SPEED = 2600;
+  const FIRE_EVERY = 0.085; // s entre disparos (≈ 700 disparos/min)
+  const RELOAD_S = 1.4;
+  const FUSE_S = 1.7;
+  const CHARGE_S = 1.1; // tiempo hasta la carga máxima de la granada
+  const THROW_MIN = 420; // velocidad de lanzamiento con una pulsación rápida
+  const THROW_MAX = 1500; // y con la carga completa
+  const THROW_ANIM = 0.3; // s de la animación de lanzar, tras soltar la granada
+  const AIM_MIN = -0.75; // puntería: unos 43° hacia arriba…
+  const AIM_MAX = 0.65; // …y 37° hacia abajo, para alcanzar los bloques del suelo
+  const READY_S = 2.5; // s que mantiene el fusil encarado tras apuntar o disparar
+  const REGEN_DELAY = 4; // s sin recibir daño antes de que un bloque se recupere
+  const REGEN_TICK = 0.06;
+  const REGEN_P = 0.06; // probabilidad por tick de que un bloque se recupere un nivel o vuelva a crecer
+  const MAX_PARTS = 4500;
+  const DONE_AT = 0.04; // se da por neutralizado con menos del 4 % del número en pie
+  const REBUILD_S = 1.2;
+  const HP = 3;
+  const HP_COLORS = ['', '#7a6100', '#c29a00', '#f7c400'];
+
+  const root = document.querySelector<HTMLElement>('[data-e404]');
+  if (root) init(root);
+
+  function init(root: HTMLElement) {
+    const $ = <T extends Element = HTMLElement>(sel: string) => root.querySelector<T>(sel)!;
+    const canvas = $<HTMLCanvasElement>('[data-e404-canvas]');
+    const ctx = canvas.getContext('2d')!;
+    const top = $('[data-e404-top]');
+    const bottom = $('[data-e404-bottom]');
+    const done = $('[data-e404-done]');
+    const live = $('[data-e404-live]');
+    const hud = {
+      integrity: $('[data-e404-integrity]'),
+      ammo: $('[data-e404-ammo]'),
+      grenades: $('[data-e404-grenades]'),
+      acc: $('[data-e404-acc]'),
+      time: $('[data-e404-time]'),
+      regen: $('[data-e404-regen]'),
+    };
+    const MAG = Number(root.dataset.mag);
+    const GRENADES = Number(root.dataset.grenades);
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)');
+
+    // La ruta que no existe, recortada para que quepa en la lectura
+    const path = decodeURI(location.pathname);
+    $('[data-e404-path]').textContent = path.length > 28 ? `${path.slice(0, 27)}…` : path;
+
+    // ---------- Estado ----------
+    let W = 0;
+    let H = 0;
+    let dpr = 1;
+    let floorY = 0;
+    let S = 1; // escala del especialista
+
+    // Rejilla del número: resistencia de cada bloque, de HP (intacto) a 0 (vacío)
+    let cell = 8;
+    let cols = 0;
+    let rows = 0;
+    let gx0 = 0;
+    let gy0 = 0;
+    let grid = new Uint8Array(0);
+    let orig = new Uint8Array(0);
+    let total = 0;
+    let alive = 0;
+    let dirty = true;
+    let unstable = false; // hay que comprobar si algún trozo se ha quedado sin apoyo
+    let lastGlow = 0;
+    const flashes: { i: number; life: number }[] = [];
+    // Momento del último daño de cada bloque (para la regeneración) y bloques recién regenerados
+    let touched = new Float32Array(0);
+    const grows: { i: number; life: number }[] = [];
+    let regenAcc = 0;
+    let lastGrow = -10;
+
+    const numCanvas = document.createElement('canvas');
+    const nctx = numCanvas.getContext('2d')!;
+    const glowCanvas = document.createElement('canvas');
+    const gctx = glowCanvas.getContext('2d')!;
+    const bgCanvas = document.createElement('canvas');
+    const bctx = bgCanvas.getContext('2d')!;
+    const floorCanvas = document.createElement('canvas');
+    const fctx = floorCanvas.getContext('2d')!;
+
+    // anim: segundos en la animación actual (parado, victoria); throwT: lanzamiento que queda;
+    // ready: tiempo que sigue con el fusil encarado
+    const op = { x: 80, vx: 0, aim: -0.1, aimTarget: null as number | null, walk: 0, anim: 0, throwT: 0, ready: 0, recoil: 0, flash: 0, heat: 0 };
+    const sheet = new Image();
+    let sheetReady = false;
+    sheet.onload = () => (sheetReady = true);
+    sheet.src = root.dataset.sprite!;
+    let parts: Part[] = [];
+    let bullets: Bullet[] = [];
+    let grenades: Grenade[] = [];
+    let lights: Light[] = [];
+    let rings: Ring[] = [];
+    let shake = 0;
+    let screenFlash = 0;
+
+    type Mode = 'rebuild' | 'play' | 'done';
+    let mode: Mode = 'rebuild';
+    let rebuildT = 0;
+    let firing = false;
+    let charging = false; // granada en la mano, cargando fuerza
+    let chargeStart = 0;
+    let nextShot = 0;
+    let ammo = MAG;
+    let reloadUntil = 0;
+    let grenadesLeft = GRENADES;
+    let stats = { shots: 0, hits: 0, grenades: 0, start: 0, end: 0 };
+    let now = 0; // segundos
+
+    const keys = new Set<string>();
+    const rand = (a: number, b: number) => a + Math.random() * (b - a);
+    const clamp = (v: number, a: number, b: number) => Math.min(b, Math.max(a, v));
+
+    // ---------- Sonido ----------
+    let actx: AudioContext | null = null;
+    let master: GainNode;
+    let noise: AudioBuffer;
+    const soundOn = () => {
+      try {
+        return localStorage.getItem('rivsan-sound') !== 'off';
+      } catch {
+        return true;
+      }
+    };
+    const unlockAudio = () => {
+      if (!actx) {
+        actx = new AudioContext();
+        const comp = actx.createDynamicsCompressor();
+        master = actx.createGain();
+        master.gain.value = 0.55;
+        master.connect(comp).connect(actx.destination);
+        noise = actx.createBuffer(1, actx.sampleRate * 1.5, actx.sampleRate);
+        const d = noise.getChannelData(0);
+        for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+      }
+      if (actx.state === 'suspended') actx.resume();
+    };
+    const sfx = () => (actx && actx.state === 'running' && soundOn() ? actx : null);
+
+    const noiseBurst = (a: AudioContext, t: number, dur: number, type: BiquadFilterType, f0: number, f1: number, vol: number) => {
+      const src = a.createBufferSource();
+      const filter = a.createBiquadFilter();
+      const g = a.createGain();
+      src.buffer = noise;
+      filter.type = type;
+      filter.frequency.setValueAtTime(f0, t);
+      filter.frequency.exponentialRampToValueAtTime(f1, t + dur);
+      g.gain.setValueAtTime(vol, t);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      src.connect(filter).connect(g).connect(master);
+      src.start(t, Math.random() * 0.2);
+      src.stop(t + dur + 0.02);
+    };
+    const tone = (a: AudioContext, t: number, dur: number, type: OscillatorType, f0: number, f1: number, vol: number) => {
+      const o = a.createOscillator();
+      const g = a.createGain();
+      o.type = type;
+      o.frequency.setValueAtTime(f0, t);
+      o.frequency.exponentialRampToValueAtTime(f1, t + dur);
+      g.gain.setValueAtTime(0, t);
+      g.gain.linearRampToValueAtTime(vol, t + 0.005);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      o.connect(g).connect(master);
+      o.start(t);
+      o.stop(t + dur + 0.02);
+    };
+    const sound = {
+      shot() {
+        const a = sfx();
+        if (!a) return;
+        const t = a.currentTime;
+        noiseBurst(a, t, 0.11, 'bandpass', 2400, 700, 0.5);
+        tone(a, t, 0.13, 'sine', 150, 45, 0.55);
+      },
+      impact() {
+        const a = sfx();
+        if (!a) return;
+        noiseBurst(a, a.currentTime, 0.04, 'highpass', 3500, 2000, 0.12);
+      },
+      tink() {
+        const a = sfx();
+        if (!a) return;
+        tone(a, a.currentTime, 0.06, 'sine', rand(3800, 4600), 3000, 0.04);
+      },
+      thud(vol: number) {
+        const a = sfx();
+        if (!a) return;
+        const t = a.currentTime;
+        noiseBurst(a, t, 0.3, 'lowpass', 500, 80, 0.35 * vol);
+        tone(a, t, 0.25, 'sine', 90, 35, 0.4 * vol);
+      },
+      boom() {
+        const a = sfx();
+        if (!a) return;
+        const t = a.currentTime;
+        noiseBurst(a, t, 1.3, 'lowpass', 1800, 60, 1);
+        tone(a, t, 0.7, 'sine', 70, 25, 0.9);
+      },
+      click() {
+        const a = sfx();
+        if (!a) return;
+        noiseBurst(a, a.currentTime, 0.03, 'highpass', 2500, 1500, 0.25);
+      },
+      reload() {
+        const a = sfx();
+        if (!a) return;
+        const t = a.currentTime;
+        noiseBurst(a, t + 0.05, 0.04, 'bandpass', 1800, 1200, 0.3);
+        noiseBurst(a, t + RELOAD_S - 0.15, 0.05, 'bandpass', 2200, 1400, 0.4);
+      },
+      regen() {
+        const a = sfx();
+        if (!a) return;
+        tone(a, a.currentTime, 0.08, 'triangle', rand(520, 640), 900, 0.025);
+      },
+      rebuild() {
+        const a = sfx();
+        if (!a) return;
+        const t = a.currentTime;
+        const o = a.createOscillator();
+        const f = a.createBiquadFilter();
+        const g = a.createGain();
+        o.type = 'sawtooth';
+        o.frequency.setValueAtTime(110, t);
+        o.frequency.exponentialRampToValueAtTime(880, t + REBUILD_S);
+        f.type = 'lowpass';
+        f.frequency.setValueAtTime(400, t);
+        f.frequency.exponentialRampToValueAtTime(3000, t + REBUILD_S);
+        g.gain.setValueAtTime(0, t);
+        g.gain.linearRampToValueAtTime(0.08, t + 0.1);
+        g.gain.setValueAtTime(0.08, t + REBUILD_S - 0.1);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + REBUILD_S + 0.15);
+        o.connect(f).connect(g).connect(master);
+        o.start(t);
+        o.stop(t + REBUILD_S + 0.2);
+        tone(a, t + REBUILD_S, 0.25, 'triangle', 1760, 1700, 0.08);
+      },
+    };
+
+    // ---------- Escenario ----------
+    const build = async () => {
+      try {
+        await document.fonts.load('400 100px "Bebas Neue"');
+      } catch {}
+      const rect = root.getBoundingClientRect();
+      W = Math.round(rect.width);
+      H = Math.round(rect.height);
+      dpr = Math.min(devicePixelRatio || 1, 2);
+      canvas.width = W * dpr;
+      canvas.height = H * dpr;
+
+      // El suelo queda por encima de la barra de controles (en móvil ocupa varias líneas)
+      floorY = Math.round(Math.min(H - clamp(H * 0.13, 64, 120), bottom.offsetTop - 20));
+      S = clamp(H / 820, 0.62, 1.2);
+      const topBound = top.offsetTop + top.offsetHeight + 28;
+
+      // Zona del especialista a la izquierda; el número ocupa el resto
+      const opZone = clamp(W * 0.2, 96, 300);
+      const maxW = (W - opZone - 24) * 0.94;
+      const maxH = Math.max(80, floorY - topBound);
+
+      const font = (size: number) => `400 ${size}px "Bebas Neue", Impact, sans-serif`;
+      const probe = document.createElement('canvas').getContext('2d')!;
+      probe.font = font(100);
+      const m = probe.measureText('404');
+      const scale = Math.min(maxW / m.width, maxH / m.actualBoundingBoxAscent);
+      const size = 100 * scale;
+      const textW = m.width * scale;
+      const textH = m.actualBoundingBoxAscent * scale;
+
+      cell = clamp(Math.round(textH / 40), 4, 12);
+      cols = Math.ceil(textW / cell) + 1;
+      rows = Math.ceil(textH / cell);
+      gx0 = Math.round(opZone + (W - opZone - cols * cell) / 2);
+      gy0 = floorY - rows * cell;
+
+      // Se pinta el texto en una capa auxiliar y se muestrea el centro de cada celda
+      const tc = document.createElement('canvas');
+      tc.width = cols * cell;
+      tc.height = rows * cell;
+      const tctx = tc.getContext('2d', { willReadFrequently: true })!;
+      tctx.font = font(size);
+      tctx.textBaseline = 'alphabetic';
+      tctx.fillStyle = '#fff';
+      tctx.fillText('404', (cols * cell - textW) / 2, rows * cell);
+      const img = tctx.getImageData(0, 0, tc.width, tc.height).data;
+
+      grid = new Uint8Array(cols * rows);
+      total = 0;
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          const px = Math.min(tc.width - 1, c * cell + (cell >> 1));
+          const py = Math.min(tc.height - 1, r * cell + (cell >> 1));
+          if (img[(py * tc.width + px) * 4 + 3] > 110) {
+            grid[r * cols + c] = HP;
+            total++;
+          }
+        }
+      }
+      orig = grid.slice();
+      touched = new Float32Array(grid.length);
+      alive = total;
+
+      numCanvas.width = cols * cell * dpr;
+      numCanvas.height = rows * cell * dpr;
+      glowCanvas.width = Math.ceil((cols * cell) / 2) + 40;
+      glowCanvas.height = Math.ceil((rows * cell) / 2) + 40;
+      drawBackground();
+
+      op.x = clamp(opZone * 0.4, 24 * S, gx0 - 60 * S);
+      reset(true);
+    };
+
+    const drawBackground = () => {
+      for (const c of [bgCanvas, floorCanvas]) {
+        c.width = W * dpr;
+        c.height = H * dpr;
+      }
+      bctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      fctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+      // Pared del simulador: fondo con cuadrícula tenue y marcas de distancia
+      const g = bctx.createLinearGradient(0, 0, 0, floorY);
+      g.addColorStop(0, '#080808');
+      g.addColorStop(1, '#141412');
+      bctx.fillStyle = g;
+      bctx.fillRect(0, 0, W, H);
+      bctx.strokeStyle = 'rgba(255, 255, 255, 0.035)';
+      bctx.lineWidth = 1;
+      bctx.beginPath();
+      const step = 56;
+      for (let x = ((W / 2) % step) + 0.5; x < W; x += step) {
+        bctx.moveTo(x, 0);
+        bctx.lineTo(x, floorY);
+      }
+      for (let y = floorY - step + 0.5; y > 0; y -= step) {
+        bctx.moveTo(0, y);
+        bctx.lineTo(W, y);
+      }
+      bctx.stroke();
+
+      // Regla vertical junto al número, como en una galería de tiro
+      bctx.fillStyle = 'rgba(247, 196, 0, 0.35)';
+      bctx.font = '500 10px "IBM Plex Mono", monospace';
+      bctx.textAlign = 'right';
+      const rx = Math.min(W - 16, gx0 + cols * cell + 28);
+      for (let i = 0, y = floorY; y > gy0 - 20; i++, y -= cell * 4) {
+        const major = i % 5 === 0;
+        bctx.fillRect(rx - (major ? 12 : 6), Math.round(y), major ? 12 : 6, 1);
+        if (major && i > 0 && rx > gx0 + cols * cell + 20) bctx.fillText(`${(i * 0.4).toFixed(1)}`, rx - 16, y + 3);
+      }
+
+      // Rótulo del blanco sobre el número
+      bctx.textAlign = 'left';
+      bctx.fillStyle = 'rgba(242, 242, 240, 0.4)';
+      bctx.font = '500 11px "IBM Plex Mono", monospace';
+      bctx.fillText('BLANCO 404 · 25 M · CARRIL 04', gx0, Math.max(14, gy0 - 14));
+
+      // Suelo en perspectiva
+      const vx = W * 0.55;
+      const vy = floorY - H * 0.9;
+      fctx.strokeStyle = 'rgba(247, 196, 0, 0.09)';
+      fctx.lineWidth = 1;
+      fctx.beginPath();
+      const spread = 70;
+      for (let i = -40; i <= 40; i++) {
+        const xb = vx + i * spread;
+        const k = (floorY - vy) / (H - vy);
+        fctx.moveTo(vx + (xb - vx) * k, floorY);
+        fctx.lineTo(xb, H);
+      }
+      for (let i = 1; i < 8; i++) {
+        const y = floorY + (H - floorY) * Math.pow(i / 8, 1.6);
+        fctx.moveTo(0, y);
+        fctx.lineTo(W, y);
+      }
+      fctx.stroke();
+      // Borde del suelo con un leve resplandor
+      fctx.shadowColor = 'rgba(247, 196, 0, 0.6)';
+      fctx.shadowBlur = 10;
+      fctx.fillStyle = 'rgba(247, 196, 0, 0.55)';
+      fctx.fillRect(0, floorY, W, 1);
+      fctx.shadowBlur = 0;
+    };
+
+    // ---------- Número ----------
+    const renderNumber = () => {
+      dirty = false;
+      const w = cols * cell;
+      const h = rows * cell;
+      const gap = cell > 6 ? 1 : 0.5;
+      nctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      nctx.clearRect(0, 0, w, h);
+      for (let pass = HP; pass >= 1; pass--) {
+        nctx.fillStyle = HP_COLORS[pass];
+        for (let i = 0; i < grid.length; i++) {
+          if (grid[i] !== pass) continue;
+          nctx.fillRect((i % cols) * cell, ((i / cols) | 0) * cell, cell - gap, cell - gap);
+        }
+      }
+      // Arista superior iluminada y sombra inferior: relieve de bloque
+      nctx.fillStyle = 'rgba(255, 255, 255, 0.35)';
+      for (let i = 0; i < grid.length; i++) {
+        if (grid[i] && (i < cols || !grid[i - cols])) nctx.fillRect((i % cols) * cell, ((i / cols) | 0) * cell, cell - gap, 1);
+      }
+      nctx.fillStyle = 'rgba(0, 0, 0, 0.35)';
+      for (let i = 0; i < grid.length; i++) {
+        if (grid[i] && i + cols < grid.length && !grid[i + cols])
+          nctx.fillRect((i % cols) * cell, ((i / cols) | 0) * cell + cell - gap - 2, cell - gap, 2);
+      }
+    };
+
+    const renderGlow = () => {
+      lastGlow = now;
+      gctx.setTransform(1, 0, 0, 1, 0, 0);
+      gctx.clearRect(0, 0, glowCanvas.width, glowCanvas.height);
+      gctx.filter = `blur(${Math.max(4, cell)}px)`;
+      gctx.drawImage(numCanvas, 20, 20, glowCanvas.width - 40, glowCanvas.height - 40);
+      gctx.filter = 'none';
+    };
+
+    const cellAt = (x: number, y: number) => {
+      const c = Math.floor((x - gx0) / cell);
+      const r = Math.floor((y - gy0) / cell);
+      if (c < 0 || r < 0 || c >= cols || r >= rows) return -1;
+      return r * cols + c;
+    };
+
+    const addPart = (p: Partial<Part> & { k: number; x: number; y: number }) => {
+      if (parts.length >= MAX_PARTS) {
+        // Se descarta el escombro más antiguo para no sobrecargar
+        const i = parts.findIndex((q) => q.k === DEBRIS && q.rest);
+        if (i < 0) return;
+        parts[i] = parts[parts.length - 1];
+        parts.pop();
+      }
+      const life = p.life ?? 1;
+      parts.push({ vx: 0, vy: 0, s: 2, c: '#fff', a: 0, va: 0, rest: false, max: life, ...p, life } as Part);
+    };
+
+    const destroyCell = (i: number, vx: number, vy: number, chunk = true) => {
+      grid[i] = 0;
+      touched[i] = now;
+      alive--;
+      const x = gx0 + (i % cols) * cell + cell / 2;
+      const y = gy0 + ((i / cols) | 0) * cell + cell / 2;
+      if (chunk) {
+        addPart({
+          k: DEBRIS,
+          x,
+          y,
+          vx,
+          vy,
+          s: cell * rand(0.55, 0.95),
+          c: DEBRIS_COLORS[(Math.random() * DEBRIS_COLORS.length) | 0],
+          life: rand(5, 8),
+        });
+      } else if (Math.random() < 0.5) {
+        addPart({ k: DUST, x, y, vx: vx * 0.2, vy: vy * 0.2 - 30, s: cell * 1.5, life: rand(0.6, 1.2), c: '200, 180, 120' });
+      }
+    };
+
+    // Impacto de bala: rompe un pequeño cráter y deja la zona de alrededor dañada
+    const hitNumber = (x: number, y: number, dx: number, dy: number) => {
+      const c0 = Math.floor((x - gx0) / cell);
+      const r0 = Math.floor((y - gy0) / cell);
+      const R = 1.9;
+      for (let dr = -3; dr <= 3; dr++) {
+        for (let dc = -3; dc <= 3; dc++) {
+          const c = c0 + dc;
+          const r = r0 + dr;
+          if (c < 0 || r < 0 || c >= cols || r >= rows) continue;
+          const d = Math.hypot(dc, dr);
+          if (d > R + Math.random() * 0.6) continue;
+          const i = r * cols + c;
+          if (!grid[i]) continue;
+          const dmg = d < 1 ? 2 : 1;
+          if (grid[i] <= dmg) {
+            const out = Math.atan2(dr || -0.5, dc || -dx);
+            const sp = rand(120, 380);
+            destroyCell(i, Math.cos(out) * sp - dx * rand(80, 260), Math.sin(out) * sp - rand(150, 420), Math.random() < 0.7);
+          } else {
+            grid[i] -= dmg;
+            touched[i] = now;
+            flashes.push({ i, life: 0.12 });
+          }
+        }
+      }
+      dirty = true;
+      unstable = true;
+
+      // Chispas hacia atrás, en el sentido contrario a la bala
+      const back = Math.atan2(-dy, -dx);
+      const n = reduced.matches ? 5 : 12;
+      for (let k = 0; k < n; k++) {
+        const a = back + rand(-1.1, 1.1);
+        const sp = rand(300, 900);
+        addPart({ k: SPARK, x, y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, life: rand(0.12, 0.35), s: rand(1, 2) });
+      }
+      addPart({ k: DUST, x, y, vx: -dx * 40, vy: -40, s: cell * 2, life: 0.9, c: '220, 200, 140' });
+      lights.push({ x, y, r: cell * 9, life: 0.07, max: 0.07, c: '255, 220, 120' });
+      if (!reduced.matches) shake = Math.max(shake, 2.5);
+    };
+
+    // Los trozos que ya no tocan el suelo se desploman enteros
+    const collapse = () => {
+      unstable = false;
+      const seen = new Uint8Array(grid.length);
+      const stack: number[] = [];
+      // Las filas de abajo están ancladas al suelo: cortar a ras no tumba el número entero
+      const base = (rows - Math.max(2, Math.round(rows * 0.08))) * cols;
+      for (let i = base; i < grid.length; i++) {
+        if (grid[i]) {
+          seen[i] = 1;
+          stack.push(i);
+        }
+      }
+      while (stack.length) {
+        const i = stack.pop()!;
+        const c = i % cols;
+        const n = [i - cols, i + cols, c > 0 ? i - 1 : -1, c < cols - 1 ? i + 1 : -1];
+        for (const j of n) {
+          if (j >= 0 && j < grid.length && grid[j] && !seen[j]) {
+            seen[j] = 1;
+            stack.push(j);
+          }
+        }
+      }
+      // Cada bloque suelto cae con un pequeño empuje lateral común a su trozo
+      let fell = 0;
+      const drift = rand(-50, 50);
+      for (let i = 0; i < grid.length; i++) {
+        if (grid[i] && !seen[i]) {
+          destroyCell(i, drift + rand(-8, 8), rand(-30, 10));
+          fell++;
+        }
+      }
+      if (fell) dirty = true;
+    };
+
+    const explode = (x: number, y: number) => {
+      const R = Math.max(56, cell * 10);
+      const rc = Math.ceil(R / cell) + 1;
+      const c0 = Math.floor((x - gx0) / cell);
+      const r0 = Math.floor((y - gy0) / cell);
+      for (let dr = -rc; dr <= rc; dr++) {
+        for (let dc = -rc; dc <= rc; dc++) {
+          const c = c0 + dc;
+          const r = r0 + dr;
+          if (c < 0 || r < 0 || c >= cols || r >= rows) continue;
+          const i = r * cols + c;
+          if (!grid[i]) continue;
+          const cx = gx0 + c * cell + cell / 2;
+          const cy = gy0 + r * cell + cell / 2;
+          const d = Math.hypot(cx - x, cy - y);
+          if (d > R * rand(0.85, 1.15)) continue;
+          const dmg = d < R * 0.7 ? HP : 2;
+          if (grid[i] <= dmg) {
+            const k = 1 - d / R;
+            const sp = rand(350, 1100) * (0.35 + k);
+            const a = Math.atan2(cy - y, cx - x);
+            destroyCell(i, Math.cos(a) * sp, Math.sin(a) * sp - rand(150, 450), Math.random() < 0.85);
+          } else {
+            grid[i] -= dmg;
+            touched[i] = now;
+          }
+        }
+      }
+      dirty = true;
+      unstable = true;
+
+      const many = reduced.matches ? 0.4 : 1;
+      for (let k = 0; k < 45 * many; k++) {
+        const a = rand(0, Math.PI * 2);
+        const sp = rand(80, 520);
+        addPart({ k: FIRE, x, y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - 120, s: rand(10, 30), life: rand(0.25, 0.6) });
+      }
+      for (let k = 0; k < 28 * many; k++) {
+        const a = rand(0, Math.PI * 2);
+        const sp = rand(30, 220);
+        addPart({ k: SMOKE, x, y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - 60, s: rand(18, 40), life: rand(1.2, 2.6), c: '70, 68, 62' });
+      }
+      for (let k = 0; k < 70 * many; k++) {
+        const a = rand(0, Math.PI * 2);
+        const sp = rand(300, 1300);
+        addPart({ k: k % 2 ? EMBER : SPARK, x, y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - 200, s: rand(1, 2.5), life: rand(0.3, 1.2) });
+      }
+      rings.push({ x, y, r: 0, max: R * 3, life: 0.45 });
+      lights.push({ x, y, r: R * 5, life: 0.35, max: 0.35, c: '255, 190, 90' });
+      if (!reduced.matches) {
+        shake = 22;
+        screenFlash = 0.55;
+      }
+      sound.boom();
+    };
+
+    // ---------- Especialista ----------
+    // Sprites de cuerpo completo generados con PixelLab (src/assets/sprites/operador.png + .json):
+    // parado, andar, apuntar (poses de unos 30° abajo a 30° arriba), lanzar granada y victoria.
+    // Cada frame se coloca por la nuca a ras de suelo, el punto más estable entre poses.
+    const A = atlas.anims;
+    type Frame = (typeof A.idle)[number] & { mx?: number; my?: number; a?: number; gx?: number; gy?: number; hx?: number; hy?: number };
+    const K = () => 1.4 * S; // escala de los sprites (el cuerpo mide 80 px en la hoja)
+    const GREN_HOLD = 3; // frame de la granada con el brazo arriba, mientras se carga
+    const aimFrame = (): Frame => {
+      let best: Frame = A.aim[0];
+      for (const f of A.aim as Frame[]) if (Math.abs(f.a! - op.aim) < Math.abs(best.a! - op.aim)) best = f;
+      return best;
+    };
+
+    const bodyFrame = (): Frame => {
+      if (mode === 'done') return A.victory[Math.min(A.victory.length - 1, Math.floor(op.anim * 8))];
+      if (charging) return A.throw[Math.min(GREN_HOLD, Math.floor((now - chargeStart) / 0.08))];
+      if (op.throwT > 0) return A.throw[Math.min(A.throw.length - 1, GREN_HOLD + 1 + Math.floor((1 - op.throwT / THROW_ANIM) * (A.throw.length - GREN_HOLD - 1)))];
+      if (firing || (op.ready > 0 && Math.abs(op.vx) <= 8)) return aimFrame();
+      if (Math.abs(op.vx) > 8) return A.walk[Math.floor(op.walk * 0.8) % A.walk.length];
+      return A.idle[Math.floor(op.anim * 5) % A.idle.length];
+    };
+
+    // Punto de un frame (coordenadas dentro del frame) en pantalla
+    const at = (f: Frame, x: number, y: number) => {
+      const k = K();
+      return { x: op.x + (x - f.ax) * k, y: floorY + (y - f.ay) * k };
+    };
+    const shoulder = () => {
+      const f = aimFrame();
+      return at(f, f.sx, f.sy);
+    };
+    const muzzle = () => {
+      const f = aimFrame();
+      const m = at(f, f.mx!, f.my!);
+      return { x: m.x - op.recoil * 3 * S, y: m.y };
+    };
+    const ejectPort = () => {
+      const f = aimFrame();
+      const s = at(f, f.sx, f.sy);
+      const m = at(f, f.mx!, f.my!);
+      return { x: s.x + (m.x - s.x) * 0.45, y: s.y + (m.y - s.y) * 0.45 };
+    };
+    const grenadeHand = () => {
+      const f: Frame = A.throw[GREN_HOLD];
+      return f.hx != null ? at(f, f.hx, f.hy!) : shoulder();
+    };
+
+    const drawOperator = () => {
+      if (!sheetReady) return;
+      const k = K();
+      const f = bodyFrame();
+      const back = A.aim.includes(f) ? op.recoil * 3 * S : 0;
+      ctx.imageSmoothingEnabled = false;
+      ctx.drawImage(sheet, f.x, f.y, f.w, f.h, op.x - f.ax * k - back, floorY - f.ay * k, f.w * k, f.h * k);
+      ctx.imageSmoothingEnabled = true;
+
+      // Luz del visor: un leve halo amarillo delante de las gafas
+      if (f.gx != null) {
+        const v = at(f, f.gx, f.gy!);
+        const glow = ctx.createRadialGradient(v.x, v.y, 0, v.x, v.y, 12 * k);
+        glow.addColorStop(0, 'rgba(247, 196, 0, 0.3)');
+        glow.addColorStop(1, 'rgba(247, 196, 0, 0)');
+        ctx.globalCompositeOperation = 'lighter';
+        ctx.fillStyle = glow;
+        ctx.fillRect(v.x - 12 * k, v.y - 12 * k, 24 * k, 24 * k);
+        ctx.globalCompositeOperation = 'source-over';
+      }
+
+      // Fogonazo en la boca del cañón
+      if (op.flash > 0) {
+        const m = muzzle();
+        const fl = op.flash / 0.05;
+        ctx.save();
+        ctx.translate(m.x, m.y);
+        ctx.rotate(op.aim);
+        ctx.scale(S, S);
+        ctx.globalCompositeOperation = 'lighter';
+        ctx.fillStyle = `rgba(255, 220, 120, ${fl})`;
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        for (let n = 0; n < 10; n++) {
+          const a = (n / 10) * Math.PI * 2;
+          const len = n % 2 ? 5 : rand(10, 22) * (Math.abs(Math.cos(a)) * 0.8 + 0.3);
+          ctx.lineTo(Math.cos(a) * len + (Math.cos(a) > 0 ? 6 : 0), Math.sin(a) * len * 0.6);
+        }
+        ctx.closePath();
+        ctx.fill();
+        ctx.fillStyle = `rgba(255, 255, 255, ${fl})`;
+        ctx.beginPath();
+        ctx.arc(4, 0, 4, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+    };
+
+    // ---------- Acciones ----------
+    const startClock = () => {
+      if (!stats.start) stats.start = now;
+    };
+
+    const shoot = () => {
+      if (now < reloadUntil) return;
+      if (ammo <= 0) {
+        reload();
+        return;
+      }
+      ammo--;
+      stats.shots++;
+      startClock();
+      nextShot = now + FIRE_EVERY;
+      const spread = 0.01 + op.heat * 0.035;
+      const a = op.aim + rand(-spread, spread);
+      const m = muzzle();
+      bullets.push({ x: m.x, y: m.y, vx: Math.cos(a) * BULLET_SPEED, vy: Math.sin(a) * BULLET_SPEED, life: 1.2 });
+      op.recoil = 1;
+      op.flash = 0.05;
+      op.heat = Math.min(1, op.heat + 0.12);
+      lights.push({ x: m.x, y: m.y, r: 160 * S, life: 0.06, max: 0.06, c: '255, 210, 110' });
+      // Vaina expulsada hacia atrás y arriba
+      const e = ejectPort();
+      addPart({ k: SHELL, x: e.x, y: e.y, vx: rand(-220, -90), vy: rand(-380, -240), s: 3 * S, life: 3, a: rand(0, 6), va: rand(-30, 30), c: '#c9a227' });
+      if (!reduced.matches) shake = Math.max(shake, 1.2);
+      sound.shot();
+      if (ammo === 0) reload();
+    };
+
+    const reload = () => {
+      if (now < reloadUntil || ammo === MAG) return;
+      reloadUntil = now + RELOAD_S;
+      sound.reload();
+    };
+
+    // Fuerza de 0 a 1 según el tiempo que se mantiene la granada
+    const chargePower = () => clamp((now - chargeStart) / CHARGE_S, 0, 1);
+    const launch = (power: number) => {
+      const a = op.aim - 0.32;
+      const v = THROW_MIN + (THROW_MAX - THROW_MIN) * power;
+      const h = grenadeHand();
+      return { x: h.x, y: h.y, vx: Math.cos(a) * v, vy: Math.sin(a) * v };
+    };
+
+    // Se puede empezar a cargar durante la rematerialización; solo se lanza en juego
+    const startCharge = () => {
+      if (mode === 'done' || charging) return;
+      if (grenadesLeft <= 0) {
+        sound.click();
+        return;
+      }
+      charging = true;
+      chargeStart = now;
+      sound.click();
+    };
+
+    const throwGrenade = (power = chargePower()) => {
+      const g = launch(power); // desde la mano, antes de que el brazo cambie de postura
+      charging = false;
+      if (mode !== 'play' || grenadesLeft <= 0) return;
+      grenadesLeft--;
+      stats.grenades++;
+      startClock();
+      grenades.push({ ...g, t: FUSE_S, a: 0 });
+      op.throwT = THROW_ANIM;
+      sound.click();
+    };
+
+    const releaseCharge = () => {
+      if (charging) throwGrenade();
+    };
+
+    // Los bloques sin daño reciente se recuperan; los vacíos vuelven a crecer junto a los que siguen
+    // en pie (así lo regenerado siempre está unido al suelo). Nunca encima del especialista.
+    const regenerate = () => {
+      const prev = grid.slice();
+      const opL = op.x - 26 * S;
+      const opR = op.x + 66 * S;
+      const opT = floorY - 125 * S;
+      let grew = 0;
+      for (let i = 0; i < grid.length; i++) {
+        const h = prev[i];
+        if (!orig[i] || h === HP || now - touched[i] < REGEN_DELAY || Math.random() >= REGEN_P) continue;
+        if (h > 0) {
+          grid[i] = h + 1;
+          dirty = true;
+          continue;
+        }
+        const c = i % cols;
+        const near = (i >= cols && prev[i - cols]) || (i + cols < prev.length && prev[i + cols]) || (c > 0 && prev[i - 1]) || (c < cols - 1 && prev[i + 1]);
+        if (!near) continue;
+        const x = gx0 + c * cell;
+        const y = gy0 + ((i / cols) | 0) * cell;
+        if (x + cell > opL && x < opR && y + cell > opT) continue;
+        grid[i] = 1;
+        alive++;
+        grew++;
+        grows.push({ i, life: 0.4 });
+        dirty = true;
+      }
+      if (grew) {
+        if (now - lastGrow > 0.12) sound.regen();
+        lastGrow = now;
+      }
+    };
+
+    const finish = () => {
+      mode = 'done';
+      firing = false;
+      stats.end = now;
+      op.anim = 0;
+      // Lo poco que queda en pie se derrumba
+      for (let i = 0; i < grid.length; i++) if (grid[i]) destroyCell(i, rand(-60, 60), rand(-120, 0));
+      dirty = true;
+      const t = stats.end - stats.start;
+      const acc = stats.shots ? Math.round((stats.hits / stats.shots) * 100) : 0;
+      $('[data-e404-r-time]').textContent = formatTime(t);
+      $('[data-e404-r-shots]').textContent = String(stats.shots);
+      $('[data-e404-r-acc]').textContent = stats.shots ? `${acc} %` : '—';
+      $('[data-e404-r-gren]').textContent = `${stats.grenades}/${GRENADES}`;
+      setTimeout(() => {
+        if (mode !== 'done') return;
+        done.hidden = false;
+        $<HTMLButtonElement>('[data-e404-again]').focus({ preventScroll: true });
+      }, 900);
+      live.textContent = `Objetivo neutralizado en ${t.toFixed(1)} segundos. Pulsa R para reiniciar.`;
+    };
+
+    const reset = (silent = false) => {
+      done.hidden = true;
+      grid.set(orig);
+      alive = total;
+      dirty = true;
+      unstable = false;
+      flashes.length = 0;
+      grows.length = 0;
+      touched.fill(0);
+      charging = false;
+      bullets = [];
+      grenades = [];
+      ammo = MAG;
+      reloadUntil = 0;
+      grenadesLeft = GRENADES;
+      stats = { shots: 0, hits: 0, grenades: 0, start: 0, end: 0 };
+      // Los escombros se desvanecen hacia arriba, como al recargar el escenario
+      for (const p of parts) {
+        if (p.k === DEBRIS || p.k === SHELL) {
+          p.rest = false;
+          p.k = DUST;
+          p.c = '247, 196, 0';
+          p.vx *= 0.1;
+          p.vy = rand(-260, -80);
+          p.life = p.max = rand(0.3, 0.7);
+        }
+      }
+      mode = 'rebuild';
+      rebuildT = 0;
+      sound.rebuild();
+      if (!silent) live.textContent = 'Simulación reiniciada.';
+    };
+
+    const formatTime = (s: number) => {
+      const m = Math.floor(s / 60);
+      return `${String(m).padStart(2, '0')}:${(s - m * 60).toFixed(1).padStart(4, '0')}`;
+    };
+
+    // ---------- Bucle ----------
+    let last = performance.now();
+    const hudCache: Record<string, string> = {};
+    const setHud = (k: keyof typeof hud, v: string) => {
+      if (hudCache[k] !== v) {
+        hudCache[k] = v;
+        hud[k].textContent = v;
+      }
+    };
+
+    // Primer bloque en pie delante del especialista, a la altura de su cuerpo: hasta ahí puede avanzar
+    const wallX = () => {
+      const r0 = Math.max(0, rows - Math.ceil((115 * S) / cell));
+      const c0 = Math.max(0, Math.floor((op.x - gx0) / cell));
+      for (let c = c0; c < cols; c++) {
+        for (let r = r0; r < rows; r++) if (grid[r * cols + c]) return gx0 + c * cell;
+      }
+      return W - 10;
+    };
+
+    const update = (dt: number) => {
+      // Movimiento y puntería
+      const left = keys.has('ArrowLeft') || keys.has('KeyA');
+      const right = keys.has('ArrowRight') || keys.has('KeyD');
+      const up = keys.has('ArrowUp') || keys.has('KeyW');
+      const down = keys.has('ArrowDown') || keys.has('KeyS');
+      const target = (right ? 1 : 0) - (left ? 1 : 0);
+      // Disparando se avanza despacio, con el fusil encarado
+      op.vx += (target * (firing ? 90 : 240) - op.vx) * Math.min(1, dt * 12);
+      op.x = clamp(op.x + op.vx * dt, 24 * S, wallX() - 52 * S);
+      if (Math.abs(op.vx) > 8) op.walk += Math.abs(op.vx) * dt * 0.075;
+      if (up || down) {
+        op.aimTarget = null;
+        op.aim += ((down ? 1 : 0) - (up ? 1 : 0)) * 1.4 * dt;
+      } else if (op.aimTarget !== null) {
+        op.aim += (op.aimTarget - op.aim) * Math.min(1, dt * 18);
+      }
+      op.aim = clamp(op.aim, AIM_MIN, AIM_MAX);
+      op.ready = Math.max(0, op.ready - dt);
+      if (up || down || firing) op.ready = READY_S;
+      op.anim += dt;
+      op.throwT = Math.max(0, op.throwT - dt);
+      op.recoil = Math.max(0, op.recoil - dt * 14);
+      op.flash = Math.max(0, op.flash - dt);
+      op.heat = Math.max(0, op.heat - dt * (firing ? 0.6 : 2.5));
+
+      if (mode === 'play') {
+        if (reloadUntil && now >= reloadUntil) {
+          reloadUntil = 0;
+          ammo = MAG;
+        }
+        if (firing && now >= nextShot) shoot();
+      }
+
+      if (mode === 'rebuild') {
+        rebuildT += dt / REBUILD_S;
+        if (rebuildT >= 1) {
+          mode = 'play';
+          rebuildT = 1;
+        }
+      }
+
+      // Balas: avanzan a pasos cortos para no atravesar bloques
+      for (let b = bullets.length - 1; b >= 0; b--) {
+        const B = bullets[b];
+        const dist = Math.hypot(B.vx, B.vy) * dt;
+        const steps = Math.ceil(dist / (cell * 0.5));
+        const sx = (B.vx * dt) / steps;
+        const sy = (B.vy * dt) / steps;
+        let gone = false;
+        for (let k = 0; k < steps && !gone; k++) {
+          B.x += sx;
+          B.y += sy;
+          const i = cellAt(B.x, B.y);
+          if (i >= 0 && grid[i]) {
+            stats.hits++;
+            hitNumber(B.x, B.y, B.vx / BULLET_SPEED, B.vy / BULLET_SPEED);
+            sound.impact();
+            gone = true;
+          } else if (B.y >= floorY) {
+            for (let n = 0; n < 6; n++) {
+              const a = -Math.PI / 2 + rand(-0.9, 0.9) + (B.vx > 0 ? -0.3 : 0.3);
+              const sp = rand(200, 600);
+              addPart({ k: SPARK, x: B.x, y: floorY - 1, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, life: rand(0.1, 0.3), s: 1.2 });
+            }
+            addPart({ k: DUST, x: B.x, y: floorY - 4, vx: 0, vy: -30, s: 14, life: 0.7, c: '180, 170, 150' });
+            gone = true;
+          } else if (B.x > W + 20 || B.y < -20 || B.x < -20) gone = true;
+        }
+        B.life -= dt;
+        if (gone || B.life <= 0) {
+          bullets[b] = bullets[bullets.length - 1];
+          bullets.pop();
+        }
+      }
+
+      // Granadas
+      for (let g = grenades.length - 1; g >= 0; g--) {
+        const G = grenades[g];
+        G.t -= dt;
+        G.vy += GRAVITY * dt;
+        G.x += G.vx * dt;
+        G.y += G.vy * dt;
+        G.a += G.vx * dt * 0.05;
+        if (G.y >= floorY - 4) {
+          G.y = floorY - 4;
+          G.vy = -G.vy * 0.35;
+          G.vx *= 0.6;
+          if (Math.abs(G.vy) > 80) sound.tink();
+        }
+        const i = cellAt(G.x, G.y);
+        if (G.t <= 0 || (i >= 0 && grid[i]) || G.x > W + 40) {
+          explode(G.x, G.y);
+          grenades[g] = grenades[grenades.length - 1];
+          grenades.pop();
+        }
+      }
+
+      if (unstable) collapse();
+
+      if (mode === 'play' && stats.start) {
+        regenAcc += dt;
+        if (regenAcc >= REGEN_TICK) {
+          regenAcc = 0;
+          regenerate();
+        }
+      }
+
+      // Partículas
+      let heavy = 0;
+      for (let i = parts.length - 1; i >= 0; i--) {
+        const p = parts[i];
+        p.life -= dt;
+        if (p.life <= 0 || p.x < -60 || p.x > W + 60) {
+          parts[i] = parts[parts.length - 1];
+          parts.pop();
+          continue;
+        }
+        switch (p.k) {
+          case DEBRIS:
+          case SHELL: {
+            if (p.rest) break;
+            p.vy += GRAVITY * dt;
+            p.x += p.vx * dt;
+            p.y += p.vy * dt;
+            p.a += p.va * dt;
+            const half = p.s / 2;
+            if (p.y + half >= floorY) {
+              p.y = floorY - half;
+              if (p.vy > 220) {
+                if (p.k === DEBRIS && p.vy > 500) heavy++;
+                if (p.k === SHELL && p.vy > 250) sound.tink();
+                p.vy = -p.vy * (p.k === SHELL ? 0.45 : 0.25);
+                p.vx *= 0.65;
+                p.va = rand(-20, 20);
+              } else {
+                p.vy = 0;
+                p.vx *= 0.8;
+                if (Math.abs(p.vx) < 6) {
+                  p.rest = true;
+                  p.vx = 0;
+                }
+              }
+            }
+            break;
+          }
+          case SPARK:
+          case EMBER:
+            p.vy += GRAVITY * (p.k === EMBER ? 0.35 : 0.5) * dt;
+            p.vx *= 1 - dt * 2;
+            p.x += p.vx * dt;
+            p.y += p.vy * dt;
+            if (p.y > floorY) {
+              p.y = floorY;
+              p.vy = -Math.abs(p.vy) * 0.3;
+            }
+            break;
+          case FIRE:
+            p.vx *= 1 - dt * 5;
+            p.vy = p.vy * (1 - dt * 5) - 120 * dt;
+            p.x += p.vx * dt;
+            p.y += p.vy * dt;
+            break;
+          case SMOKE:
+          case DUST:
+            p.vx *= 1 - dt * 1.5;
+            p.vy = p.vy * (1 - dt * 1.5) - 18 * dt;
+            p.x += p.vx * dt;
+            p.y += p.vy * dt;
+            p.s += dt * (p.k === SMOKE ? 26 : 14);
+            break;
+        }
+      }
+      // Grandes trozos que llegan al suelo: golpe sordo y temblor
+      if (heavy > 12) {
+        if (!reduced.matches) shake = Math.max(shake, Math.min(14, heavy * 0.12));
+        sound.thud(Math.min(1, heavy / 120));
+        for (let n = 0; n < Math.min(8, heavy / 10); n++)
+          addPart({ k: DUST, x: rand(gx0, gx0 + cols * cell), y: floorY - 6, vx: rand(-80, 80), vy: -rand(20, 70), s: rand(16, 30), life: rand(0.8, 1.6), c: '200, 180, 120' });
+      }
+
+      for (let i = flashes.length - 1; i >= 0; i--) if ((flashes[i].life -= dt) <= 0) flashes.splice(i, 1);
+      for (let i = grows.length - 1; i >= 0; i--) if ((grows[i].life -= dt) <= 0 || !grid[grows[i].i]) grows.splice(i, 1);
+      for (let i = lights.length - 1; i >= 0; i--) if ((lights[i].life -= dt) <= 0) lights.splice(i, 1);
+      for (let i = rings.length - 1; i >= 0; i--) {
+        const R = rings[i];
+        R.life -= dt;
+        R.r += (R.max - R.r) * Math.min(1, dt * 9);
+        if (R.life <= 0) rings.splice(i, 1);
+      }
+      shake *= Math.exp(-dt * 10);
+      screenFlash = Math.max(0, screenFlash - dt * 2.2);
+
+      if (mode === 'play' && total && alive / total <= DONE_AT) finish();
+
+      // Lecturas del visor
+      setHud('integrity', `${Math.max(0, Math.round((alive / Math.max(1, total)) * 100))} %`);
+      setHud('ammo', now < reloadUntil ? 'Recargando' : `${ammo}/${MAG}`);
+      setHud('grenades', String(grenadesLeft));
+      setHud('acc', stats.shots ? `${Math.round((stats.hits / stats.shots) * 100)} %` : '—');
+      setHud('regen', !stats.start || mode !== 'play' ? 'en espera' : now - lastGrow < 0.4 ? 'activa' : 'en espera');
+      setHud('time', formatTime(stats.start ? (stats.end || now) - stats.start : 0));
+    };
+
+    const draw = () => {
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, W, H);
+      ctx.save();
+      if (shake > 0.3) ctx.translate(rand(-shake, shake), rand(-shake, shake));
+
+      ctx.drawImage(bgCanvas, 0, 0, W, H);
+      if (dirty) renderNumber();
+      if (now - lastGlow > 0.12 || mode === 'rebuild') renderGlow();
+
+      const nw = cols * cell;
+      const nh = rows * cell;
+      // Parte visible del número mientras se rematerializa: de abajo arriba
+      const cut = mode === 'rebuild' ? nh * (1 - easeOut(rebuildT)) : 0;
+
+      // Reflejo en el suelo
+      ctx.save();
+      ctx.globalAlpha = 0.1;
+      ctx.translate(0, floorY * 2);
+      ctx.scale(1, -1);
+      if (nh - cut > 0) ctx.drawImage(numCanvas, 0, cut * dpr, nw * dpr, (nh - cut) * dpr, gx0, gy0 + cut, nw, nh - cut);
+      ctx.restore();
+      const fade = ctx.createLinearGradient(0, floorY, 0, H);
+      fade.addColorStop(0, 'rgba(11, 11, 11, 0.2)');
+      fade.addColorStop(1, 'rgba(11, 11, 11, 0.95)');
+      ctx.fillStyle = fade;
+      ctx.fillRect(0, floorY, W, H - floorY);
+      ctx.drawImage(floorCanvas, 0, 0, W, H);
+
+      // Resplandor y número
+      if (nh - cut > 0) {
+        ctx.save();
+        ctx.globalCompositeOperation = 'lighter';
+        ctx.globalAlpha = 0.45;
+        ctx.drawImage(glowCanvas, gx0 - 40, gy0 - 40, nw + 80, nh + 80);
+        ctx.restore();
+        ctx.drawImage(numCanvas, 0, cut * dpr, nw * dpr, (nh - cut) * dpr, gx0, gy0 + cut, nw, nh - cut);
+      }
+      if (mode === 'rebuild') drawScan(cut);
+
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+      for (const f of flashes) {
+        ctx.globalAlpha = f.life / 0.12;
+        ctx.fillRect(gx0 + (f.i % cols) * cell, gy0 + ((f.i / cols) | 0) * cell, cell - 1, cell - 1);
+      }
+      ctx.globalAlpha = 1;
+
+      // Escombros y vainas
+      for (const p of parts) {
+        if (p.k !== DEBRIS && p.k !== SHELL) continue;
+        ctx.globalAlpha = Math.min(1, p.life);
+        ctx.fillStyle = p.c;
+        if (p.k === SHELL) {
+          ctx.save();
+          ctx.translate(p.x, p.y);
+          ctx.rotate(p.a);
+          ctx.fillRect(-p.s, -p.s / 2.5, p.s * 2, p.s / 1.25);
+          ctx.restore();
+        } else {
+          ctx.fillRect(p.x - p.s / 2, p.y - p.s / 2, p.s, p.s);
+        }
+      }
+      ctx.globalAlpha = 1;
+
+      // Bloques que acaban de volver a crecer: contorno claro
+      ctx.lineWidth = 1;
+      for (const g of grows) {
+        ctx.strokeStyle = `rgba(255, 246, 204, ${g.life / 0.4})`;
+        ctx.strokeRect(gx0 + (g.i % cols) * cell + 0.5, gy0 + ((g.i / cols) | 0) * cell + 0.5, cell - 2, cell - 2);
+      }
+      if (mode === 'play' && now - lastGrow < 0.4 && Math.floor(now * 4) % 2 === 0) {
+        ctx.fillStyle = YELLOW;
+        ctx.font = '500 11px "IBM Plex Mono", monospace';
+        ctx.textAlign = 'right';
+        ctx.fillText('▲ REGENERANDO', gx0 + cols * cell, Math.max(14, gy0 - 14));
+        ctx.textAlign = 'left';
+      }
+
+      drawOperator();
+      if (charging) drawCharge();
+
+      // Granadas: cuerpo oscuro con luz parpadeante
+      for (const G of grenades) {
+        ctx.save();
+        ctx.translate(G.x, G.y);
+        ctx.rotate(G.a);
+        ctx.fillStyle = '#2f3a2c';
+        ctx.beginPath();
+        ctx.ellipse(0, 0, 6 * S, 4.5 * S, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+        if (Math.floor(G.t * 10) % 2 === 0) {
+          ctx.fillStyle = YELLOW;
+          ctx.fillRect(G.x - 1.5, G.y - 6 * S, 3, 3);
+        }
+      }
+
+      // Humo (debajo de la luz)
+      for (const p of parts) {
+        if (p.k !== SMOKE && p.k !== DUST) continue;
+        const k = p.life / p.max;
+        ctx.fillStyle = `rgba(${p.c}, ${(p.k === SMOKE ? 0.35 : 0.18) * k})`;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.s, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // Todo lo que emite luz se suma
+      ctx.globalCompositeOperation = 'lighter';
+      for (const L of lights) {
+        const k = L.life / L.max;
+        const g = ctx.createRadialGradient(L.x, L.y, 0, L.x, L.y, L.r);
+        g.addColorStop(0, `rgba(${L.c}, ${0.35 * k})`);
+        g.addColorStop(1, `rgba(${L.c}, 0)`);
+        ctx.fillStyle = g;
+        ctx.fillRect(L.x - L.r, L.y - L.r, L.r * 2, L.r * 2);
+      }
+      ctx.lineCap = 'round';
+      for (const B of bullets) {
+        ctx.strokeStyle = 'rgba(255, 214, 90, 0.9)';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(B.x - B.vx * 0.018, B.y - B.vy * 0.018);
+        ctx.lineTo(B.x, B.y);
+        ctx.stroke();
+      }
+      for (const p of parts) {
+        const k = p.life / p.max;
+        if (p.k === SPARK) {
+          ctx.strokeStyle = `rgba(255, ${200 + 55 * k}, ${120 + 120 * k}, ${k})`;
+          ctx.lineWidth = p.s;
+          ctx.beginPath();
+          ctx.moveTo(p.x, p.y);
+          ctx.lineTo(p.x - p.vx * 0.02, p.y - p.vy * 0.02);
+          ctx.stroke();
+        } else if (p.k === EMBER) {
+          ctx.fillStyle = `rgba(255, 150, 40, ${k})`;
+          ctx.fillRect(p.x - 1, p.y - 1, p.s, p.s);
+        } else if (p.k === FIRE) {
+          ctx.fillStyle = `rgba(255, ${120 + 120 * k}, ${40 * k}, ${0.5 * k})`;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.s * (0.4 + k * 0.6), 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+      for (const R of rings) {
+        ctx.strokeStyle = `rgba(255, 230, 170, ${R.life / 0.45})`;
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(R.x, R.y, R.r, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.restore();
+
+      if (screenFlash > 0) {
+        ctx.fillStyle = `rgba(255, 245, 220, ${screenFlash})`;
+        ctx.fillRect(0, 0, W, H);
+      }
+    };
+
+    // Granada cargando: medidor sobre el especialista y trayectoria prevista
+    const drawCharge = () => {
+      const power = chargePower();
+      const g = launch(power);
+      ctx.fillStyle = YELLOW;
+      for (let k = 0; k < 90; k++) {
+        const dt = 1 / 60;
+        g.vy += GRAVITY * dt;
+        g.x += g.vx * dt;
+        g.y += g.vy * dt;
+        const i = cellAt(g.x, g.y);
+        if (g.y >= floorY || g.x > W || (i >= 0 && grid[i])) {
+          ctx.globalAlpha = 0.9;
+          ctx.beginPath();
+          ctx.arc(g.x, Math.min(g.y, floorY - 2), 5, 0, Math.PI * 2);
+          ctx.strokeStyle = YELLOW;
+          ctx.stroke();
+          break;
+        }
+        if (k % 3 === 0) {
+          ctx.globalAlpha = 0.85 * (1 - k / 110);
+          ctx.fillRect(g.x - 1.5, g.y - 1.5, 3, 3);
+        }
+      }
+      ctx.globalAlpha = 1;
+
+      const segs = 10;
+      const bw = 56 * S;
+      const bx = op.x - bw / 2 + 4 * S;
+      const by = floorY - 128 * S;
+      const sw = bw / segs;
+      for (let k = 0; k < segs; k++) {
+        const on = (k + 1) / segs <= power + 0.001;
+        ctx.fillStyle = on ? (power >= 1 && Math.floor(now * 10) % 2 ? '#fff6cc' : YELLOW) : 'rgba(255, 255, 255, 0.15)';
+        ctx.fillRect(bx + k * sw, by, sw - 2, 6);
+      }
+      ctx.fillStyle = 'rgba(242, 242, 240, 0.7)';
+      ctx.font = '500 10px "IBM Plex Mono", monospace';
+      ctx.fillText('FUERZA', bx, by - 5);
+    };
+
+    // Línea de barrido de la rematerialización con el contorno de los bloques que van a aparecer
+    const drawScan = (cut: number) => {
+      const y = gy0 + cut;
+      const rowCut = Math.floor(cut / cell);
+      ctx.strokeStyle = 'rgba(247, 196, 0, 0.5)';
+      ctx.lineWidth = 1;
+      for (let r = Math.max(0, rowCut - 4); r <= rowCut && r < rows; r++) {
+        ctx.globalAlpha = 1 - (rowCut - r) / 5;
+        for (let c = 0; c < cols; c++) {
+          if (orig[r * cols + c]) ctx.strokeRect(gx0 + c * cell + 0.5, gy0 + r * cell + 0.5, cell - 2, cell - 2);
+        }
+      }
+      ctx.globalAlpha = 1;
+      ctx.save();
+      ctx.shadowColor = YELLOW;
+      ctx.shadowBlur = 18;
+      ctx.fillStyle = '#fff6cc';
+      ctx.fillRect(gx0 - 30, y - 1, cols * cell + 60, 2);
+      ctx.restore();
+    };
+
+    const easeOut = (t: number) => 1 - Math.pow(1 - t, 3);
+
+    const frame = (t: number) => {
+      const dt = Math.min(0.033, (t - last) / 1000);
+      last = t;
+      now = t / 1000;
+      if (W) {
+        update(dt);
+        draw();
+      }
+      requestAnimationFrame(frame);
+    };
+
+    // ---------- Entrada ----------
+    const isField = (el: EventTarget | null) => el instanceof HTMLElement && el.closest('input, textarea, select, [contenteditable="true"]');
+    const GAME_KEYS = ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Space', 'KeyA', 'KeyD', 'KeyW', 'KeyS', 'KeyG', 'KeyR'];
+
+    addEventListener('keydown', (e) => {
+      if (isField(e.target) || e.metaKey || e.ctrlKey || e.altKey) return;
+      // Con el foco en un enlace o botón, Espacio e Intro hacen lo suyo
+      if (e.code === 'Space' && e.target instanceof HTMLElement && e.target.closest('a, button')) return;
+      if (!GAME_KEYS.includes(e.code)) return;
+      e.preventDefault();
+      unlockAudio();
+      keys.add(e.code);
+      if (e.repeat) return;
+      // El gatillo se registra siempre; solo dispara en juego (también si se mantiene durante la rematerialización)
+      if (e.code === 'Space') firing = true;
+      if (e.code === 'KeyG') startCharge();
+      if (e.code === 'KeyR') reset();
+    });
+    addEventListener('keyup', (e) => {
+      keys.delete(e.code);
+      if (e.code === 'Space') firing = false;
+      if (e.code === 'KeyG') releaseCharge();
+    });
+    addEventListener('blur', () => {
+      keys.clear();
+      firing = false;
+      charging = false;
+    });
+
+    const aimAt = (e: PointerEvent) => {
+      const rect = canvas.getBoundingClientRect();
+      const s = shoulder();
+      op.aimTarget = clamp(Math.atan2(e.clientY - rect.top - s.y, e.clientX - rect.left - s.x), AIM_MIN, AIM_MAX);
+      op.ready = READY_S;
+    };
+    const onStage = (e: Event) => !(e.target instanceof HTMLElement && e.target.closest('a, button, .e404-intro, .e404-done, .sound-toggle'));
+
+    root.addEventListener('pointermove', (e) => {
+      if (e.pointerType === 'mouse' && onStage(e)) aimAt(e);
+    });
+    root.addEventListener('pointerdown', (e) => {
+      unlockAudio();
+      if (!onStage(e) || e.button !== 0) return;
+      aimAt(e);
+      firing = true;
+    });
+    addEventListener('pointerup', () => (firing = false));
+    root.addEventListener('pointercancel', () => (firing = false));
+
+    // Botón de granada: se carga mientras se mantiene pulsado y se lanza al soltar.
+    // Activado con el teclado (Intro con el foco en él) lanza a media fuerza.
+    const grenadeBtn = $<HTMLButtonElement>('[data-e404-grenade]');
+    grenadeBtn.addEventListener('pointerdown', (e) => {
+      unlockAudio();
+      grenadeBtn.setPointerCapture(e.pointerId);
+      startCharge();
+    });
+    grenadeBtn.addEventListener('pointerup', releaseCharge);
+    grenadeBtn.addEventListener('pointercancel', () => (charging = false));
+    grenadeBtn.addEventListener('click', (e) => {
+      if (e.detail === 0) throwGrenade(0.5);
+      grenadeBtn.blur();
+    });
+    for (const sel of ['[data-e404-reset]', '[data-e404-again]']) {
+      $(sel).addEventListener('click', (e) => {
+        unlockAudio();
+        reset();
+        (e.currentTarget as HTMLElement).blur();
+      });
+    }
+
+    // Se rehace el escenario al cambiar el ancho (no al ocultarse la barra del navegador en móvil)
+    let lastW = 0;
+    let lastH = 0;
+    let timer = 0;
+    new ResizeObserver(() => {
+      const r = root.getBoundingClientRect();
+      if (Math.abs(r.width - lastW) < 1 && Math.abs(r.height - lastH) < 120) return;
+      lastW = r.width;
+      lastH = r.height;
+      clearTimeout(timer);
+      timer = window.setTimeout(build, lastW ? 150 : 0);
+    }).observe(root);
+
+    requestAnimationFrame(frame);
+  }
+</script>
+
+<style>
+  .e404 {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    min-height: 100svh;
+    min-height: max(100svh, 560px);
+    padding-top: calc(var(--header-h) + clamp(20px, 4vh, 48px));
+    background: var(--bg);
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  .e404-canvas {
+    position: absolute;
+    inset: 0;
+    z-index: -2;
+    display: block;
+    width: 100%;
+    height: 100%;
+    /* Se puede seguir desplazando la página con el dedo; un toque dispara */
+    touch-action: pan-y;
+  }
+
+  /* Viñeta del visor */
+  .e404::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background: radial-gradient(ellipse 85% 75% at 55% 55%, transparent 55%, rgba(0, 0, 0, 0.55));
+  }
+
+  /* Esquinas del visor */
+  .e404-visor {
+    position: absolute;
+    inset: calc(var(--header-h) + 10px) 12px 12px;
+    z-index: -1;
+    pointer-events: none;
+  }
+
+  .e404-visor i {
+    position: absolute;
+    width: 22px;
+    height: 22px;
+    border: 0 solid rgba(247, 196, 0, 0.7);
+  }
+
+  .e404-visor i:nth-child(1) {
+    top: 0;
+    left: 0;
+    border-width: 2px 0 0 2px;
+  }
+
+  .e404-visor i:nth-child(2) {
+    top: 0;
+    right: 0;
+    border-width: 2px 2px 0 0;
+  }
+
+  .e404-visor i:nth-child(3) {
+    bottom: 0;
+    left: 0;
+    border-width: 0 0 2px 2px;
+  }
+
+  .e404-visor i:nth-child(4) {
+    bottom: 0;
+    right: 0;
+    border-width: 0 2px 2px 0;
+  }
+
+  .e404-top {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 20px 40px;
+    pointer-events: none;
+  }
+
+  .e404-intro,
+  .e404-stats {
+    pointer-events: auto;
+  }
+
+  .e404-intro {
+    max-width: 34rem;
+    -webkit-user-select: text;
+    user-select: text;
+  }
+
+  .e404-title {
+    margin: 0.75rem 0 0.6rem;
+    font-size: clamp(2.25rem, 5vw, 3.75rem);
+  }
+
+  .e404-lead {
+    color: var(--text-muted);
+    max-width: 40ch;
+    margin-bottom: 1.25rem;
+  }
+
+  .e404-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 14px 24px;
+  }
+
+  .e404-stats {
+    gap: 2px;
+    padding-top: 4px;
+  }
+
+  .e404-stats b {
+    display: inline-block;
+    min-width: 7.5ch;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .e404-bottom {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: clamp(18px, 3vh, 28px);
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 10px 28px;
+    padding-inline: 64px;
+    pointer-events: none;
+  }
+
+  .e404-bottom > * {
+    pointer-events: auto;
+  }
+
+  .e404-keys {
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 6px 18px;
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  .e404-keys span {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .e404-keys--touch {
+    display: none;
+  }
+
+  @media not ((hover: hover) and (pointer: fine)) {
+    .e404-keys--desk {
+      display: none;
+    }
+
+    .e404-keys--touch {
+      display: flex;
+    }
+
+    .e404 .e404-btn kbd {
+      display: none;
+    }
+  }
+
+  .e404 kbd {
+    display: inline-block;
+    min-width: 1.9em;
+    padding: 1px 5px;
+    font-family: var(--font-data);
+    font-size: 0.6875rem;
+    line-height: 1.5;
+    text-align: center;
+    color: var(--text);
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid var(--line-strong);
+    border-bottom-width: 2px;
+    border-radius: 3px;
+  }
+
+  .e404-buttons {
+    display: flex;
+    gap: 8px;
+  }
+
+  .e404-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 40px;
+    padding: 6px 12px;
+    font-size: 0.75rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text);
+    background: rgba(11, 11, 11, 0.7);
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: border-color 0.2s, color 0.2s;
+  }
+
+  .e404-btn:hover {
+    border-color: var(--yellow);
+    color: var(--yellow);
+  }
+
+  /* Informe al neutralizar el objetivo */
+  .e404-done {
+    position: absolute;
+    left: 50%;
+    top: 55%;
+    z-index: 3;
+    width: min(440px, calc(100% - 32px));
+    padding: 28px;
+    transform: translate(-50%, -50%);
+    background: rgba(11, 11, 11, 0.88);
+    border: 1px solid var(--line-strong);
+    backdrop-filter: blur(8px);
+    animation: e404-in 0.35s cubic-bezier(0.2, 0.9, 0.3, 1.2);
+  }
+
+  .e404-done[hidden] {
+    display: none;
+  }
+
+  .e404-done::before,
+  .e404-done::after {
+    content: '';
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    border: 0 solid var(--yellow);
+  }
+
+  .e404-done::before {
+    top: -1px;
+    left: -1px;
+    border-width: 2px 0 0 2px;
+  }
+
+  .e404-done::after {
+    bottom: -1px;
+    right: -1px;
+    border-width: 0 2px 2px 0;
+  }
+
+  .e404-done-title {
+    margin: 0.5rem 0 1rem;
+    font-family: var(--font-display);
+    font-size: clamp(2.25rem, 6vw, 3rem);
+    line-height: 0.95;
+    text-transform: uppercase;
+    color: var(--yellow);
+  }
+
+  .e404-report {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px 20px;
+    margin: 0 0 1.5rem;
+  }
+
+  .e404-report dt {
+    font-size: 0.6875rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+
+  .e404-report dd {
+    margin: 0;
+    font-size: 1.25rem;
+    color: var(--text);
+  }
+
+  @keyframes e404-in {
+    from {
+      opacity: 0;
+      transform: translate(-50%, -46%) scale(0.96);
+    }
+  }
+
+  @media (max-width: 640px) {
+    .e404-stats {
+      justify-items: start;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 2px 14px;
+    }
+
+    .e404-stats b {
+      min-width: 0;
+    }
+
+    .e404-lead {
+      font-size: 0.9375rem;
+    }
+
+    .e404-bottom {
+      padding-inline: 16px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .e404-done {
+      animation: none;
+    }
+  }
+</style>
