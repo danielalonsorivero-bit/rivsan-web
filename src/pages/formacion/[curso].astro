@@ -87,30 +87,32 @@ const ficha = [
     <Image src={data.imagen} alt={data.imagenAlt} class="bg" widths={[800, 1600]} sizes="100vw" loading="eager" fetchpriority="high" />
     <div class="shade" aria-hidden="true"></div>
     <div class="container content">
+      <div class="plate theme-signal">
       <nav class="crumbs" aria-label="Ruta">
         <a href="/formacion/">Formación</a>
         <span aria-hidden="true">/</span>
         <a href={`/formacion/#${data.categoria}`}>{cat.label}</a>
       </nav>
       {data.ejemplo && <p class="sample">Curso de ejemplo · contenido provisional</p>}
-      <p class="eyebrow">{cat.partner}</p>
-      <h1 class="h-xl">{data.titulo}</h1>
+      <p class="kicker">{cat.partner}</p>
+      <h1>{data.titulo}</h1>
       <p class="lead">{data.resumen}</p>
       <div class="actions">
-        <button type="button" class="btn btn-primary" data-open-request>+ Info y solicitud <span class="arrow">→</span></button>
-        {convocatorias.length > 0 && <a href="#convocatorias" class="btn btn-ghost">Ver convocatorias</a>}
+        <button type="button" class="btn btn-primary" data-open-request>+ Info y solicitud</button>
+        {convocatorias.length > 0 && <a href="#convocatorias" class="link-arrow">Ver convocatorias</a>}
+      </div>
       </div>
     </div>
   </section>
 
-  <section class="section">
+  <section class="section theme-light">
     <div class="container layout">
       <article class="prose">
         <Content />
       </article>
 
       <aside class="sidebar">
-        <div class="panel hud">
+        <div class="panel panel--ficha theme-signal">
           <h2 class="panel-title">Ficha del curso</h2>
           <dl class="ficha">
             {
@@ -140,7 +142,7 @@ const ficha = [
                       <span class:list={['pill', `pill--${estado.tone}`]}>{estado.label}</span>
                       {estado.tone !== 'full' && (
                         <button type="button" class="link-arrow" data-open-request data-convocatoria={c.id}>
-                          Solicitar plaza →
+                          Solicitar plaza
                         </button>
                       )}
                     </li>
@@ -263,14 +265,26 @@ const ficha = [
 </script>
 
 <style>
+  /* v2: foto a sangre y el título en una placa amarilla apoyada en el borde inferior */
   .course-hero {
     position: relative;
     min-height: 72svh;
     display: flex;
     align-items: flex-end;
-    padding: calc(var(--header-h) + 48px) 0 64px;
+    padding: calc(var(--header-h) + 25vh) 0 0;
     isolation: isolate;
     overflow: hidden;
+  }
+
+  .plate {
+    container-type: inline-size;
+    width: min(100%, 900px);
+    padding: clamp(24px, 4vw, 48px) clamp(20px, 4vw, 48px) clamp(28px, 4vw, 44px);
+  }
+
+  .kicker {
+    font-weight: 600;
+    margin-bottom: 0.75rem;
   }
 
   .bg {
@@ -287,59 +301,52 @@ const ficha = [
     position: absolute;
     inset: 0;
     z-index: -1;
-    background:
-      linear-gradient(90deg, rgba(11, 11, 11, 0.94) 0%, rgba(11, 11, 11, 0.6) 60%, rgba(11, 11, 11, 0.35) 100%),
-      linear-gradient(0deg, var(--bg) 0%, transparent 45%);
+    background: linear-gradient(0deg, rgba(35, 31, 32, 0.5), transparent 60%);
   }
 
-  .content h1 {
-    font-size: clamp(2.75rem, 6vw, 5.5rem);
-    max-width: 13em;
+  .plate h1 {
+    font-size: clamp(1.6rem, 5.6cqi, 3.5rem);
+    line-height: 1;
     margin-bottom: 1.25rem;
   }
 
-  .content .lead {
-    color: #d6d6d0;
+  .plate .lead {
+    color: var(--text);
+    font-weight: 500;
   }
 
   .crumbs {
     display: flex;
     gap: 10px;
-    font-family: var(--font-label);
-    font-weight: 500;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    font-size: 0.85rem;
-    color: var(--text-muted);
-    margin-bottom: 28px;
+    font-weight: 600;
+    font-size: 0.9375rem;
+    margin-bottom: 20px;
   }
 
   .crumbs a {
-    text-decoration: none;
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
   }
 
   .crumbs a:hover {
-    color: var(--yellow);
+    text-decoration-thickness: 3px;
   }
 
   .sample {
     display: inline-block;
-    font-family: var(--font-label);
     font-weight: 600;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    font-size: 0.75rem;
-    padding: 4px 10px;
-    border: 1px dashed var(--yellow);
-    color: var(--yellow);
-    margin-bottom: 20px;
+    font-size: 0.875rem;
+    padding: 3px 10px;
+    border: 1.5px dashed var(--ink);
+    margin-bottom: 16px;
   }
 
   .actions {
     display: flex;
     flex-wrap: wrap;
-    gap: 14px;
-    margin-top: 1.75rem;
+    align-items: center;
+    gap: 16px 28px;
+    margin-top: 1.5rem;
   }
 
   .layout {
@@ -350,9 +357,13 @@ const ficha = [
   }
 
   /* Contenido markdown del curso */
+  .prose {
+    max-width: 68ch;
+  }
+
   .prose :global(h2) {
-    font-size: clamp(2rem, 3.4vw, 2.75rem);
-    margin: 2.2em 0 0.6em;
+    font-size: clamp(1.4rem, 2.4vw, 1.9rem);
+    margin: 2.2em 0 0.7em;
   }
 
   .prose :global(h2:first-child) {
@@ -361,7 +372,7 @@ const ficha = [
 
   .prose :global(p),
   .prose :global(li) {
-    color: #cfcfc9;
+    color: var(--text-muted);
   }
 
   .prose :global(strong) {
@@ -390,6 +401,7 @@ const ficha = [
     width: 8px;
     height: 8px;
     background: var(--yellow);
+    outline: 1px solid var(--ink);
   }
 
   .prose :global(ol) {
@@ -406,10 +418,10 @@ const ficha = [
     content: counter(paso, decimal-leading-zero);
     position: absolute;
     left: 0;
-    font-family: var(--font-label);
-    font-weight: 600;
-    color: var(--yellow);
-    letter-spacing: 0.1em;
+    font-stretch: var(--wide);
+    font-weight: 800;
+    color: var(--text);
+    font-variant-numeric: tabular-nums;
   }
 
   .sidebar {
@@ -419,18 +431,23 @@ const ficha = [
     top: calc(var(--header-h) + 24px);
   }
 
+  /* La ficha es una placa amarilla; las convocatorias, una lista con filete de tinta */
   .panel {
-    background: var(--surface);
-    border: 1px solid var(--line);
-    padding: 28px;
+    padding-top: 18px;
+    border-top: 3px solid var(--ink);
+  }
+
+  .panel--ficha {
+    padding: 24px 28px 28px;
+    border-top: 0;
   }
 
   .panel-title {
-    font-family: var(--font-label);
-    font-weight: 600;
-    letter-spacing: 0.22em;
-    font-size: 0.85rem;
-    color: var(--yellow);
+    font-family: var(--font-display);
+    font-stretch: var(--wide);
+    font-weight: 800;
+    text-transform: uppercase;
+    font-size: 1.125rem;
     margin-bottom: 18px;
   }
 
@@ -453,12 +470,14 @@ const ficha = [
   }
 
   .ficha dt {
-    font-size: 0.85rem;
-    color: var(--text-dim);
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-muted);
   }
 
   .ficha dd {
     margin: 0;
+    font-weight: 500;
   }
 
   .sessions {
@@ -488,10 +507,12 @@ const ficha = [
 
   .when strong {
     font-family: var(--font-display);
-    font-weight: 400;
-    font-size: 1.6rem;
-    line-height: 1;
+    font-stretch: var(--wide);
+    font-weight: 800;
+    font-size: 1.2rem;
+    line-height: 1.1;
     text-transform: uppercase;
+    font-variant-numeric: tabular-nums;
   }
 
   .when span {
@@ -501,6 +522,9 @@ const ficha = [
 
   .sessions .link-arrow {
     grid-column: 1 / -1;
+    font: inherit;
+    font-weight: 700;
+    color: var(--text);
     background: none;
     border: 0;
     padding: 0;
@@ -521,15 +545,10 @@ const ficha = [
     width: 100%;
   }
 
-  .related {
-    background: var(--bg-2);
-    border-top: 1px solid var(--line);
-  }
-
   .related-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
+    gap: 40px clamp(20px, 3vw, 40px);
   }
 
   /* Ventana modal de solicitud: ficha horizontal (credencial + formulario) */
@@ -539,7 +558,8 @@ const ficha = [
     padding: 0;
     background: var(--bg-2);
     color: var(--text);
-    border: 1px solid rgba(247, 196, 0, 0.4);
+    border: 0;
+    border-top: 6px solid var(--yellow);
     overflow: hidden;
     /* Al llegar al final del scroll interno no se desplaza la página de detrás */
     overscroll-behavior: contain;
@@ -573,7 +593,7 @@ const ficha = [
     overflow: hidden;
     display: flex;
     align-items: flex-end;
-    border-right: 2px dashed rgba(247, 196, 0, 0.45);
+    border-right: 2px dashed var(--line-strong);
   }
 
   /* Muescas de troquel en el borde perforado */
@@ -585,8 +605,7 @@ const ficha = [
     width: 24px;
     height: 24px;
     border-radius: 50%;
-    background: #050505;
-    border: 1px solid rgba(247, 196, 0, 0.4);
+    background: rgba(0, 0, 0, 0.8);
     z-index: 2;
   }
 
@@ -622,49 +641,47 @@ const ficha = [
     inset: -60% 0 0;
     z-index: -1;
     background:
-      linear-gradient(0deg, rgba(11, 11, 11, 0.97) 55%, rgba(11, 11, 11, 0.4)),
-      repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.03) 0 1px, transparent 1px 3px);
+      linear-gradient(0deg, rgba(35, 31, 32, 0.97) 55%, rgba(35, 31, 32, 0.4));
   }
 
   .ticket-eyebrow {
     margin: 0;
-    font-size: 0.7rem;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--yellow);
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-muted);
   }
 
   .ticket-title {
-    font-size: clamp(1.9rem, 2.6vw, 2.5rem);
+    font-size: clamp(1.3rem, 1.9vw, 1.65rem);
+    line-height: 1.05;
   }
 
+  /* La convocatoria elegida, en una placa amarilla */
   .ticket-conv {
     display: grid;
     gap: 2px;
     padding: 14px 16px;
-    border: 1px solid rgba(247, 196, 0, 0.45);
-    background: rgba(247, 196, 0, 0.06);
+    background: var(--yellow);
+    color: var(--ink);
   }
 
   .ticket-conv .data {
-    font-size: 0.68rem;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--text-dim);
+    font-size: 0.875rem;
+    font-weight: 600;
   }
 
   .ticket-conv strong {
     font-family: var(--font-display);
-    font-weight: 400;
-    font-size: 1.6rem;
+    font-stretch: var(--wide);
+    font-weight: 800;
+    font-size: 1.3rem;
     line-height: 1.05;
-    color: var(--yellow);
     text-transform: uppercase;
   }
 
   .ticket-conv span:last-child {
     font-size: 0.9rem;
-    color: var(--text-muted);
+    font-weight: 500;
   }
 
   .ticket-data {
@@ -681,11 +698,8 @@ const ficha = [
   }
 
   .ticket-data dt {
-    font-size: 0.68rem;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--text-dim);
-    padding-top: 2px;
+    font-weight: 600;
+    color: var(--text-muted);
   }
 
   .ticket-data dd {
@@ -698,9 +712,10 @@ const ficha = [
     white-space: nowrap;
     padding-top: 12px;
     border-top: 1px solid var(--line);
-    font-size: 0.68rem;
-    letter-spacing: 0.16em;
-    color: var(--text-dim);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    font-variant-numeric: tabular-nums;
   }
 
   .enroll-form {
@@ -734,8 +749,7 @@ const ficha = [
   }
 
   .close:hover {
-    border-color: var(--yellow);
-    color: var(--yellow);
+    border-color: var(--text);
   }
 
   /* En pantallas estrechas la credencial pasa arriba, compacta, y la ficha hace scroll */
@@ -751,7 +765,7 @@ const ficha = [
 
     .ticket {
       border-right: 0;
-      border-bottom: 2px dashed rgba(247, 196, 0, 0.45);
+      border-bottom: 2px dashed var(--line-strong);
     }
 
     .ticket::before,

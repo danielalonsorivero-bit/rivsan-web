@@ -6,6 +6,7 @@ import team from '../../assets/img/equipo-4.jpg';
 import aar from '../../assets/img/aar-pantalla.jpg';
 
 // Resumen del simulador. El detalle (armas, configuraciones, módulos) está en /simulador/.
+// v2: las tres capacidades van en filas con la foto a un lado, no en tarjetas iguales.
 const features = [
   {
     tag: 'Sistema SuitUp',
@@ -36,9 +37,9 @@ const features = [
 
 <section class="section simulator" id="simulador">
   <div class="container">
-    <div class="head reveal">
+    <div class="head">
       <div>
-        <p class="eyebrow">Simulador VR · Tecnología RE-liON</p>
+        <p class="eyebrow">Simulador VR, tecnología RE-liON</p>
         <h2 class="h-lg">Tu jefatura, <span class="accent">convertida en zona táctica</span></h2>
       </div>
       <div>
@@ -46,29 +47,29 @@ const features = [
           Un sistema inalámbrico que se monta en cualquier espacio cubierto y se recoge al terminar. Sin obras, sin sensores
           fijos, sin cables.
         </p>
-        <a href="/simulador/" class="link-arrow">Conocer el simulador a fondo <span aria-hidden="true">→</span></a>
+        <a href="/simulador/" class="link-arrow">Conocer el simulador a fondo</a>
       </div>
     </div>
 
-    <div class="cards">
+    <ul class="features">
       {
         features.map((f) => (
-          <article class="card reveal">
-            <div class="card-media hud">
-              <Image src={f.image} alt={f.alt} widths={[480, 800]} sizes="(max-width: 960px) 100vw, 33vw" />
+          <li class="feature">
+            <Image src={f.image} alt={f.alt} widths={[480, 800]} sizes="(max-width: 820px) 100vw, 34vw" />
+            <div class="feature-text">
+              <p class="tag">{f.tag}</p>
+              <h3>
+                <a href={f.href}>{f.title}</a>
+              </h3>
+              <p class="muted">{f.text}</p>
             </div>
-            <span class="tag">{f.tag}</span>
-            <h3>
-              <a href={f.href}>{f.title}</a>
-            </h3>
-            <p class="muted">{f.text}</p>
-          </article>
+          </li>
         ))
       }
-    </div>
+    </ul>
 
     <div class="try">
-      <div class="try-text reveal">
+      <div class="try-text">
         <p class="eyebrow">Pruébalo</p>
         <h3 class="h-md">Revisa una intervención como lo hace tu instructor</h3>
         <p class="muted">
@@ -76,9 +77,7 @@ const features = [
           tiempo.
         </p>
       </div>
-      <div class="reveal">
-        <AarDemo />
-      </div>
+      <AarDemo />
     </div>
   </div>
 </section>
@@ -89,56 +88,69 @@ const features = [
     grid-template-columns: 1.1fr 1fr;
     gap: 24px 64px;
     align-items: end;
-    margin-bottom: 56px;
+    margin-bottom: clamp(40px, 5vw, 64px);
   }
 
   .head .lead {
-    margin-bottom: 1rem;
+    margin-bottom: 1.25rem;
   }
 
-  .cards {
+  .features {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-top: 3px solid var(--paper);
+  }
+
+  .feature {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: clamp(20px, 3vw, 40px);
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    gap: clamp(20px, 4vw, 56px);
+    align-items: center;
+    padding-block: clamp(24px, 3vw, 36px);
+    border-bottom: 1px solid var(--line);
   }
 
-  .card-media {
-    margin-bottom: 24px;
-  }
-
-  .card-media img {
+  .feature img {
     width: 100%;
-    aspect-ratio: 4 / 3;
+    aspect-ratio: 16 / 9;
     object-fit: cover;
-    filter: saturate(0.85) contrast(1.05);
   }
 
   .tag {
-    font-family: var(--font-label);
     font-weight: 600;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    font-size: 0.8rem;
     color: var(--text-muted);
+    margin-bottom: 8px;
   }
 
-  .card h3 {
-    font-size: clamp(1.75rem, 2.6vw, 2.25rem);
-    margin: 8px 0 12px;
+  .feature h3 {
+    font-family: var(--font-display);
+    font-stretch: var(--wide);
+    font-weight: 800;
+    text-transform: uppercase;
+    font-size: clamp(1.4rem, 2.4vw, 2rem);
+    line-height: 1.02;
+    margin-bottom: 14px;
   }
 
-  .card h3 a {
+  .feature h3 a {
     text-decoration: none;
   }
 
-  .card h3 a:hover {
-    color: var(--yellow);
+  .feature h3 a:hover {
+    text-decoration: underline;
+    text-decoration-color: var(--yellow);
+    text-decoration-thickness: 4px;
+    text-underline-offset: 6px;
+  }
+
+  .feature-text p:last-child {
+    max-width: 56ch;
+    margin: 0;
   }
 
   .try {
     margin-top: clamp(64px, 8vw, 112px);
-    padding-top: clamp(40px, 5vw, 64px);
-    border-top: 1px solid var(--line);
     display: grid;
     grid-template-columns: 1fr 2fr;
     gap: clamp(32px, 5vw, 64px);
@@ -146,19 +158,19 @@ const features = [
   }
 
   .try h3 {
-    font-size: clamp(2rem, 3.4vw, 2.75rem);
     margin-bottom: 1rem;
   }
 
   @media (max-width: 960px) {
     .try,
-    .head,
-    .cards {
+    .head {
       grid-template-columns: 1fr;
     }
+  }
 
-    .cards {
-      gap: 48px;
+  @media (max-width: 820px) {
+    .feature {
+      grid-template-columns: 1fr;
     }
   }
 </style>

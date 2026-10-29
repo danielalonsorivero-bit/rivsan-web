@@ -34,7 +34,7 @@ const hayEjemplos = cursos.some((c) => c.data.ejemplo);
   title="Formación"
   description="Cursos de simulación táctica, primeros auxilios tácticos y uso de la fuerza no letal para Policía Local y Fuerzas y Cuerpos de Seguridad."
 >
-  <section class="page-hero">
+  <section class="page-hero theme-signal">
     <div class="container">
       <p class="eyebrow">Formación</p>
       <h1 class="h-xl">Cursos y <span class="accent">calendario</span></h1>
@@ -107,7 +107,7 @@ const hayEjemplos = cursos.some((c) => c.data.ejemplo);
     </div>
   </section>
 
-  <section class="section catalog">
+  <section class="section catalog theme-light">
     <div class="container">
       {
         grupos.map((g) => (
@@ -136,7 +136,9 @@ const hayEjemplos = cursos.some((c) => c.data.ejemplo);
                     entrena.
                   </p>
                 </div>
-                <ForceDemo />
+                <div class="theme-ink">
+                  <ForceDemo />
+                </div>
               </div>
             )}
           </div>
@@ -196,8 +198,11 @@ const hayEjemplos = cursos.some((c) => c.data.ejemplo);
   }
 
   .feature-demo h3 {
-    font-size: clamp(2rem, 3.4vw, 2.75rem);
     margin-bottom: 1rem;
+  }
+
+  .feature-demo .theme-ink {
+    padding: clamp(12px, 2vw, 24px);
   }
 
   @media (max-width: 960px) {
@@ -206,28 +211,26 @@ const hayEjemplos = cursos.some((c) => c.data.ejemplo);
     }
   }
 
+  /* v2: cabecera en banda amarilla, con el rótulo ancho y los filtros en tinta */
   .page-hero {
-    padding: calc(var(--header-h) + clamp(56px, 8vw, 104px)) 0 clamp(40px, 5vw, 64px);
-    background:
-      radial-gradient(ellipse at 85% 0%, rgba(247, 196, 0, 0.12), transparent 55%),
-      var(--bg);
-    border-bottom: 1px solid var(--line);
+    padding: calc(var(--header-h) + clamp(40px, 6vw, 80px)) 0 clamp(32px, 4vw, 48px);
   }
 
   .page-hero h1 {
     margin-bottom: 1.25rem;
   }
 
+  .page-hero .lead {
+    color: var(--text);
+    font-weight: 500;
+  }
+
   .sample {
     display: inline-block;
-    font-family: var(--font-label);
     font-weight: 600;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    font-size: 0.75rem;
-    padding: 4px 10px;
-    border: 1px dashed var(--yellow);
-    color: var(--yellow);
+    font-size: 0.875rem;
+    padding: 3px 10px;
+    border: 1.5px dashed var(--ink);
   }
 
   .filters {
@@ -238,28 +241,24 @@ const hayEjemplos = cursos.some((c) => c.data.ejemplo);
   }
 
   .chip {
-    font-family: var(--font-label);
-    font-weight: 600;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    font-size: 0.9rem;
-    padding: 0.6em 1.1em;
+    font: inherit;
+    font-weight: 700;
+    font-size: 0.975rem;
+    padding: 0.55em 1.1em;
     background: transparent;
-    color: var(--text);
-    border: 1px solid var(--line-strong);
-    border-radius: 999px;
+    color: var(--ink);
+    border: 2px solid var(--ink);
     cursor: pointer;
-    transition: background 0.2s, color 0.2s, border-color 0.2s;
+    transition: background-color 0.15s, color 0.15s;
   }
 
   .chip:hover {
-    border-color: var(--yellow);
+    background: rgba(35, 31, 32, 0.08);
   }
 
   .chip[aria-pressed='true'] {
-    background: var(--yellow);
-    border-color: var(--yellow);
-    color: var(--ink);
+    background: var(--ink);
+    color: var(--yellow);
   }
 
   .section-head {
@@ -281,13 +280,13 @@ const hayEjemplos = cursos.some((c) => c.data.ejemplo);
   }
 
   .month-title {
-    font-family: var(--font-label);
-    font-weight: 600;
-    letter-spacing: 0.22em;
-    font-size: 0.9rem;
-    color: var(--yellow);
+    font-family: var(--font-display);
+    font-stretch: var(--wide);
+    font-weight: 800;
+    text-transform: uppercase;
+    font-size: 1.125rem;
     padding-bottom: 12px;
-    border-bottom: 2px solid var(--yellow);
+    border-bottom: 3px solid var(--paper);
   }
 
   .rows {
@@ -313,9 +312,12 @@ const hayEjemplos = cursos.some((c) => c.data.ejemplo);
 
   .date {
     font-family: var(--font-display);
-    font-size: 1.9rem;
+    font-stretch: var(--wide);
+    font-weight: 800;
+    font-size: 1.25rem;
     line-height: 1;
     text-transform: uppercase;
+    font-variant-numeric: tabular-nums;
   }
 
   .info {
@@ -330,7 +332,9 @@ const hayEjemplos = cursos.some((c) => c.data.ejemplo);
   }
 
   .title:hover {
-    color: var(--yellow);
+    text-decoration: underline;
+    text-decoration-color: var(--yellow);
+    text-decoration-thickness: 3px;
   }
 
   .meta {
@@ -344,19 +348,13 @@ const hayEjemplos = cursos.some((c) => c.data.ejemplo);
   }
 
   .cta-disabled {
-    font-family: var(--font-label);
-    font-weight: 600;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    font-size: 0.85rem;
+    font-weight: 700;
+    font-size: 0.95rem;
     color: var(--text-dim);
     text-align: center;
   }
 
-  .catalog {
-    background: var(--bg-2);
-    border-block: 1px solid var(--line);
-  }
+
 
   .group + .group {
     margin-top: clamp(64px, 8vw, 104px);
@@ -371,18 +369,14 @@ const hayEjemplos = cursos.some((c) => c.data.ejemplo);
   }
 
   .count {
-    font-family: var(--font-label);
-    font-weight: 600;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    font-size: 0.85rem;
-    color: var(--text-dim);
+    font-weight: 700;
+    color: var(--text-muted);
   }
 
   .grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
+    gap: 40px clamp(20px, 3vw, 40px);
   }
 
   .custom {

@@ -27,61 +27,49 @@ const href = `/formacion/${curso.id}/`;
         <dd>{proxima ? `${rangoCorto(proxima.inicio, proxima.fin)} · ${proxima.lugar}` : 'A demanda'}</dd>
       </div>
     </dl>
-    <a href={href} class="link-arrow">+ Info <span aria-hidden="true">→</span></a>
+    <a href={href} class="link-arrow">+ Info</a>
   </div>
 </article>
 
 <style>
+  /* v2: sin caja; un filete grueso arriba y la foto debajo */
   .course-card {
-    background: var(--surface);
-    border: 1px solid var(--line);
     display: flex;
     flex-direction: column;
-    transition: border-color 0.25s;
-  }
-
-  .course-card:hover {
-    border-color: rgba(247, 196, 0, 0.5);
+    padding-top: 16px;
+    border-top: 3px solid currentColor;
   }
 
   .media {
     display: block;
     overflow: hidden;
-    border-bottom: 3px solid var(--yellow);
+    margin-bottom: 18px;
   }
 
   .media img {
     width: 100%;
     aspect-ratio: 16 / 9;
     object-fit: cover;
-    filter: grayscale(0.3);
-    transition: transform 0.5s ease, filter 0.5s ease;
-  }
-
-  .course-card:hover .media img {
-    transform: scale(1.04);
-    filter: grayscale(0);
   }
 
   .body {
-    padding: 24px;
     display: flex;
     flex-direction: column;
     flex: 1;
   }
 
   .cat {
-    font-family: var(--font-label);
     font-weight: 600;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    font-size: 0.78rem;
-    color: var(--yellow);
-    margin-bottom: 8px;
+    color: var(--text-muted);
+    margin-bottom: 6px;
   }
 
   h3 {
-    font-size: clamp(1.6rem, 2.2vw, 2rem);
+    font-stretch: var(--wide);
+    font-weight: 800;
+    text-transform: uppercase;
+    font-size: clamp(1.15rem, 1.6vw, 1.35rem);
+    line-height: 1.08;
     margin-bottom: 10px;
   }
 
@@ -90,7 +78,9 @@ const href = `/formacion/${curso.id}/`;
   }
 
   h3 a:hover {
-    color: var(--yellow);
+    text-decoration: underline;
+    text-decoration-color: var(--yellow);
+    text-decoration-thickness: 3px;
   }
 
   .summary {
@@ -100,29 +90,31 @@ const href = `/formacion/${curso.id}/`;
 
   .facts {
     margin: 4px 0 20px;
-    padding-top: 14px;
-    border-top: 1px solid var(--line);
     display: grid;
-    gap: 6px;
     font-size: 0.925rem;
   }
 
   .facts div {
     display: flex;
     gap: 12px;
+    padding-block: 7px;
+    border-top: 1px solid var(--line);
   }
 
   .facts dt {
     width: 72px;
     flex: none;
-    color: var(--text-dim);
+    font-weight: 600;
+    color: var(--text-muted);
   }
 
   .facts dd {
     margin: 0;
+    font-weight: 500;
   }
 
   .link-arrow {
     margin-top: auto;
+    align-self: flex-start;
   }
 </style>

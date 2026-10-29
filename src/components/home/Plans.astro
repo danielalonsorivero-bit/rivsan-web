@@ -1,11 +1,12 @@
 ---
 // Modalidades de contratación, editables desde el panel (Portada). Sin precios: todo se cierra por presupuesto.
+// v2: tres columnas con filetes; la recomendada lleva una cabecera amarilla en lugar de una insignia flotante.
 import { planes } from '../../data/contenido/home.json';
 ---
 
 <section class="section plans theme-light" id="contratacion">
   <div class="container">
-    <div class="head reveal">
+    <div class="head">
       {planes.antetitulo && <p class="eyebrow">{planes.antetitulo}</p>}
       <h2 class="h-lg">{planes.titulo} {planes.acento && <span class="accent">{planes.acento}</span>}</h2>
       {planes.entrada && <p class="lead">{planes.entrada}</p>}
@@ -14,9 +15,9 @@ import { planes } from '../../data/contenido/home.json';
     <div class="grid">
       {
         planes.planes.map((p) => (
-          <article class:list={['plan', 'reveal', { 'plan--featured hud': p.destacado }]}>
-            {p.destacado && <span class="badge">Recomendado</span>}
-            <h3 class="h-md">{p.nombre}</h3>
+          <article class:list={['plan', { 'plan--featured': p.destacado }]}>
+            <p class="badge" aria-hidden={p.destacado ? undefined : 'true'}>{p.destacado ? 'Recomendado' : ''}</p>
+            <h3>{p.nombre}</h3>
             {p.resumen && <p class="summary">{p.resumen}</p>}
             <ul>
               {p.puntos.map((pt) => <li>{pt}</li>)}
@@ -32,72 +33,70 @@ import { planes } from '../../data/contenido/home.json';
       }
     </div>
 
-    <p class="promise reveal">
+    <p class="promise">
       <strong>¿Ayuntamiento?</strong> Una jornada formativa suele poder tramitarse como contrato menor.
-      <a href="/contratar/">Cómo contratar paso a paso →</a>
+      <a href="/contratar/">Cómo contratar paso a paso</a>
     </p>
   </div>
 </section>
 
 <style>
   .head {
-    text-align: center;
-    max-width: 760px;
-    margin: 0 auto 56px;
-  }
-
-  .head .eyebrow::after {
-    content: '';
-    width: 28px;
-    height: 2px;
-    background: var(--yellow);
+    max-width: 940px;
+    margin-bottom: clamp(40px, 5vw, 64px);
   }
 
   .head h2 {
     margin-bottom: 1.25rem;
   }
 
-  .head .lead {
-    margin-inline: auto;
-  }
-
   .grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
-    align-items: stretch;
+    border-top: 3px solid var(--ink);
   }
 
   .plan {
-    position: relative;
     display: flex;
     flex-direction: column;
-    padding: 36px 32px;
-    background: var(--bg-2);
-    border: 1px solid var(--line);
+    padding: 0 clamp(16px, 2.4vw, 32px) 32px;
   }
 
-  .plan--featured {
-    background: var(--surface);
-    border-color: rgba(247, 196, 0, 0.45);
+  .plan:first-child {
+    padding-left: 0;
   }
 
+  .plan:last-child {
+    padding-right: 0;
+  }
+
+  .plan + .plan {
+    border-left: 1px solid var(--line-strong);
+  }
+
+  /* Franja superior: vacía en los planes normales, amarilla en el recomendado */
   .badge {
-    position: absolute;
-    top: -13px;
-    right: 24px;
+    min-height: 2.25rem;
+    margin: 0 0 24px;
+    padding: 6px 0;
+    font-weight: 700;
+    font-size: 0.9375rem;
+  }
+
+  .plan--featured .badge {
     background: var(--yellow);
-    color: var(--ink);
-    font-family: var(--font-label);
-    font-weight: 600;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    font-size: 0.75rem;
-    padding: 4px 10px;
+    margin-inline: calc(-1 * clamp(16px, 2.4vw, 32px));
+    padding-inline: clamp(16px, 2.4vw, 32px);
   }
 
   .plan h3 {
-    margin-bottom: 10px;
+    font-family: var(--font-display);
+    font-stretch: var(--wide);
+    font-weight: 800;
+    text-transform: uppercase;
+    font-size: clamp(1.3rem, 2vw, 1.65rem);
+    line-height: 1.05;
+    margin-bottom: 12px;
   }
 
   .summary {
@@ -108,42 +107,26 @@ import { planes } from '../../data/contenido/home.json';
   .plan ul {
     list-style: none;
     margin: 8px 0 32px;
-    padding: 20px 0 0;
-    border-top: 1px solid var(--line);
+    padding: 0;
     display: grid;
-    gap: 12px;
+    gap: 0;
   }
 
   .plan li {
-    padding-left: 30px;
-    position: relative;
-  }
-
-  .plan li::before {
-    content: '✓';
-    position: absolute;
-    left: 0;
-    top: 0.2em;
-    width: 18px;
-    height: 18px;
-    display: grid;
-    place-items: center;
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: var(--ink);
-    background: var(--yellow);
-    border-radius: 2px;
+    padding: 10px 0;
+    border-top: 1px solid var(--line);
+    font-weight: 500;
   }
 
   .plan .btn {
     margin-top: auto;
+    align-self: flex-start;
   }
 
   .promise {
-    margin: 40px auto 0;
-    text-align: center;
+    margin: 40px 0 0;
     color: var(--text-muted);
-    max-width: 64ch;
+    max-width: 70ch;
   }
 
   .promise strong {
@@ -152,20 +135,38 @@ import { planes } from '../../data/contenido/home.json';
 
   .promise a {
     color: var(--text);
+    font-weight: 700;
     white-space: nowrap;
-  }
-
-  .promise a {
     text-decoration-color: var(--yellow);
-    text-decoration-thickness: 2px;
-    text-underline-offset: 4px;
+    text-decoration-thickness: 3px;
+    text-underline-offset: 5px;
   }
 
   @media (max-width: 960px) {
     .grid {
       grid-template-columns: 1fr;
-      max-width: 520px;
-      margin-inline: auto;
+      border-top: 0;
+    }
+
+    .plan,
+    .plan:first-child,
+    .plan:last-child {
+      padding: 0 0 32px;
+      border-top: 3px solid var(--ink);
+    }
+
+    .plan + .plan {
+      border-left: 0;
+    }
+
+    .plan--featured .badge {
+      margin-inline: 0;
+    }
+
+    .badge:empty {
+      min-height: 0;
+      padding: 0;
+      margin-bottom: 20px;
     }
 
     .summary {

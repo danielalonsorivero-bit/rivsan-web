@@ -61,7 +61,7 @@ const loose = [...nav.filter((i) => !i.children), ...footerExtra];
   </div>
 
   <div class="container footer-bottom">
-    <p>© {year} {site.legalName} · CIF {site.cif}</p>
+    <p>© {year} {site.legalName}, CIF {site.cif}</p>
     <ul>
       <li><a href="/legal/aviso-legal/">Aviso legal</a></li>
       <li><a href="/legal/privacidad/">Privacidad</a></li>
@@ -72,8 +72,13 @@ const loose = [...nav.filter((i) => !i.children), ...footerExtra];
 
 <style>
   .site-footer {
-    background: #070707;
-    border-top: 1px solid var(--line);
+    background: #1a1718;
+    border-top: 6px solid var(--yellow);
+  }
+
+  /* Tras una sección amarilla (el contacto de la portada) el filete sobra */
+  :global(main:has(> :last-child.theme-signal)) + .site-footer {
+    border-top: 0;
     padding-top: 72px;
     font-size: 0.975rem;
   }
@@ -95,15 +100,18 @@ const loose = [...nav.filter((i) => !i.children), ...footerExtra];
   }
 
   .footer-brand a {
-    color: var(--yellow);
+    text-decoration-color: var(--yellow);
+    text-decoration-thickness: 2px;
   }
 
   .footer-title {
-    font-family: var(--font-label);
-    font-weight: 600;
-    font-size: 0.85rem;
-    letter-spacing: 0.24em;
-    color: var(--yellow);
+    font-family: var(--font-body);
+    font-stretch: 100%;
+    font-weight: 700;
+    font-size: 1rem;
+    letter-spacing: 0;
+    text-transform: none;
+    color: var(--text-muted);
     margin-bottom: 16px;
   }
 
@@ -121,19 +129,18 @@ const loose = [...nav.filter((i) => !i.children), ...footerExtra];
   }
 
   ul a:hover {
-    color: var(--yellow);
+    text-decoration: underline;
+    text-decoration-color: var(--yellow);
+    text-decoration-thickness: 2px;
   }
 
   .soon {
     margin-left: 6px;
-    font-family: var(--font-label);
-    font-size: 0.65rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    padding: 1px 5px;
-    border: 1px solid var(--yellow);
-    color: var(--yellow);
-    border-radius: 2px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 1px 6px;
+    background: var(--yellow);
+    color: var(--ink);
   }
 
   .footer-cta {
@@ -163,13 +170,6 @@ const loose = [...nav.filter((i) => !i.children), ...footerExtra];
 
   .footer-bottom a {
     color: var(--text-dim);
-  }
-
-  /* Con ratón hay un interruptor de sonido fijo abajo a la izquierda: se deja hueco para que no tape la última línea */
-  @media (hover: hover) and (pointer: fine) {
-    .footer-bottom {
-      padding-bottom: 64px;
-    }
   }
 
   @media (max-width: 1080px) {

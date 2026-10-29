@@ -3,39 +3,36 @@ import { Image } from 'astro:assets';
 import { perfiles } from '../../data/perfiles';
 import { videoPerfil } from '../../data/videos';
 
-// Con vídeo, la tarjeta muestra su primer fotograma y lo reproduce al pasar el cursor
-// (en pantallas táctiles, mientras la tarjeta está centrada en pantalla).
-const tarjetas = perfiles.map((p) => ({ ...p, video: videoPerfil(p.slug) }));
+// v2: los perfiles son un índice en filas, no tarjetas. Cada fila lleva su fotograma a la derecha
+// y reproduce el vídeo al pasar el cursor o al enfocarla (en táctil, cuando está centrada en pantalla).
+const filas = perfiles.map((p) => ({ ...p, video: videoPerfil(p.slug) }));
 ---
 
-<section class="section profiles" id="perfiles">
+<section class="section profiles theme-light" id="perfiles">
   <div class="container">
-    <div class="head reveal">
+    <div class="head">
       <p class="eyebrow">Para quién</p>
       <h2 class="h-lg">Cada unidad tiene <span class="accent">su misión</span></h2>
     </div>
 
-    <div class="cards">
+    <ul class="rows">
       {
-        tarjetas.map((p) => (
-          <article class="card reveal" data-card-video={p.video ? '' : undefined}>
-            <Image src={p.video?.poster ?? p.image} alt="" widths={[480, 800]} sizes="(max-width: 820px) 100vw, 33vw" />
-            {p.video && <video muted loop playsinline preload="none" data-src={p.video.sd} aria-hidden="true" />}
-            <div class="card-body">
-              <h3>
-                <a href={`/soluciones/${p.slug}/`} class="stretched">
-                  {p.label}
-                </a>
-              </h3>
-              <p>{p.short}</p>
-              <span class="link-arrow" aria-hidden="true">
-                Ver solución →
-              </span>
+        filas.map((p) => (
+          <li class="row" data-card-video={p.video ? '' : undefined}>
+            <h3>
+              <a href={`/soluciones/${p.slug}/`} class="stretched">
+                {p.label}
+              </a>
+            </h3>
+            <p>{p.short}</p>
+            <div class="media">
+              <Image src={p.video?.poster ?? p.image} alt="" widths={[360, 640]} sizes="(max-width: 820px) 100vw, 300px" />
+              {p.video && <video muted loop playsinline preload="none" data-src={p.video.sd} aria-hidden="true" />}
             </div>
-          </article>
+          </li>
         ))
       }
-    </div>
+    </ul>
   </div>
 </section>
 
@@ -43,34 +40,34 @@ const tarjetas = perfiles.map((p) => ({ ...p, video: videoPerfil(p.slug) }));
   // Reproducción al pasar el cursor; cada arranque empieza con un corte de señal breve
   const quieto = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const tactil = matchMedia('(hover: none)').matches;
-  const tarjetas = [...document.querySelectorAll<HTMLElement>('[data-card-video]')];
+  const filas = [...document.querySelectorAll<HTMLElement>('[data-card-video]')];
 
-  const reproducir = (card: HTMLElement) => {
-    const v = card.querySelector('video')!;
+  const reproducir = (fila: HTMLElement) => {
+    const v = fila.querySelector('video')!;
     if (!v.src) v.src = v.dataset.src!;
     v.play().then(
       () => {
-        card.classList.add('is-playing', 'is-cortando');
-        setTimeout(() => card.classList.remove('is-cortando'), 380);
+        fila.classList.add('is-playing', 'is-cortando');
+        setTimeout(() => fila.classList.remove('is-cortando'), 380);
       },
       () => {},
     );
   };
-  const parar = (card: HTMLElement) => {
-    card.classList.remove('is-playing');
-    card.querySelector('video')!.pause();
+  const parar = (fila: HTMLElement) => {
+    fila.classList.remove('is-playing');
+    fila.querySelector('video')!.pause();
   };
 
   if (!quieto) {
     if (tactil) {
-      // Sin cursor: se reproduce la tarjeta que está en el centro de la pantalla
+      // Sin cursor: se reproduce la fila que está en el centro de la pantalla
       const io = new IntersectionObserver(
         (entradas) => entradas.forEach((e) => (e.isIntersecting ? reproducir : parar)(e.target as HTMLElement)),
         { rootMargin: '-35% 0px -35% 0px' },
       );
-      tarjetas.forEach((c) => io.observe(c));
+      filas.forEach((c) => io.observe(c));
     } else {
-      tarjetas.forEach((c) => {
+      filas.forEach((c) => {
         c.addEventListener('pointerenter', () => reproducir(c));
         c.addEventListener('pointerleave', () => parar(c));
         c.addEventListener('focusin', () => reproducir(c));
@@ -82,83 +79,95 @@ const tarjetas = perfiles.map((p) => ({ ...p, video: videoPerfil(p.slug) }));
 
 <style>
   .head {
-    max-width: 780px;
-    margin-bottom: 48px;
+    max-width: 940px;
+    margin-bottom: clamp(32px, 4vw, 56px);
   }
 
-  .cards {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
+  .rows {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-top: 3px solid var(--ink);
   }
 
-  .card {
+  .row {
     position: relative;
-    isolation: isolate;
-    min-height: 420px;
-    display: flex;
-    align-items: flex-end;
-    overflow: hidden;
-    border: 1px solid var(--line);
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr) 280px;
+    gap: clamp(20px, 3vw, 48px);
+    align-items: center;
+    padding-block: clamp(20px, 2.4vw, 28px);
+    border-bottom: 1px solid var(--line-strong);
   }
 
-  .card img {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    z-index: -2;
-    filter: grayscale(0.4);
-    transition: transform 0.6s ease, filter 0.6s ease;
+  .row h3 {
+    font-stretch: var(--wide);
+    font-weight: 800;
+    text-transform: uppercase;
+    font-size: clamp(1.5rem, 2.6vw, 2.25rem);
+    line-height: 1;
   }
 
-  .card::after {
+  .row h3 a {
+    text-decoration: none;
+  }
+
+  /* El enlace del título cubre toda la fila */
+  .stretched::after {
     content: '';
     position: absolute;
     inset: 0;
-    z-index: -1;
-    background: linear-gradient(0deg, rgba(11, 11, 11, 0.95) 25%, rgba(11, 11, 11, 0.2) 75%);
   }
 
-  .card:hover img {
-    transform: scale(1.04);
-    filter: grayscale(0);
+  .row:hover h3 a,
+  .row:focus-within h3 a {
+    text-decoration: underline;
+    text-decoration-color: var(--yellow);
+    text-decoration-thickness: 6px;
+    text-underline-offset: 6px;
   }
 
-  .card video {
+  .row p {
+    margin: 0;
+    color: var(--text-muted);
+  }
+
+  .media {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    background: var(--ink);
+  }
+
+  .media img,
+  .media video {
     position: absolute;
     inset: 0;
     width: 100%;
     height: 100%;
     object-fit: cover;
-    z-index: -2;
-    opacity: 0;
-    transition: opacity 0.35s ease;
   }
 
-  .card.is-playing video {
+  .media img {
+    filter: grayscale(1) contrast(1.05);
+    transition: filter 0.3s;
+  }
+
+  .row:hover .media img {
+    filter: none;
+  }
+
+  .media video {
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .row.is-playing video {
     opacity: 1;
   }
 
-  /* Líneas de barrido sobre el vídeo, como en el hero */
-  .card[data-card-video]::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    z-index: -1;
-    pointer-events: none;
-    background: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.25) 0 1px, transparent 1px 3px);
-    opacity: 0;
-    transition: opacity 0.35s ease;
-  }
-
-  .card.is-playing::before {
-    opacity: 0.6;
-  }
-
   /* Corte de señal al arrancar: tirón horizontal y desdoble de color */
-  .card.is-cortando video {
+  .row.is-cortando video {
     animation: corte 0.38s steps(1, end);
   }
 
@@ -185,42 +194,14 @@ const tarjetas = perfiles.map((p) => ({ ...p, video: videoPerfil(p.slug) }));
     }
   }
 
-  .card:hover {
-    border-color: rgba(247, 196, 0, 0.5);
-  }
-
-  .card-body {
-    padding: 28px;
-  }
-
-  .card h3 {
-    font-size: clamp(2rem, 3vw, 2.5rem);
-    margin-bottom: 10px;
-  }
-
-  .card h3 a {
-    text-decoration: none;
-  }
-
-  /* El enlace del título cubre toda la tarjeta */
-  .stretched::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-  }
-
-  .card p {
-    color: #d6d6d0;
-    margin-bottom: 18px;
-  }
-
-  @media (max-width: 960px) {
-    .cards {
+  @media (max-width: 820px) {
+    .row {
       grid-template-columns: 1fr;
+      gap: 12px;
     }
 
-    .card {
-      min-height: 300px;
+    .media {
+      order: -1;
     }
   }
 </style>

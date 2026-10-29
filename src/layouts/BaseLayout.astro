@@ -1,12 +1,10 @@
 ---
 import '../styles/global.css';
 import { getImage } from 'astro:assets';
-import bebasLatin from '@fontsource/bebas-neue/files/bebas-neue-latin-400-normal.woff2?url';
+import archivoLatin from '@fontsource-variable/archivo/files/archivo-latin-wdth-normal.woff2?url';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
-import Crosshair from '../components/Crosshair.astro';
 import Gate from '../components/Gate.astro';
-import Sound from '../components/Sound.astro';
 import { site } from '../data/site';
 import { indexable, organizationLd } from '../data/seo';
 import { paginas as seoPaginas } from '../data/contenido/seo.json';
@@ -47,9 +45,9 @@ const shareUrl = new URL(share.src, Astro.site);
     <link rel="canonical" href={canonical} />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="sitemap" href="/sitemap-index.xml" />
-    <!-- La fuente de titulares se precarga para evitar saltos en los textos grandes -->
-    <link rel="preload" href={bebasLatin} as="font" type="font/woff2" crossorigin />
-    <meta name="theme-color" content="#0b0b0b" />
+    <!-- La única familia de la web se precarga para evitar saltos en los textos grandes -->
+    <link rel="preload" href={archivoLatin} as="font" type="font/woff2" crossorigin />
+    <meta name="theme-color" content="#231f20" />
 
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content={site.name} />
@@ -75,8 +73,6 @@ const shareUrl = new URL(share.src, Astro.site);
       <slot />
     </main>
     <Footer />
-    <Crosshair />
-    <Sound />
 
     <script>
       // Aparición progresiva de bloques con .reveal

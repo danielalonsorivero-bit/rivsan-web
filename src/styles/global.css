@@ -1,47 +1,47 @@
-@import '@fontsource/bebas-neue/400.css';
-@import '@fontsource/barlow/400.css';
-@import '@fontsource/barlow/500.css';
-@import '@fontsource/barlow/600.css';
-@import '@fontsource/barlow-condensed/500.css';
-@import '@fontsource/barlow-condensed/600.css';
+/* v2 · «Rotulación de servicio»: una sola familia (Archivo, con eje de anchura). Los titulares van
+   anchos y pesados, como la rotulación de un vehículo policial; el texto, en anchura normal.
+   El amarillo de marca se usa como superficie (paneles y bandas), no como acento. */
+@import '@fontsource-variable/archivo/wdth.css';
 @import '@fontsource/montserrat/300.css';
 @import '@fontsource/montserrat/400.css';
-@import '@fontsource/ibm-plex-mono/400.css';
-@import '@fontsource/ibm-plex-mono/500.css';
 
 /* ---------- Tokens ---------- */
 :root {
   /* Marca */
-  --yellow: #f7c400;
+  --yellow: #f7c400; /* Señal */
   --yellow-600: #d9ab00;
-  --ink: #231f20;
+  --ink: #231f20; /* Tinta: el negro del logotipo */
+  --asphalt: #3a3637; /* Asfalto */
+  --paper: #fafaf7; /* Blanco reflectante */
+  --gallery: #8c8786; /* Gris galería */
 
-  /* Superficies (tema oscuro por defecto) */
-  --bg: #0b0b0b;
-  --bg-2: #121212;
-  --surface: #1a1a1a;
-  --surface-2: #222;
-  --line: rgba(255, 255, 255, 0.1);
-  --line-strong: rgba(255, 255, 255, 0.22);
+  /* Superficies (tinta por defecto) */
+  --bg: var(--ink);
+  --bg-2: #2b2728;
+  --surface: #312d2e;
+  --surface-2: var(--asphalt);
+  --line: rgba(250, 250, 247, 0.14);
+  --line-strong: rgba(250, 250, 247, 0.3);
 
   /* Texto */
-  --text: #f2f2f0;
-  --text-muted: #a9a9a4;
-  --text-dim: #8f8f88; /* ≥4.5:1 (AA) sobre todas las superficies */
+  --text: var(--paper);
+  --text-muted: #c4bfbc;
+  --text-dim: #ada8a5; /* ≥4.5:1 (AA) sobre todas las superficies oscuras */
 
-  /* Tipografía */
-  --font-display: 'Bebas Neue', 'Oswald', Impact, sans-serif;
-  --font-body: 'Barlow', system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --font-label: 'Barlow Condensed', 'Barlow', sans-serif;
-  --font-brand: 'Montserrat', sans-serif;
-  /* Datos y lecturas tipo telemetría: antetítulos, cifras, códigos */
-  --font-data: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+  /* Tipografía: anchura y peso son los que dan el carácter */
+  --font-display: 'Archivo Variable', 'Archivo', 'Arial Black', sans-serif;
+  --font-body: 'Archivo Variable', 'Archivo', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-label: var(--font-body);
+  --font-data: var(--font-body);
+  --font-brand: 'Montserrat', sans-serif; /* solo el logotipo */
+  --wide: 125%;
+  --narrow: 87.5%;
 
   /* Layout */
-  --max: 1240px;
-  --gutter: clamp(16px, 4vw, 40px);
-  --section-y: clamp(72px, 10vw, 128px);
-  --radius: 4px;
+  --max: 1280px;
+  --gutter: clamp(16px, 4vw, 48px);
+  --section-y: clamp(72px, 9vw, 136px);
+  --radius: 0;
   --header-h: 72px;
 }
 
@@ -85,19 +85,32 @@ img {
 
 a {
   color: inherit;
+  text-underline-offset: 0.2em;
 }
 
+/* Titulares: Archivo ancha y pesada, en mayúsculas como la rotulación */
 h1,
 h2,
 h3,
 h4 {
   font-family: var(--font-display);
-  font-weight: 400;
-  line-height: 0.95;
-  letter-spacing: 0.01em;
+  font-stretch: var(--wide);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.015em;
   margin: 0;
   text-transform: uppercase;
   text-wrap: balance;
+}
+
+/* Los titulares pequeños vuelven a caja baja y anchura normal: se leen mejor */
+h3,
+h4 {
+  font-stretch: 100%;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+  text-transform: none;
 }
 
 p {
@@ -110,8 +123,13 @@ p {
 }
 
 :focus-visible {
-  outline: 2px solid var(--yellow);
+  outline: 3px solid var(--yellow);
   outline-offset: 3px;
+}
+
+/* Sobre amarillo el anillo de foco pasa a tinta */
+.theme-signal :focus-visible {
+  outline-color: var(--ink);
 }
 
 /* ---------- Utilidades ---------- */
@@ -126,50 +144,34 @@ p {
   padding-block: var(--section-y);
 }
 
+/* Antetítulo: texto discreto en caja baja, sin raya ni mayúsculas */
 .eyebrow {
-  font-family: var(--font-data);
-  font-weight: 500;
-  font-size: 0.8125rem;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
+  font-weight: 600;
+  font-size: 1rem;
   color: var(--text-muted);
-  display: inline-flex;
-  align-items: center;
-  gap: 0.75em;
-  margin-bottom: 1.25rem;
-}
-
-.eyebrow::before {
-  content: '';
-  width: 28px;
-  height: 2px;
-  background: var(--yellow);
+  margin-bottom: 1rem;
 }
 
 .h-xl {
-  font-size: clamp(3rem, 8vw, 6.5rem);
+  font-size: clamp(2.25rem, 5.4vw, 4.75rem);
 }
 
 .h-lg {
-  font-size: clamp(2.5rem, 5.5vw, 4.25rem);
+  font-size: clamp(1.75rem, 3.2vw, 2.75rem);
 }
 
 .h-md {
-  font-size: clamp(1.75rem, 3vw, 2.25rem);
+  font-size: clamp(1.4rem, 2.2vw, 1.75rem);
 }
 
+/* El resalte de una frase del titular se compone con el texto, no con color */
 .accent {
-  color: var(--yellow);
+  color: inherit;
 }
 
-/* El amarillo se reserva para el titular principal, las acciones y los datos:
-   en los titulares de sección el resaltado pasa a blanco pleno sobre gris */
-:is(h2, h3):has(.accent) {
-  color: var(--text-muted);
-}
-
-:is(h2, h3) .accent {
-  color: var(--text);
+/* Cifras y lecturas de datos */
+.data {
+  font-variant-numeric: tabular-nums;
 }
 
 /* Cifras que cuentan al aparecer (ver BaseLayout) */
@@ -177,17 +179,11 @@ p {
   font-variant-numeric: tabular-nums;
 }
 
-/* Cifras y lecturas de datos */
-.data {
-  font-family: var(--font-data);
-  font-variant-numeric: tabular-nums;
-  letter-spacing: 0.02em;
-}
-
 .lead {
-  font-size: clamp(1.125rem, 1.6vw, 1.3rem);
+  font-size: clamp(1.125rem, 1.5vw, 1.25rem);
+  line-height: 1.55;
   color: var(--text-muted);
-  max-width: 62ch;
+  max-width: 60ch;
 }
 
 .muted {
@@ -209,17 +205,22 @@ p {
   align-items: center;
   justify-content: center;
   gap: 0.6em;
-  padding: 0.95em 1.6em;
-  font-family: var(--font-label);
-  font-weight: 600;
+  padding: 0.9em 1.5em;
+  font-family: var(--font-body);
+  font-weight: 700;
   font-size: 1rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
+  line-height: 1.2;
   text-decoration: none;
   border: 2px solid transparent;
   border-radius: var(--radius);
   cursor: pointer;
-  transition: background 0.2s, color 0.2s, border-color 0.2s, transform 0.2s;
+  transition: background-color 0.15s, color 0.15s, border-color 0.15s;
+}
+
+/* Las flechas de los botones y enlaces se retiran en la v2 */
+.btn .arrow,
+.link-arrow > [aria-hidden='true'] {
+  display: none;
 }
 
 .btn-primary {
@@ -228,7 +229,7 @@ p {
 }
 
 .btn-primary:hover {
-  background: #fff;
+  background: var(--paper);
 }
 
 .btn:disabled {
@@ -246,66 +247,43 @@ p {
 }
 
 .btn-ghost:hover {
-  border-color: var(--yellow);
-  color: var(--yellow);
+  border-color: currentColor;
 }
 
-.btn .arrow {
-  transition: transform 0.2s;
-}
-
-.btn:hover .arrow {
-  transform: translateX(4px);
-}
-
-/* Enlace de texto con flecha */
+/* Enlace de texto: subrayado grueso amarillo */
 .link-arrow {
-  font-family: var(--font-label);
-  font-weight: 600;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  font-size: 0.9375rem;
-  color: var(--yellow);
-  text-decoration: none;
-  display: inline-flex;
-  gap: 0.5em;
+  font-weight: 700;
+  color: var(--text);
+  text-decoration: underline;
+  text-decoration-color: var(--yellow);
+  text-decoration-thickness: 3px;
+  text-underline-offset: 6px;
 }
 
 .link-arrow:hover {
-  color: #fff;
+  text-decoration-color: currentColor;
 }
 
-/* Secciones en claro (contratación, parte institucional): redefine los tokens */
+/* ---------- Temas de sección ---------- */
+/* Blanco reflectante: secciones de lectura */
 .theme-light {
-  --bg: #f2f1ec;
-  --bg-2: #e9e7e0;
+  --bg: var(--paper);
+  --bg-2: #f0efea;
   --surface: #fff;
-  --surface-2: #f6f5f1;
-  --line: rgba(35, 31, 32, 0.12);
-  --line-strong: rgba(35, 31, 32, 0.28);
-  --text: #1b1819;
+  --surface-2: #f4f3ef;
+  --line: rgba(35, 31, 32, 0.14);
+  --line-strong: rgba(35, 31, 32, 0.32);
+  --text: var(--ink);
   --text-muted: #57524f;
-  --text-dim: #6b6662;
+  --text-dim: #65605d;
   color-scheme: light;
   background: var(--bg);
   color: var(--text);
 }
 
-.theme-light .link-arrow {
-  color: var(--ink);
-  text-decoration: underline;
-  text-decoration-color: var(--yellow);
-  text-decoration-thickness: 2px;
-  text-underline-offset: 4px;
-}
-
-.theme-light .link-arrow:hover {
-  color: #000;
-}
-
 .theme-light .btn-primary:hover {
   background: var(--ink);
-  color: #fff;
+  color: var(--paper);
 }
 
 .theme-light .btn-primary:disabled:hover {
@@ -313,16 +291,76 @@ p {
   color: var(--ink);
 }
 
+.theme-light .link-arrow {
+  text-decoration-color: var(--ink);
+}
+
+.theme-light .link-arrow:hover {
+  text-decoration-color: var(--yellow);
+}
+
+/* Señal: superficies amarillas con texto en tinta */
+.theme-signal {
+  --bg: var(--yellow);
+  --line: rgba(35, 31, 32, 0.2);
+  --line-strong: rgba(35, 31, 32, 0.45);
+  --text: var(--ink);
+  --text-muted: #3d3415;
+  --text-dim: #4a401b;
+  color-scheme: light;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.theme-signal .btn-primary {
+  background: var(--ink);
+  color: var(--yellow);
+}
+
+.theme-signal .btn-primary:hover {
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.theme-signal .link-arrow {
+  text-decoration-color: var(--ink);
+}
+
+/* Tinta: devuelve los tokens oscuros dentro de una sección clara o amarilla (p. ej. el formulario) */
+.theme-ink {
+  --bg: var(--ink);
+  --bg-2: #2b2728;
+  --surface: #312d2e;
+  --surface-2: var(--asphalt);
+  --line: rgba(250, 250, 247, 0.14);
+  --line-strong: rgba(250, 250, 247, 0.3);
+  --text: var(--paper);
+  --text-muted: #c4bfbc;
+  --text-dim: #ada8a5;
+  color-scheme: dark;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.theme-ink :focus-visible {
+  outline-color: var(--yellow);
+}
+
+.theme-ink .btn-primary {
+  background: var(--yellow);
+  color: var(--ink);
+}
+
+.theme-ink .btn-primary:hover {
+  background: var(--paper);
+}
+
 /* Etiqueta de estado (plazas, etc.) */
 .pill {
-  font-family: var(--font-label);
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  font-size: 0.75rem;
-  padding: 4px 9px;
-  border-radius: 999px;
-  border: 1px solid currentColor;
+  font-weight: 700;
+  font-size: 0.8125rem;
+  padding: 3px 9px;
+  border: 1.5px solid currentColor;
   white-space: nowrap;
   justify-self: end;
 }
@@ -339,6 +377,18 @@ p {
   color: #ff6b6b;
 }
 
+.theme-light .pill--ok {
+  color: #1d7a3e;
+}
+
+.theme-light .pill--low {
+  color: #8a6a00;
+}
+
+.theme-light .pill--full {
+  color: #c4262b;
+}
+
 /* Botón de pausa de los vídeos de fondo (lo añade scripts/senal.ts dentro de la caja del vídeo) */
 .senal-pausa {
   position: absolute;
@@ -348,21 +398,18 @@ p {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 7px 11px;
-  font-size: 0.6875rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--text-muted);
-  background: rgba(11, 11, 11, 0.7);
-  border: 1px solid var(--line-strong);
-  border-radius: 999px;
+  padding: 7px 12px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--paper);
+  background: rgba(35, 31, 32, 0.75);
+  border: 1px solid rgba(250, 250, 247, 0.3);
   backdrop-filter: blur(6px);
   cursor: pointer;
-  transition: color 0.2s, border-color 0.2s;
+  transition: border-color 0.15s;
 }
 
 .senal-pausa:hover {
-  color: var(--text);
   border-color: var(--yellow);
 }
 
@@ -381,55 +428,18 @@ p {
   border-inline-end: 0;
 }
 
-/* Esquinas tipo visor (HUD) */
+/* Las esquinas tipo visor (HUD) de la v1 se retiran: la clase queda sin efecto */
 .hud {
   position: relative;
 }
 
-.hud::before,
-.hud::after {
-  content: '';
-  position: absolute;
-  width: 18px;
-  height: 18px;
-  border-color: var(--yellow);
-  border-style: solid;
-  pointer-events: none;
-  z-index: 2;
-}
-
-.hud::before {
-  top: -1px;
-  left: -1px;
-  border-width: 2px 0 0 2px;
-}
-
-.hud::after {
-  bottom: -1px;
-  right: -1px;
-  border-width: 0 2px 2px 0;
-}
-
-/* Aparición al hacer scroll (solo con JS; sin él todo se ve desde el principio) */
+/* Sin apariciones al hacer scroll en la v2: el único movimiento es la entrada del hero */
 .js .reveal {
-  opacity: 0;
-  transform: translateY(24px);
-  transition: opacity 0.7s ease, transform 0.7s ease;
-}
-
-.js .reveal.is-visible {
   opacity: 1;
-  transform: none;
 }
 
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
-  }
-
-  .js .reveal {
-    opacity: 1;
-    transform: none;
-    transition: none;
   }
 }

@@ -6,59 +6,60 @@ import video1080 from '../../assets/video/hero-1080.mp4?url';
 import SignalFx from '../SignalFx.astro';
 import { hero as h } from '../../data/contenido/home.json';
 
-// Textos y cifras editables desde el panel (Portada). `animar`: la cifra se anima desde 0 al aparecer
-// (ver BaseLayout), solo si es un número entero.
-const stats = h.cifras.map((c) => ({ ...c, animar: c.animar && /^\d+$/.test(c.valor) }));
+// v2: el vídeo con el shader de señal ocupa la pantalla y el titular va en un panel amarillo con
+// letra ancha, como un rótulo de vehículo. Debajo, una franja con las cifras (editables desde el panel).
 ---
 
 <section class="hero">
-  <!-- Fotograma inicial (carga al instante) → vídeo → el vídeo pasa por un shader de señal NTSC en el canvas.
-       Con «reducir movimiento», ahorro de datos o sin autoplay se queda el fotograma. -->
-  <Image
-    src={poster}
-    alt="Dos agentes con visores de realidad virtual avanzan en binomio y se giran empuñando armas simuladas"
-    class="hero-bg hero-poster"
-    widths={[800, 1400, 1920]}
-    sizes="100vw"
-    loading="eager"
-    fetchpriority="high"
-  />
-  <video
-    class="hero-bg hero-video"
-    data-senal-video
-    data-src-sd={video720}
-    data-src-hd={video1080}
-    muted
-    loop
-    playsinline
-    preload="none"
-    aria-hidden="true"></video>
-  <canvas class="hero-bg hero-gl" data-senal-gl aria-hidden="true"></canvas>
-  <div class="hero-shade" aria-hidden="true"></div>
-  <SignalFx />
-  <p class="hero-readout data" aria-hidden="true">
-    <span><i></i> <b data-hero-status>SIM ACTIVO</b></span>
-    <span data-hero-clock>T+00:00.000</span>
-    <span>ESCENARIO 01 · BINOMIO</span>
-  </p>
+  <div class="hero-media">
+    <!-- Fotograma inicial (carga al instante) → vídeo → el vídeo pasa por un shader de señal NTSC en el canvas.
+         Con «reducir movimiento», ahorro de datos o sin autoplay se queda el fotograma. -->
+    <Image
+      src={poster}
+      alt="Dos agentes con visores de realidad virtual avanzan en binomio y se giran empuñando armas simuladas"
+      class="hero-bg hero-poster"
+      widths={[800, 1400, 1920]}
+      sizes="100vw"
+      loading="eager"
+      fetchpriority="high"
+    />
+    <video
+      class="hero-bg hero-video"
+      data-senal-video
+      data-src-sd={video720}
+      data-src-hd={video1080}
+      muted
+      loop
+      playsinline
+      preload="none"
+      aria-hidden="true"></video>
+    <canvas class="hero-bg hero-gl" data-senal-gl aria-hidden="true"></canvas>
+    <SignalFx />
 
-  <div class="container hero-content">
-    {h.antetitulo && <p class="eyebrow">{h.antetitulo}</p>}
-    <h1 class="h-xl">{h.titulo} {h.acento && <span class="accent">{h.acento}</span>}</h1>
-    {h.entrada && <p class="lead">{h.entrada}</p>}
-    <div class="hero-actions">
-      <a href="#contacto" class="btn btn-primary">Solicitar demostración <span class="arrow">→</span></a>
-      <a href="#perfiles" class="btn btn-ghost">Ver soluciones</a>
+    <div class="container hero-content">
+      <div class="panel theme-signal">
+        {h.antetitulo && <p class="kicker">{h.antetitulo}</p>}
+        <h1>
+          <span class="line">{h.titulo}</span>
+          {h.acento && <span class="line">{h.acento}</span>}
+        </h1>
+        {h.entrada && <p class="entrada">{h.entrada}</p>}
+        <div class="actions">
+          <a href="#contacto" class="btn btn-primary">Solicitar demostración</a>
+          <a href="#perfiles" class="link-arrow">Ver soluciones</a>
+        </div>
+      </div>
     </div>
   </div>
 
   <div class="container">
     <ul class="hero-stats">
       {
-        stats.map((s) => (
+        h.cifras.map((s) => (
           <li>
             <span class="stat-value">
-              {s.prefijo}<span data-count={s.animar ? s.valor : undefined}>{s.valor}</span>
+              {s.prefijo}
+              {s.valor}
               {s.unidad && <small>{s.unidad}</small>}
             </span>
             <span class="stat-label">{s.texto}</span>
@@ -72,65 +73,38 @@ const stats = h.cifras.map((c) => ({ ...c, animar: c.animar && /^\d+$/.test(c.va
 <script>
   import { videoConSenal } from '../../scripts/senal';
 
-  // Vídeo del hero con el shader de señal (ver scripts/senal.ts). En la costura del bucle la
-  // lectura del visor avisa de que se resincroniza.
-  const hero = document.querySelector<HTMLElement>('.hero');
-  const status = document.querySelector('[data-hero-status]');
-  if (hero)
-    videoConSenal(hero, {
-      alCorte: (corte) => status && (status.textContent = corte ? 'SEÑAL · RESYNC' : 'SIM ACTIVO'),
-    });
-</script>
-
-<script>
-  // Reloj de la lectura del visor (no corre con «reducir movimiento»)
-  const clock = document.querySelector('[data-hero-clock]');
-  if (clock && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    const start = performance.now();
-    const pad = (n: number, l = 2) => String(n).padStart(l, '0');
-    let on = false;
-    const tick = () => {
-      if (!on) return;
-      const ms = Math.floor(performance.now() - start);
-      clock.textContent = `T+${pad(Math.floor(ms / 60000))}:${pad(Math.floor(ms / 1000) % 60)}.${pad(ms % 1000, 3)}`;
-      requestAnimationFrame(tick);
-    };
-    // Solo corre mientras el hero está en pantalla
-    new IntersectionObserver(([e]) => {
-      on = e.isIntersecting;
-      if (on) requestAnimationFrame(tick);
-    }).observe(clock);
-  }
+  // Vídeo del hero con el shader de señal (ver scripts/senal.ts)
+  const media = document.querySelector<HTMLElement>('.hero-media');
+  if (media) videoConSenal(media);
 </script>
 
 <style>
   .hero {
-    position: relative;
-    min-height: 100svh;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-    padding-top: calc(var(--header-h) + 48px);
-    overflow: hidden;
-    isolation: isolate;
+    background: var(--ink);
   }
 
-  /* Encuadre del vídeo, centrado para no cortar el arma del agente de la derecha.
-     --media-shift (fracción del ancho) lo desplazaría a la derecha, fundiendo el borde a negro.
+  /* Encuadre del vídeo: los agentes quedan a la derecha, libres del panel.
      El shader lee las mismas variables (scripts/senal.ts). */
-  .hero {
+  .hero-media {
     --fx-cycle: 7s;
-    --media-x: 0.5;
+    --media-x: 0.7;
     --media-shift: 0;
-    /* Botón de pausa del vídeo, bajo la lectura del visor */
-    --pausa-top: calc(var(--header-h) + 108px);
+    --pausa-top: calc(var(--header-h) + 16px);
     --pausa-right: var(--gutter);
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    min-height: min(92svh, 900px);
+    display: flex;
+    align-items: flex-end;
+    padding-top: calc(var(--header-h) + 48px);
   }
 
   @media (max-width: 960px) {
-    .hero {
-      --media-x: 0.3;
-      --pausa-top: calc(var(--header-h) + 16px);
+    .hero-media {
+      --media-x: 0.4;
+      min-height: 0;
+      padding-top: calc(var(--header-h) + 38vw);
     }
   }
 
@@ -144,110 +118,98 @@ const stats = h.cifras.map((c) => ({ ...c, animar: c.animar && /^\d+$/.test(c.va
     z-index: -2;
   }
 
-  .hero-poster,
-  .hero-video {
-    translate: calc(var(--media-shift) * 100%) 0;
-  }
-
   .hero-video,
   .hero-gl {
     opacity: 0;
   }
 
   /* Con WebGL el vídeo sigue reproduciéndose (es la textura) pero solo se ve el canvas */
-  .hero.is-video .hero-video,
-  .hero.is-gl .hero-gl {
+  .hero-media.is-video .hero-video,
+  .hero-media.is-gl .hero-gl {
     opacity: 1;
   }
 
-  .hero.is-video .hero-poster,
-  .hero.is-gl .hero-poster {
+  .hero-media.is-video .hero-poster,
+  .hero-media.is-gl .hero-poster {
     visibility: hidden;
   }
 
-  /* Sin WebGL: el fotograma o el vídeo tiemblan un instante cada --fx-cycle */
-  @media (prefers-reduced-motion: no-preference) {
-    .hero-poster,
-    .hero-video {
-      animation: jitter var(--fx-cycle) steps(1, end) infinite;
-    }
-  }
-
-  @keyframes jitter {
-    0%,
-    86% {
-      transform: none;
-    }
-    87% {
-      transform: translate(-3px, 0) skewX(-0.6deg);
-    }
-    88% {
-      transform: translate(2px, 1px);
-    }
-    89% {
-      transform: translate(-1px, 0);
-    }
-    90%,
-    95% {
-      transform: none;
-    }
-    96% {
-      transform: translate(2px, 0);
-    }
-    97% {
-      transform: none;
-    }
-  }
-
-  .hero-shade {
-    position: absolute;
-    inset: 0;
-    z-index: -1;
-    background:
-      linear-gradient(90deg, rgba(11, 11, 11, 0.92) 0%, rgba(11, 11, 11, 0.55) 55%, rgba(11, 11, 11, 0.2) 100%),
-      linear-gradient(0deg, var(--bg) 0%, transparent 40%);
-  }
-
+  /* El panel apoya en el borde inferior del vídeo */
   .hero-content {
-    max-width: var(--max);
+    display: flex;
   }
 
-  .hero-content h1 {
-    font-size: clamp(2.75rem, 5.4vw, 5.25rem);
-    max-width: 12em;
+  .panel {
+    container-type: inline-size;
+    width: min(100%, 980px);
+    padding: clamp(24px, 4vw, 52px) clamp(20px, 4vw, 56px) clamp(28px, 4vw, 48px);
   }
 
-  .hero-content h1 .accent {
+  .kicker {
+    font-weight: 600;
+    margin-bottom: 1.25rem;
+  }
+
+  /* El rótulo: dos líneas en Archivo ancha, la segunda como continuación del mismo bloque */
+  h1 {
+    /* Calculado para que «Entrena la intervención» quepa en una línea del panel */
+    font-size: clamp(1.5rem, 5.3cqi, 3.75rem);
+    line-height: 0.98;
+    letter-spacing: -0.02em;
+    margin-bottom: clamp(20px, 3cqi, 32px);
+  }
+
+  .line {
     display: block;
-    margin-bottom: 1.5rem;
   }
 
-  .hero-content .lead {
-    color: #d6d6d0;
+  .entrada {
+    font-size: clamp(1.0625rem, 1.4vw, 1.1875rem);
+    line-height: 1.5;
+    font-weight: 500;
     max-width: 52ch;
+    margin-bottom: 1.75rem;
   }
 
-  .hero-actions {
+  .actions {
     display: flex;
     flex-wrap: wrap;
-    gap: 14px;
-    margin-top: 2rem;
+    align-items: center;
+    gap: 16px 28px;
   }
 
+  /* El único movimiento de la página: el panel sube sobre el vídeo al cargar */
+  @media (prefers-reduced-motion: no-preference) {
+    .panel {
+      animation: rotulo 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) 0.15s both;
+    }
+
+    @keyframes rotulo {
+      from {
+        clip-path: inset(100% 0 0 0);
+        transform: translateY(32px);
+      }
+      to {
+        clip-path: inset(0 0 0 0);
+        transform: none;
+      }
+    }
+  }
+
+  /* Franja de cifras bajo el vídeo */
   .hero-stats {
     list-style: none;
     padding: 0;
-    margin: clamp(48px, 8vh, 96px) 0 0;
+    margin: 0;
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    border-top: 1px solid var(--line-strong);
   }
 
   .hero-stats li {
-    padding: 28px 24px 40px 0;
+    padding: 28px 24px 36px 0;
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 8px;
   }
 
   .hero-stats li + li {
@@ -257,64 +219,24 @@ const stats = h.cifras.map((c) => ({ ...c, animar: c.animar && /^\d+$/.test(c.va
 
   .stat-value {
     font-family: var(--font-display);
-    font-size: clamp(2.5rem, 4vw, 3.5rem);
+    font-stretch: var(--wide);
+    font-weight: 800;
+    font-size: clamp(1.75rem, 2.6vw, 2.25rem);
     line-height: 1;
-    color: var(--yellow);
+    font-variant-numeric: tabular-nums;
   }
 
   .stat-value small {
-    font-family: var(--font-data);
-    font-size: 0.3em;
-    text-transform: uppercase;
-    margin-left: 0.25em;
-    color: var(--text);
-    letter-spacing: 0.05em;
-  }
-
-  /* Lectura tipo visor en la esquina superior derecha */
-  .hero-readout {
-    position: absolute;
-    top: calc(var(--header-h) + 24px);
-    right: var(--gutter);
-    margin: 0;
-    display: grid;
-    justify-items: end;
-    gap: 4px;
-    font-size: 0.75rem;
-    letter-spacing: 0.12em;
-    color: rgba(242, 242, 240, 0.7);
-  }
-
-  .hero-readout i {
-    display: inline-block;
-    width: 7px;
-    height: 7px;
-    border-radius: 50%;
-    background: #ff5a5f;
-    margin-right: 6px;
-    animation: rec 1.2s steps(2) infinite;
-  }
-
-  @keyframes rec {
-    50% {
-      opacity: 0.2;
-    }
-  }
-
-  @media (max-width: 960px) {
-    .hero-readout {
-      display: none;
-    }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .hero-readout i {
-      animation: none;
-    }
+    font-family: var(--font-body);
+    font-stretch: 100%;
+    font-weight: 600;
+    font-size: 0.45em;
+    margin-left: 0.3em;
   }
 
   .stat-label {
-    font-size: 0.95rem;
+    font-size: 0.975rem;
+    line-height: 1.4;
     color: var(--text-muted);
   }
 
@@ -336,6 +258,12 @@ const stats = h.cifras.map((c) => ({ ...c, animar: c.animar && /^\d+$/.test(c.va
 
     .hero-stats li:nth-child(n + 3) {
       border-top: 1px solid var(--line);
+    }
+  }
+
+  @media (max-width: 560px) {
+    .hero-content {
+      padding-inline: 0;
     }
   }
 </style>

@@ -166,16 +166,16 @@ const modules = [
   <!-- Hero -->
   <section class="sim-hero">
     <div class="container hero-grid">
-      <div class="hero-text">
-        <p class="eyebrow">Simulador VR · RE-liON</p>
+      <div class="hero-text theme-signal">
+        <p class="kicker">Simulador VR · RE-liON</p>
         <h1 class="h-xl">Tu jefatura, convertida en <span class="accent">zona táctica</span></h1>
         <p class="lead">
           Sistema de entrenamiento inmersivo, móvil e inalámbrico. Se despliega en tus instalaciones y entrena a toda la
           unidad con el peso, el tacto y el estrés de una intervención real.
         </p>
         <div class="actions">
-          <a href="#contacto" class="btn btn-primary">Solicitar demostración <span class="arrow">→</span></a>
-          <a href="#modulos" class="btn btn-ghost">Ver módulos</a>
+          <a href="#contacto" class="btn btn-primary">Solicitar demostración</a>
+          <a href="#modulos" class="link-arrow">Ver módulos</a>
         </div>
       </div>
       <div class="hero-media hud">
@@ -226,7 +226,7 @@ const modules = [
   </section>
 
   <!-- Equipo del operador -->
-  <section class="section alt">
+  <section class="section alt theme-light">
     <div class="container split">
       <div class="split-media hud reveal">
         <Image src={operador} alt="Operador equipado con visor de realidad virtual y fusil instrumentado" widths={[700, 1200]} sizes="(max-width: 960px) 100vw, 55vw" />
@@ -259,14 +259,11 @@ const modules = [
       </div>
       <div class="weapons">
         {
-          weapons.map((w, i) => (
+          weapons.map((w) => (
             <article class="weapon reveal">
               <div class="weapon-media" data-arma-video>
                 <Image src={w.image} alt={w.alt} widths={[400, 700, 960]} sizes="(max-width: 960px) 100vw, 33vw" />
                 <video muted loop playsinline preload="none" data-src={w.video} aria-hidden="true" />
-                <span class="weapon-cam data" aria-hidden="true">
-                  <i></i> CAM {String(i + 1).padStart(2, '0')} · {w.name.toUpperCase()}
-                </span>
               </div>
               <div class="weapon-body">
                 <span class="weapon-name">{w.name}</span>
@@ -282,7 +279,7 @@ const modules = [
   </section>
 
   <!-- Configuraciones -->
-  <section class="section alt" id="configuraciones">
+  <section class="section alt theme-light" id="configuraciones">
     <div class="container">
       <div class="head reveal">
         <p class="eyebrow">Kits y configuraciones</p>
@@ -374,7 +371,7 @@ const modules = [
   </section>
 
   <!-- Módulos -->
-  <section class="section alt" id="modulos">
+  <section class="section alt theme-light" id="modulos">
     <div class="container">
       <div class="head reveal">
         <p class="eyebrow">Módulos de entrenamiento</p>
@@ -383,13 +380,12 @@ const modules = [
       </div>
       <div class="modules">
         {
-          modules.map((m, i) => (
+          modules.map((m) => (
             <article class="module reveal" id={m.id}>
               <div class="module-media">
                 <Image src={m.image} alt={m.alt} widths={[360, 600]} sizes="(max-width: 700px) 100vw, 280px" />
               </div>
               <div class="module-body">
-                <span class="module-n">{String(i + 1).padStart(2, '0')}</span>
                 <h3>{m.title}</h3>
                 <p class="muted">{m.text}</p>
               </div>
@@ -465,35 +461,52 @@ const modules = [
 
 <style>
   /* Hero */
+  /* v2: panel amarillo con el rótulo junto a la foto, como en la portada */
   .sim-hero {
-    padding-top: calc(var(--header-h) + clamp(40px, 6vw, 88px));
-    background:
-      radial-gradient(ellipse at 80% 20%, rgba(247, 196, 0, 0.1), transparent 55%),
-      var(--bg);
+    padding-top: calc(var(--header-h) + clamp(24px, 4vw, 56px));
   }
 
   .hero-grid {
     display: grid;
-    grid-template-columns: 1.05fr 1fr;
-    gap: clamp(32px, 5vw, 72px);
-    align-items: center;
+    grid-template-columns: 1.1fr 1fr;
+    align-items: stretch;
+  }
+
+  .hero-text {
+    container-type: inline-size;
+    padding: clamp(28px, 4vw, 56px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .hero-text .kicker {
+    font-weight: 600;
+    margin-bottom: 1.25rem;
   }
 
   .hero-text h1 {
-    font-size: clamp(2.75rem, 5.6vw, 5.25rem);
+    font-size: clamp(1.75rem, 7.4cqi, 4rem);
     margin-bottom: 1.25rem;
+  }
+
+  .hero-text .lead {
+    color: var(--text);
+    font-weight: 500;
   }
 
   .actions {
     display: flex;
     flex-wrap: wrap;
-    gap: 14px;
-    margin-top: 2rem;
+    align-items: center;
+    gap: 16px 28px;
+    margin-top: 1.5rem;
   }
 
   .hero-media img {
     width: 100%;
-    aspect-ratio: 4 / 3;
+    height: 100%;
+    min-height: 320px;
     object-fit: cover;
   }
 
@@ -503,7 +516,7 @@ const modules = [
     margin: clamp(48px, 7vw, 88px) 0 0;
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    border-block: 1px solid var(--line-strong);
+    border-bottom: 1px solid var(--line-strong);
   }
 
   .specs li {
@@ -522,15 +535,19 @@ const modules = [
 
   .spec-value {
     font-family: var(--font-display);
-    font-size: clamp(2.5rem, 4vw, 3.5rem);
+    font-stretch: var(--wide);
+    font-weight: 800;
+    font-size: clamp(1.75rem, 2.6vw, 2.25rem);
     line-height: 1;
-    color: var(--yellow);
+    font-variant-numeric: tabular-nums;
   }
 
   .spec-value small {
+    font-family: var(--font-body);
+    font-stretch: 100%;
+    font-weight: 600;
     font-size: 0.45em;
-    margin-left: 0.25em;
-    color: var(--text);
+    margin-left: 0.3em;
   }
 
   .spec-label {
@@ -539,14 +556,9 @@ const modules = [
   }
 
   /* Comunes */
-  .alt {
-    background: var(--bg-2);
-    border-block: 1px solid var(--line);
-  }
-
   .head {
-    max-width: 780px;
-    margin-bottom: 56px;
+    max-width: 940px;
+    margin-bottom: clamp(40px, 5vw, 56px);
   }
 
   .head h2 {
@@ -567,12 +579,19 @@ const modules = [
     padding-left: 26px;
   }
 
+  .checks li {
+    font-weight: 500;
+  }
+
   .checks li::before {
-    content: '✓';
+    content: '';
     position: absolute;
     left: 0;
-    color: var(--yellow);
-    font-weight: 600;
+    top: 0.62em;
+    width: 8px;
+    height: 8px;
+    background: var(--yellow);
+    outline: 1px solid var(--ink);
   }
 
   /* Pasos */
@@ -602,14 +621,16 @@ const modules = [
 
   .meter-n {
     font-size: 0.875rem;
-    letter-spacing: 0.14em;
+    font-weight: 600;
     color: var(--text-muted);
+    font-variant-numeric: tabular-nums;
   }
 
   .meter-n span {
+    font-stretch: var(--wide);
+    font-weight: 800;
     color: var(--yellow);
     font-size: 1.75rem;
-    letter-spacing: 0;
   }
 
   .meter-bar {
@@ -670,28 +691,34 @@ const modules = [
     opacity: 0.55;
   }
 
+  /* Los pasos sí son una secuencia: la numeración se queda, en la letra ancha */
   .step-readout {
-    font-size: 0.75rem;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--yellow);
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--text-muted);
   }
 
   .step-n {
     font-family: var(--font-display);
-    font-size: clamp(4rem, 8vw, 6.5rem);
+    font-stretch: var(--wide);
+    font-weight: 800;
+    font-size: clamp(3rem, 6vw, 4.5rem);
     line-height: 1;
-    color: transparent;
-    -webkit-text-stroke: 1px var(--line-strong);
+    color: var(--line-strong);
     margin-top: 8px;
+    font-variant-numeric: tabular-nums;
   }
 
   .is-active .step-n {
-    -webkit-text-stroke-color: var(--yellow);
+    color: var(--yellow);
   }
 
   .steps h3 {
-    font-size: clamp(2rem, 3.5vw, 2.75rem);
+    font-family: var(--font-display);
+    font-stretch: var(--wide);
+    font-weight: 800;
+    text-transform: uppercase;
+    font-size: clamp(1.6rem, 2.8vw, 2.25rem);
     margin: 4px 0 10px;
   }
 
@@ -744,17 +771,31 @@ const modules = [
   }
 
   /* Armas */
-  .weapons {
+  /* Armas y configuraciones: columnas con filetes, sin caja de tarjeta */
+  .weapons,
+  .setups {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
+    border-top: 3px solid currentColor;
   }
 
-  .weapon {
-    background: var(--surface);
-    border: 1px solid var(--line);
+  .weapon,
+  .setup {
     display: flex;
     flex-direction: column;
+    padding: 24px clamp(16px, 2vw, 28px) 8px;
+  }
+
+  :is(.weapon, .setup):first-child {
+    padding-left: 0;
+  }
+
+  :is(.weapon, .setup):last-child {
+    padding-right: 0;
+  }
+
+  :is(.weapon, .setup) + :is(.weapon, .setup) {
+    border-left: 1px solid var(--line-strong);
   }
 
   /* Vídeo de producto con un velo de señal muy suave: líneas de barrido finas y una banda de luz
@@ -765,7 +806,6 @@ const modules = [
     overflow: hidden;
     aspect-ratio: 16 / 9;
     background: #e9e9e6;
-    border-bottom: 3px solid var(--yellow);
   }
 
   .weapon-media img,
@@ -859,7 +899,7 @@ const modules = [
   }
 
   .weapon-body {
-    padding: 24px;
+    padding-top: 20px;
     display: flex;
     flex-direction: column;
     gap: 4px;
@@ -868,18 +908,17 @@ const modules = [
 
   .weapon-name {
     font-family: var(--font-display);
-    font-size: 2.5rem;
+    font-stretch: var(--wide);
+    font-weight: 800;
+    text-transform: uppercase;
+    font-size: clamp(1.5rem, 2.4vw, 2rem);
     line-height: 1;
-    color: var(--yellow);
   }
 
   .weapon-level {
-    font-family: var(--font-label);
     font-weight: 600;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    font-size: 0.875rem;
-    margin-bottom: 10px;
+    color: var(--text-muted);
+    margin: 6px 0 10px;
   }
 
   .weapon-body p {
@@ -896,17 +935,6 @@ const modules = [
   }
 
   /* Configuraciones */
-  .setups {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
-  }
-
-  .setup {
-    border: 1px solid var(--line);
-    background: var(--surface);
-  }
-
   .setup img {
     width: 100%;
     aspect-ratio: 16 / 10;
@@ -915,19 +943,20 @@ const modules = [
   }
 
   .setup-body {
-    padding: 24px;
+    padding-top: 20px;
   }
 
   .setup-kit {
-    font-family: var(--font-label);
     font-weight: 600;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    font-size: 0.8rem;
-    color: var(--yellow);
+    color: var(--text-muted);
   }
 
   .setup h3 {
+    font-stretch: var(--wide);
+    font-weight: 800;
+    text-transform: uppercase;
+    font-size: clamp(1.15rem, 1.6vw, 1.35rem);
+    line-height: 1.1;
     margin: 6px 0 10px;
   }
 
@@ -950,12 +979,8 @@ const modules = [
 
   .compare caption {
     text-align: left;
-    font-family: var(--font-label);
-    font-weight: 600;
-    letter-spacing: 0.22em;
-    text-transform: uppercase;
-    font-size: 0.85rem;
-    color: var(--yellow);
+    font-weight: 700;
+    font-size: 1.25rem;
     padding-bottom: 16px;
   }
 
@@ -969,24 +994,17 @@ const modules = [
 
   .compare thead th {
     font-family: var(--font-display);
-    font-weight: 400;
-    font-size: 1.6rem;
-    letter-spacing: 0.02em;
-    border-bottom: 2px solid var(--yellow);
+    font-stretch: var(--wide);
+    font-weight: 800;
+    text-transform: uppercase;
+    font-size: 1.05rem;
+    border-bottom: 3px solid currentColor;
   }
 
   .compare tbody th {
-    font-family: var(--font-label);
-    font-weight: 600;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    font-size: 0.85rem;
+    font-weight: 700;
     color: var(--text-muted);
     width: 18%;
-  }
-
-  .compare tbody td:nth-child(2) {
-    color: var(--yellow);
   }
 
   /* Instructor */
@@ -1015,9 +1033,10 @@ const modules = [
   }
 
   /* Módulos */
+  /* Módulos: filas de un índice, sin caja */
   .modules {
     display: grid;
-    gap: 16px;
+    border-top: 3px solid currentColor;
   }
 
   .module {
@@ -1025,35 +1044,24 @@ const modules = [
     grid-template-columns: 240px 1fr 220px;
     gap: 28px;
     align-items: center;
-    background: var(--surface);
-    border: 1px solid var(--line);
-    padding: 16px 28px 16px 16px;
+    padding-block: 20px;
+    border-bottom: 1px solid var(--line-strong);
     scroll-margin-top: calc(var(--header-h) + 16px);
-    transition: border-color 0.25s;
-  }
-
-  .module:hover {
-    border-color: rgba(247, 196, 0, 0.45);
   }
 
   .module-media img {
     width: 100%;
     aspect-ratio: 16 / 10;
     object-fit: cover;
-    filter: grayscale(0.4);
-  }
-
-  .module-n {
-    font-family: var(--font-label);
-    font-weight: 600;
-    letter-spacing: 0.2em;
-    color: var(--yellow);
-    font-size: 0.9rem;
   }
 
   .module h3 {
-    font-size: clamp(1.75rem, 2.4vw, 2.25rem);
-    margin: 4px 0 8px;
+    font-stretch: var(--wide);
+    font-weight: 800;
+    text-transform: uppercase;
+    font-size: clamp(1.2rem, 1.8vw, 1.5rem);
+    line-height: 1.05;
+    margin: 0 0 8px;
   }
 
   .module-body p {
@@ -1064,27 +1072,16 @@ const modules = [
     list-style: none;
     margin: 0;
     padding: 0 0 0 24px;
-    border-left: 1px solid var(--line);
+    border-left: 3px solid var(--yellow);
     display: grid;
-    gap: 8px;
-    font-family: var(--font-label);
-    font-weight: 500;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    font-size: 0.9rem;
-  }
-
-  .module-req li::before {
-    content: '▸ ';
-    color: var(--yellow);
+    gap: 4px;
+    font-weight: 600;
+    font-size: 0.95rem;
   }
 
   /* Banda contratación */
   .band {
     padding-block: 56px;
-    background:
-      repeating-linear-gradient(135deg, rgba(247, 196, 0, 0.06) 0 2px, transparent 2px 14px),
-      var(--bg);
   }
 
   .band-inner {
@@ -1129,7 +1126,19 @@ const modules = [
     .weapons,
     .setups {
       grid-template-columns: 1fr;
-      max-width: 560px;
+      border-top: 0;
+    }
+
+    .weapon,
+    .setup,
+    :is(.weapon, .setup):first-child,
+    :is(.weapon, .setup):last-child {
+      padding: 24px 0;
+      border-top: 3px solid currentColor;
+    }
+
+    :is(.weapon, .setup) + :is(.weapon, .setup) {
+      border-left: 0;
     }
 
     .specs {

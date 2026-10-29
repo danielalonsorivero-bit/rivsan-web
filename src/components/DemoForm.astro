@@ -3,17 +3,20 @@ import { Image } from 'astro:assets';
 import RequestForm from './RequestForm.astro';
 import { site } from '../data/site';
 import photo from '../assets/img/agente-fusil.jpg';
+
+// v2: la sección de contacto es la otra gran superficie amarilla de la página; el formulario
+// va en un bloque de tinta encima.
 ---
 
-<section class="section contact" id="contacto">
+<section class="section contact theme-signal" id="contacto">
   <div class="container grid">
-    <div class="aside reveal">
+    <div class="aside">
       <p class="eyebrow">Contacto</p>
       <h2 class="h-lg">Solicita una <span class="accent">demostración operativa</span></h2>
       <p class="lead">
         Vamos a tu jefatura o unidad, desplegamos el sistema y tus agentes lo prueban. Sin compromiso.
       </p>
-      <div class="aside-media hud">
+      <div class="aside-media">
         <Image src={photo} alt="Agente con visor de realidad virtual apuntando con un fusil simulado" widths={[400, 700]} sizes="(max-width: 960px) 100vw, 35vw" />
       </div>
       <ul class="direct">
@@ -22,7 +25,7 @@ import photo from '../assets/img/agente-fusil.jpg';
       </ul>
     </div>
 
-    <div class="reveal" data-demo-form>
+    <div class="theme-ink" data-demo-form>
       <RequestForm />
     </div>
   </div>
@@ -53,11 +56,6 @@ import photo from '../assets/img/agente-fusil.jpg';
 </script>
 
 <style>
-  .contact {
-    background: var(--bg-2);
-    border-top: 1px solid var(--line);
-  }
-
   .grid {
     display: grid;
     grid-template-columns: 0.9fr 1.1fr;
@@ -78,6 +76,8 @@ import photo from '../assets/img/agente-fusil.jpg';
     aspect-ratio: 16 / 10;
     object-fit: cover;
     object-position: 50% 30%;
+    filter: grayscale(1) contrast(1.1);
+    mix-blend-mode: multiply;
   }
 
   .direct {
@@ -85,32 +85,32 @@ import photo from '../assets/img/agente-fusil.jpg';
     padding: 0;
     margin: 0;
     display: grid;
-    gap: 12px;
+    border-top: 3px solid var(--ink);
   }
 
   .direct li {
     display: flex;
     gap: 16px;
     align-items: baseline;
+    padding-block: 12px;
+    border-bottom: 1px solid var(--line);
   }
 
   .direct span {
-    font-family: var(--font-label);
     font-weight: 600;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    font-size: 0.8rem;
-    color: var(--text-dim);
-    width: 80px;
+    width: 90px;
+    flex: none;
   }
 
   .direct a {
     font-size: 1.15rem;
+    font-weight: 700;
     text-decoration: none;
   }
 
   .direct a:hover {
-    color: var(--yellow);
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
   }
 
   @media (max-width: 960px) {
