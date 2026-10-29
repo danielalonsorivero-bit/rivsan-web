@@ -358,9 +358,13 @@ const perks = [
     color: var(--text-dim);
   }
 
+  /* El anillo de foco global (:focus-visible) se mantiene; aquí solo se acerca al borde */
   input:focus {
-    outline: none;
     border-color: var(--yellow);
+  }
+
+  input:not([type='checkbox']):not([type='radio']):focus-visible {
+    outline-offset: 1px;
   }
 
   .was-validated input:invalid {

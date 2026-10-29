@@ -324,6 +324,48 @@ p {
   color: #ff6b6b;
 }
 
+/* Botón de pausa de los vídeos de fondo (lo añade scripts/senal.ts dentro de la caja del vídeo) */
+.senal-pausa {
+  position: absolute;
+  top: var(--pausa-top, 12px);
+  right: var(--pausa-right, 12px);
+  z-index: 5;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 11px;
+  font-size: 0.6875rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  background: rgba(11, 11, 11, 0.7);
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  backdrop-filter: blur(6px);
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s;
+}
+
+.senal-pausa:hover {
+  color: var(--text);
+  border-color: var(--yellow);
+}
+
+/* Dos barras (pausa) o un triángulo (reanudar) */
+.senal-pausa-icono {
+  width: 8px;
+  height: 10px;
+  border-inline: 3px solid var(--yellow);
+}
+
+.senal-pausa[aria-pressed='true'] .senal-pausa-icono {
+  width: 0;
+  height: 0;
+  border-block: 5px solid transparent;
+  border-inline: 8px solid var(--yellow);
+  border-inline-end: 0;
+}
+
 /* Esquinas tipo visor (HUD) */
 .hud {
   position: relative;

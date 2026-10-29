@@ -170,7 +170,14 @@ const hayEjemplos = cursos.some((c) => c.data.ejemplo);
     });
   };
 
-  chips.forEach((c) => c.addEventListener('click', () => apply(c.dataset.filter!)));
+  // El filtro queda en la URL (#area) para poder compartir o recargar la vista filtrada
+  chips.forEach((c) =>
+    c.addEventListener('click', () => {
+      const filter = c.dataset.filter!;
+      apply(filter);
+      history.replaceState(null, '', filter === 'todos' ? location.pathname + location.search : `#${filter}`);
+    }),
+  );
 
   // Llegar con /formacion/#auxilios filtra directamente esa área
   const fromHash = location.hash.slice(1);

@@ -45,7 +45,8 @@ import photo from '../assets/img/agente-fusil.jpg';
         e.preventDefault();
         history.replaceState(null, '', url.search + url.hash);
         preselect();
-        document.getElementById('contacto')?.scrollIntoView({ behavior: 'smooth' });
+        const quieto = matchMedia('(prefers-reduced-motion: reduce)').matches;
+        document.getElementById('contacto')?.scrollIntoView({ behavior: quieto ? 'auto' : 'smooth' });
       }),
     );
   }

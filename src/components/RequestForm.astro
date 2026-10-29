@@ -161,14 +161,46 @@ const endpoint = conEnvio ? `${import.meta.env.BASE_URL.replace(/\/?$/, '/')}api
   document.querySelectorAll<HTMLFormElement>('[data-request-form]').forEach((form) => {
     const status = form.querySelector<HTMLElement>('[data-status]')!;
     const boton = form.querySelector<HTMLButtonElement>('button[type="submit"]')!;
-    const privacidad = form.querySelector<HTMLInputElement>('input[name="privacidad"]')!;
     const fecha = form.querySelector<HTMLInputElement>('[data-fecha]');
+    const campos = [...form.querySelectorAll<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>('input:not([type="hidden"]):not([name="web"]), select, textarea')];
 
-    // El botón se activa al aceptar la privacidad (sin JS el formulario no envía, así que se desactiva aquí)
-    const sincronizar = () => (boton.disabled = !privacidad.checked);
-    privacidad.addEventListener('change', sincronizar);
-    form.addEventListener('reset', () => setTimeout(sincronizar));
-    sincronizar();
+    // Errores junto a cada campo: el texto va dentro de su <label> (oculto para el nombre accesible)
+    // y se enlaza con aria-describedby para que el lector de pantalla lo lea al enfocar el campo
+    const mensaje = (c: (typeof campos)[number]) => {
+      const v = c.validity;
+      if (c.type === 'checkbox') return 'Acepta la política de privacidad para enviar la solicitud.';
+      if (v.valueMissing) return 'Este campo es obligatorio.';
+      if (v.typeMismatch && c.type === 'email') return 'Escribe un email válido, p. ej. nombre@ayuntamiento.es.';
+      if (v.rangeUnderflow) return `Indica ${(c as HTMLInputElement).min} o más.`;
+      if (v.badInput) return 'Escribe solo números.';
+      return c.validationMessage;
+    };
+    const marcar = (c: (typeof campos)[number]) => {
+      const label = c.closest('label')!;
+      let err = label.querySelector<HTMLElement>('.f-error');
+      if (c.validity.valid) {
+        c.removeAttribute('aria-invalid');
+        err?.remove();
+        return;
+      }
+      if (!err) {
+        err = document.createElement('span');
+        err.className = 'f-error';
+        err.id = `${c.name}-${Math.random().toString(36).slice(2, 8)}-error`;
+        err.setAttribute('aria-hidden', 'true');
+        label.append(err);
+        c.setAttribute('aria-describedby', err.id);
+      }
+      err.textContent = mensaje(c);
+      c.setAttribute('aria-invalid', 'true');
+    };
+    // Tras el primer intento de envío, cada campo se revalida al corregirlo
+    campos.forEach((c) =>
+      ['input', 'change'].forEach((ev) =>
+        c.addEventListener(ev, () => form.classList.contains('was-validated') && marcar(c)),
+      ),
+    );
+    const limpiar = () => campos.forEach((c) => (c.removeAttribute('aria-invalid'), c.closest('label')!.querySelector('.f-error')?.remove()));
 
     // Fecha preferente: desde mañana. Más adelante se cruzará con las fechas disponibles.
     const hoyIso = () => {
@@ -191,13 +223,16 @@ const endpoint = conEnvio ? `${import.meta.env.BASE_URL.replace(/\/?$/, '/')}api
       aviso('Gracias. Te hemos enviado un correo de confirmación y te contactaremos en menos de 48 horas laborables.', 'ok');
       form.reset();
       form.classList.remove('was-validated');
+      limpiar();
     };
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       if (!form.checkValidity()) {
         form.classList.add('was-validated');
-        aviso('Revisa los campos marcados.', 'error');
+        campos.forEach(marcar);
+        const n = campos.filter((c) => !c.validity.valid).length;
+        aviso(n === 1 ? 'Falta 1 campo por completar.' : `Faltan ${n} campos por completar.`, 'error');
         form.querySelector<HTMLElement>(':invalid')?.focus();
         return;
       }
@@ -206,6 +241,7 @@ const endpoint = conEnvio ? `${import.meta.env.BASE_URL.replace(/\/?$/, '/')}api
         aviso('Gracias. Te contactaremos en menos de 48 horas laborables. (Maqueta: el formulario aún no envía.)', 'ok');
         form.reset();
         form.classList.remove('was-validated');
+        limpiar();
         return;
       }
 
@@ -227,7 +263,7 @@ const endpoint = conEnvio ? `${import.meta.env.BASE_URL.replace(/\/?$/, '/')}api
       } catch {
         aviso(`No se ha podido enviar. Comprueba la conexión o escríbenos a ${form.dataset.email}.`, 'error');
       } finally {
-        sincronizar();
+        boton.disabled = false;
       }
     });
   });
@@ -246,6 +282,8 @@ const endpoint = conEnvio ? `${import.meta.env.BASE_URL.replace(/\/?$/, '/')}api
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 20px;
+    /* Un error bajo un campo no estira el campo vecino */
+    align-items: start;
   }
 
   label {
@@ -282,15 +320,40 @@ const endpoint = conEnvio ? `${import.meta.env.BASE_URL.replace(/\/?$/, '/')}api
     color: var(--text-dim);
   }
 
+  /* El anillo de foco global (:focus-visible) se mantiene; aquí solo se acerca al borde */
   input:focus,
   select:focus,
   textarea:focus {
-    outline: none;
     border-color: var(--yellow);
+  }
+
+  :is(input, select, textarea):focus-visible {
+    outline-offset: 1px;
   }
 
   .was-validated :invalid {
     border-color: #e5484d;
+  }
+
+  /* Mensaje de error de un campo: va dentro de su <label>, así que deshace el estilo de etiqueta.
+     Lo crea el script, sin el atributo de ámbito de Astro: de ahí :global */
+  .form :global(.f-error) {
+    font-family: var(--font-body);
+    font-weight: 400;
+    font-size: 0.85rem;
+    line-height: 1.4;
+    letter-spacing: 0;
+    text-transform: none;
+    color: #ff6b6b;
+  }
+
+  .check {
+    flex-wrap: wrap;
+  }
+
+  .form .check :global(.f-error) {
+    flex-basis: 100%;
+    padding-left: 32px;
   }
 
   .check {

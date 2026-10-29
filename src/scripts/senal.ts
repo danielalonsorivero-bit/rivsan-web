@@ -9,7 +9,11 @@
 // Cortes de señal: en la costura del bucle (tapa el salto al primer fotograma), al arrancar y al
 // azar cada pocos segundos. El encuadre lo marcan las variables CSS --media-x, --media-y (fracción
 // desde arriba, como object-position) y --media-shift de `caja`.
+// En cuanto arranca el vídeo se añade a `caja` un botón para pausarlo (el bucle dura más de 5 s);
+// su posición la ajustan --pausa-top y --pausa-right (estilos en global.css).
 import { senalShader } from './senal-shader';
+
+type Estado = { pausado: boolean };
 
 // `hdDesde`: ancho de la caja en píxeles reales a partir del que se carga la versión HD
 export function videoConSenal(caja: HTMLElement, { alCorte, hdDesde = 1600 }: { alCorte?: (corte: boolean) => void; hdDesde?: number } = {}) {
@@ -19,13 +23,38 @@ export function videoConSenal(caja: HTMLElement, { alCorte, hdDesde = 1600 }: { 
   const ahorro = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData;
   if (!video || !canvas || quieto || ahorro) return;
   video.src = (caja.clientWidth * devicePixelRatio > hdDesde ? video.dataset.srcHd : video.dataset.srcSd) ?? '';
+  const estado: Estado = { pausado: false };
   video.play().then(
-    () => caja.classList.add(iniciarGL(caja, video, canvas, alCorte) ? 'is-gl' : 'is-video'),
+    () => {
+      const reanudar = iniciarGL(caja, video, canvas, estado, alCorte);
+      caja.classList.add(reanudar ? 'is-gl' : 'is-video');
+      botonPausa(caja, video, estado, reanudar || undefined);
+    },
     () => {},
   );
 }
 
-function iniciarGL(caja: HTMLElement, video: HTMLVideoElement, canvas: HTMLCanvasElement, alCorte?: (corte: boolean) => void) {
+// Al pausar, el canvas se queda con el último fotograma pintado
+function botonPausa(caja: HTMLElement, video: HTMLVideoElement, estado: Estado, reanudarGL?: () => void) {
+  const boton = document.createElement('button');
+  boton.type = 'button';
+  boton.className = 'senal-pausa data';
+  const pintar = () => {
+    boton.setAttribute('aria-pressed', String(estado.pausado));
+    boton.setAttribute('aria-label', estado.pausado ? 'Reanudar el vídeo de fondo' : 'Pausar el vídeo de fondo');
+    boton.innerHTML = `<span class="senal-pausa-icono" aria-hidden="true"></span><span aria-hidden="true">${estado.pausado ? 'Reanudar' : 'Pausa'}</span>`;
+  };
+  boton.addEventListener('click', () => {
+    estado.pausado = !estado.pausado;
+    if (estado.pausado) video.pause();
+    else video.play().then(() => reanudarGL?.(), () => {});
+    pintar();
+  });
+  pintar();
+  caja.append(boton);
+}
+
+function iniciarGL(caja: HTMLElement, video: HTMLVideoElement, canvas: HTMLCanvasElement, estado: Estado, alCorte?: (corte: boolean) => void) {
   const gl = canvas.getContext('webgl', { alpha: false, antialias: false, powerPreference: 'low-power' });
   if (!gl) return false;
   const shader = (tipo: number, src: string) => {
@@ -86,7 +115,7 @@ function iniciarGL(caja: HTMLElement, video: HTMLVideoElement, canvas: HTMLCanva
   let enCorte = false;
 
   const frame = (ahora: number) => {
-    if (!visible || document.hidden) return (pintando = false);
+    if (!visible || document.hidden || estado.pausado) return (pintando = false);
     const t = (ahora - inicio) / 1000;
     if (t > proxima) {
       rafaga = { desde: t, hasta: t + 0.12 + Math.random() * 0.25, fuerza: 0.3 + Math.random() * 0.4 };
@@ -110,7 +139,7 @@ function iniciarGL(caja: HTMLElement, video: HTMLVideoElement, canvas: HTMLCanva
     requestAnimationFrame(frame);
   };
   const arrancar = () => {
-    if (visible && !document.hidden && !pintando) {
+    if (visible && !document.hidden && !estado.pausado && !pintando) {
       pintando = true;
       requestAnimationFrame(frame);
     }
@@ -119,10 +148,14 @@ function iniciarGL(caja: HTMLElement, video: HTMLVideoElement, canvas: HTMLCanva
   // Fuera de pantalla se para todo, también el vídeo
   new IntersectionObserver(([e]) => {
     visible = e.isIntersecting;
-    visible ? (video.play().catch(() => {}), arrancar()) : video.pause();
+    if (!visible) video.pause();
+    else if (!estado.pausado) {
+      video.play().catch(() => {});
+      arrancar();
+    }
   }).observe(caja);
   document.addEventListener('visibilitychange', arrancar);
   medir();
   arrancar();
-  return true;
+  return arrancar;
 }

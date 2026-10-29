@@ -541,6 +541,8 @@ const ficha = [
     color: var(--text);
     border: 1px solid rgba(247, 196, 0, 0.4);
     overflow: hidden;
+    /* Al llegar al final del scroll interno no se desplaza la página de detrás */
+    overscroll-behavior: contain;
   }
 
   .request-dialog[open] {
@@ -704,6 +706,7 @@ const ficha = [
   .enroll-form {
     padding: 24px clamp(24px, 3vw, 40px) 28px;
     overflow-y: auto;
+    overscroll-behavior: contain;
   }
 
   .enroll-head {

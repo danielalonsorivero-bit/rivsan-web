@@ -122,11 +122,15 @@ const stats = h.cifras.map((c) => ({ ...c, animar: c.animar && /^\d+$/.test(c.va
     --fx-cycle: 7s;
     --media-x: 0.5;
     --media-shift: 0;
+    /* Botón de pausa del vídeo, bajo la lectura del visor */
+    --pausa-top: calc(var(--header-h) + 108px);
+    --pausa-right: var(--gutter);
   }
 
   @media (max-width: 960px) {
     .hero {
       --media-x: 0.3;
+      --pausa-top: calc(var(--header-h) + 16px);
     }
   }
 

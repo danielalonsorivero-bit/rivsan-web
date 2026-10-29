@@ -59,10 +59,10 @@ const levels = [
         {
           levels.map((l, i) => (
             <li data-i={i}>
-              <div class="cell cell--subject">
+              <button type="button" class="cell cell--subject">
                 <strong>{l.subject}</strong>
                 <span>{l.detail}</span>
-              </div>
+              </button>
               <span class="arrow" aria-hidden="true" />
               <div class="cell cell--agent">
                 <strong>{l.response}</strong>
@@ -184,8 +184,16 @@ const levels = [
     transition: opacity 0.3s, border-color 0.3s, background 0.3s;
   }
 
+  /* Botón que fija el nivel: hereda el aspecto de celda */
   .cell--subject {
+    font: inherit;
+    color: inherit;
+    text-align: left;
     cursor: pointer;
+  }
+
+  li:not(.is-active) .cell--subject:hover {
+    opacity: 0.8;
   }
 
   .cell strong {

@@ -65,13 +65,20 @@ const isHome = Astro.url.pathname === import.meta.env.BASE_URL || Astro.url.path
   onScroll();
   window.addEventListener('scroll', onScroll, { passive: true });
 
+  const toggleLabel = toggle.querySelector('.visually-hidden')!;
+  const isOpen = () => header.classList.contains('is-open');
   const setOpen = (open: boolean) => {
     header.classList.toggle('is-open', open);
     toggle.setAttribute('aria-expanded', String(open));
+    toggleLabel.textContent = open ? 'Cerrar menú' : 'Abrir menú';
     document.body.style.overflow = open ? 'hidden' : '';
+    // Con el panel abierto, el resto de la página queda fuera del tabulador y del lector de pantalla
+    for (const el of document.body.children) if (el !== header) (el as HTMLElement).inert = open;
   };
-  toggle.addEventListener('click', () => setOpen(!header.classList.contains('is-open')));
+  toggle.addEventListener('click', () => setOpen(!isOpen()));
   header.querySelectorAll('.nav a').forEach((a) => a.addEventListener('click', () => setOpen(false)));
+  // Al pasar a escritorio el panel deja de existir: se cierra para no dejar la página inerte
+  matchMedia('(max-width: 1080px)').addEventListener('change', (e) => !e.matches && isOpen() && setOpen(false));
 
   // Desplegables: clic (y teclado) en escritorio y acordeón en el menú móvil
   const setSub = (li: HTMLElement, open: boolean) => {
@@ -90,10 +97,14 @@ const isHome = Astro.url.pathname === import.meta.env.BASE_URL || Astro.url.path
   });
   document.addEventListener('keydown', (e) => {
     if (e.key !== 'Escape') return;
+    // Primero se cierra el desplegable abierto; con otra pulsación, el menú móvil
     const open = subs.find((li) => li.classList.contains('is-sub-open'));
     if (open) {
       setSub(open, false);
       open.querySelector<HTMLButtonElement>('[data-sub-toggle]')!.focus();
+    } else if (isOpen()) {
+      setOpen(false);
+      toggle.focus();
     }
   });
 </script>
@@ -343,6 +354,7 @@ const isHome = Astro.url.pathname === import.meta.env.BASE_URL || Astro.url.path
       visibility: hidden;
       transition: transform 0.3s, visibility 0.3s;
       overflow-y: auto;
+      overscroll-behavior: contain;
     }
 
     .is-open .nav {

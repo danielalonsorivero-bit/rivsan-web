@@ -25,7 +25,7 @@ const hash = import.meta.env.PUBLIC_PASSWORD_HASH;
             <span class="visually-hidden">Contraseña</span>
             <input type="password" name="password" placeholder="Contraseña" autocomplete="current-password" required />
           </label>
-          <p class="gate-error" data-gate-error hidden>
+          <p class="gate-error" role="alert" data-gate-error hidden>
             Contraseña incorrecta.
           </p>
           <button type="submit" class="btn btn-primary">
