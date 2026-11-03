@@ -4,21 +4,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import DemoForm from '../components/DemoForm.astro';
 import galeria from '../assets/img/galeria-tradicional.jpg';
 
-const laws = [
-  {
-    ref: 'Ley 6/2023',
-    title: 'Formación continua obligatoria',
-    text: 'Establece la formación continua obligatoria para las Policías Locales de Andalucía y regula los centros y las actividades formativas.',
-    points: ['La formación pasa a ser una obligación, no una opción', 'Exige planificar y acreditar actividades formativas', 'Regula qué centros y actividades son válidos'],
-  },
-  {
-    ref: 'Decreto 8/2026',
-    title: 'Ingreso, formación y promoción',
-    text: 'Publicado en el BOJA el 3 de febrero de 2026 y en vigor desde el 23 de febrero de 2026. Regula el ingreso, la formación, la promoción y la convocatoria unificada de las Policías Locales de Andalucía.',
-    points: ['Convocatorias unificadas de ingreso', 'Formación vinculada a la promoción', 'En vigor desde el 23/02/2026'],
-  },
-];
-
 // Campos de la calculadora. Los valores por defecto reproducen el escenario del dossier (~21.500 €/año).
 const fields = [
   { id: 'agentes', label: 'Agentes a formar', unit: 'agentes', value: 40, min: 1, max: 1000, step: 1 },
@@ -32,22 +17,21 @@ const fields = [
 ---
 
 <BaseLayout
-  title="Normativa y ahorro"
-  description="Ley 6/2023 y Decreto 8/2026: la formación continua de la Policía Local de Andalucía es obligatoria. Calcula cuánto puedes ahorrar."
+  title="Calculadora de ahorro"
+  description="Calcula cuánto le cuesta a tu jefatura el modelo tradicional de formación y cuánto puedes ahorrar entrenando con el simulador en tus instalaciones."
   image={galeria}
 >
   <section class="page-hero">
     <div class="container hero-grid">
       <div>
-        <p class="eyebrow">Normativa y justificación económica</p>
-        <h1 class="h-xl">La formación <span class="accent">ya no es opcional</span></h1>
+        <p class="eyebrow">Recursos · Calculadora de ahorro</p>
+        <h1 class="h-xl">¿Cuánto te cuesta <span class="accent">seguir igual</span>?</h1>
         <p class="lead">
-          La normativa andaluza convierte la formación continua de las Policías Locales en una obligación. El reto ya no es
-          si formar, sino cómo hacerlo con más frecuencia y menos coste.
+          Galería externa, munición, dietas y horas fuera de servicio se repiten cada año. Introduce los datos de tu
+          jefatura y compara con lo que costaría entrenar con el simulador en tus propias instalaciones.
         </p>
         <div class="actions">
           <a href="#calculadora" class="btn btn-primary">Calcular mi ahorro <span class="arrow">→</span></a>
-          <a href="#marco-legal" class="btn btn-ghost">Ver marco legal</a>
         </div>
       </div>
       <div class="hero-media hud">
@@ -56,45 +40,12 @@ const fields = [
     </div>
   </section>
 
-  <!-- Marco legal -->
-  <section class="section" id="marco-legal">
-    <div class="container">
-      <div class="head reveal">
-        <p class="eyebrow">Marco legal · Andalucía</p>
-        <h2 class="h-lg">Lo que dice <span class="accent">la norma</span></h2>
-      </div>
-      <div class="laws">
-        {
-          laws.map((l) => (
-            <article class="law reveal">
-              <span class="law-ref">{l.ref}</span>
-              <h3 class="h-md">{l.title}</h3>
-              <p class="muted">{l.text}</p>
-              <ul>
-                {l.points.map((p) => (
-                  <li>{p}</li>
-                ))}
-              </ul>
-            </article>
-          ))
-        }
-      </div>
-      <p class="disclaimer">
-        Resumen orientativo. Para cualquier decisión, consulta el texto oficial publicado en el BOJA.
-      </p>
-    </div>
-  </section>
-
   <!-- Calculadora -->
   <section class="section calc-section" id="calculadora">
     <div class="container">
       <div class="head reveal">
-        <p class="eyebrow">Calculadora de ahorro</p>
-        <h2 class="h-lg">¿Cuánto te cuesta <span class="accent">seguir igual</span>?</h2>
-        <p class="lead">
-          Introduce los datos de tu jefatura. Calculamos el coste anual del modelo tradicional y lo que dejarías de gastar
-          al trasladar parte del entrenamiento al simulador, en tus propias instalaciones.
-        </p>
+        <p class="eyebrow">Datos de tu jefatura</p>
+        <h2 class="h-lg">Modelo actual <span class="accent">frente al simulador</span></h2>
       </div>
 
       <div class="calc" data-calc>
@@ -213,7 +164,7 @@ const fields = [
         <article class="arg reveal">
           <span class="arg-n">02</span>
           <h3>Acreditar con datos</h3>
-          <p class="muted">El After-Action Review registra tiempos, decisiones y disparos de cada agente: un respaldo objetivo para la formación obligatoria.</p>
+          <p class="muted">El After-Action Review registra tiempos, decisiones y disparos de cada agente: un respaldo objetivo para la formación de los agentes.</p>
         </article>
         <article class="arg reveal">
           <span class="arg-n">03</span>
@@ -368,61 +319,6 @@ const fields = [
 
   .head h2 {
     margin-bottom: 1rem;
-  }
-
-  /* Marco legal */
-  .laws {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
-  }
-
-  .law {
-    padding: clamp(28px, 4vw, 40px);
-    background: var(--bg-2);
-    border: 1px solid var(--line);
-    border-top: 3px solid var(--line-strong);
-  }
-
-  .law-ref {
-    font-family: var(--font-display);
-    font-size: clamp(2.5rem, 4.5vw, 3.5rem);
-    line-height: 1;
-    color: var(--yellow);
-  }
-
-  .law h3 {
-    margin: 8px 0 14px;
-  }
-
-  .law ul {
-    list-style: none;
-    margin: 16px 0 0;
-    padding: 16px 0 0;
-    border-top: 1px solid var(--line);
-    display: grid;
-    gap: 8px;
-  }
-
-  .law li {
-    padding-left: 22px;
-    position: relative;
-  }
-
-  .law li::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 0.6em;
-    width: 8px;
-    height: 8px;
-    background: var(--text-dim);
-  }
-
-  .disclaimer {
-    margin-top: 20px;
-    font-size: 0.875rem;
-    color: var(--text-dim);
   }
 
   /* Calculadora */
@@ -703,7 +599,6 @@ const fields = [
 
   @media (max-width: 960px) {
     .hero-grid,
-    .laws,
     .args {
       grid-template-columns: 1fr;
     }

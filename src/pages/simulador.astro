@@ -1,7 +1,6 @@
 ---
 import { Image } from 'astro:assets';
 import AarDemo from '../components/AarDemo.astro';
-import LiveEditDemo from '../components/LiveEditDemo.astro';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import DemoForm from '../components/DemoForm.astro';
 
@@ -18,7 +17,7 @@ import videoArmaC from '../assets/video/arma-c.mp4?url';
 import solo from '../assets/img/setup-solo.jpg';
 import equipo from '../assets/img/equipo-4.jpg';
 import remoto from '../assets/img/setup-remoto.jpg';
-import aar from '../assets/img/aar-pantalla.jpg';
+import kitBolsa from '../assets/img/kit-bolsa.jpg';
 import modIdent from '../assets/img/mod-identificacion.jpg';
 import modTiro from '../assets/img/mod-tiro.jpg';
 import modCqb from '../assets/img/mod-cqb.jpg';
@@ -209,6 +208,7 @@ const modules = [
           <span class="meter-n"><span data-deploy-n>01</span> / 0{steps.length}</span>
           <span class="meter-bar"><span data-deploy-bar></span></span>
         </div>
+        <Image src={kitBolsa} alt="Agente transportando el kit del simulador en su bolsa" class="deploy-kit" widths={[400, 800]} sizes="(max-width: 960px) 100vw, 360px" />
       </div>
       <ol class="steps">
         {
@@ -236,7 +236,7 @@ const modules = [
         <h2 class="h-lg">Entrena igual <span class="accent">que actúas</span></h2>
         <p class="muted">
           Con el sistema SuitUp el agente usa un arma que reproduce la de dotación: mismo peso, equilibrio, tacto y
-          automatismos. El movimiento es 1:1, sin vicios de entrenamiento, y el cuerpo responde como en la calle:
+          automatismos, permitiendo el enfunde y desenfunde del arma corta. El movimiento es 1:1, sin vicios de entrenamiento, y el cuerpo responde como en la calle:
           pulsaciones, fatiga y visión de túnel.
         </p>
         <ul class="checks">
@@ -334,41 +334,22 @@ const modules = [
     <div class="container">
       <div class="head reveal">
         <p class="eyebrow">El instructor al mando</p>
-        <h2 class="h-lg">Ajusta en directo, <span class="accent">mide después</span></h2>
+        <h2 class="h-lg">Cada intervención, <span class="accent">revisada en 3D</span></h2>
       </div>
       <div class="aar-demo reveal">
         <AarDemo />
       </div>
-      <div class="duo">
-        <article class="duo-card reveal">
-          <div class="duo-demo">
-            <LiveEditDemo />
-          </div>
-          <h3 class="h-md">Live Edit</h3>
-          <p class="muted">
-            Desde el Instructor Kit se modifica la complejidad del escenario mientras los agentes están dentro.
-          </p>
-          <ul class="checks">
-            <li>Personajes generados por ordenador para role-play</li>
-            <li>Obstáculos que aparecen sobre la marcha</li>
-            <li>Factores de estrés: visibilidad y comunicaciones degradadas</li>
-          </ul>
-        </article>
-        <article class="duo-card reveal">
-          <div class="duo-media hud">
-            <Image src={aar} alt="Agente revisando la reconstrucción 3D de su intervención" widths={[600, 1000]} sizes="(max-width: 960px) 100vw, 50vw" />
-          </div>
-          <h3 class="h-md">After-Action Review</h3>
-          <p class="muted">
-            Cada intervención queda grabada en 3D y se puede rebobinar desde cualquier ángulo. Una evaluación objetiva y
-            un respaldo técnico para la revisión operativa.
-          </p>
-          <ul class="checks">
-            <li>Tiempos de reacción en milisegundos</li>
-            <li>Cono de visión de cada agente</li>
-            <li>Trayectorias de disparo e impactos</li>
-          </ul>
-        </article>
+      <div class="aar-text reveal">
+        <h3 class="h-md">After-Action Review</h3>
+        <p class="muted">
+          Cada intervención queda grabada en 3D y se puede rebobinar desde cualquier ángulo. Una evaluación objetiva y
+          un respaldo técnico para la revisión operativa.
+        </p>
+        <ul class="checks">
+          <li>Tiempos de reacción en milisegundos</li>
+          <li>Cono de visión de cada agente</li>
+          <li>Trayectorias de disparo e impactos</li>
+        </ul>
       </div>
     </div>
   </section>
@@ -596,6 +577,16 @@ const modules = [
     display: grid;
     gap: 12px;
     max-width: 320px;
+  }
+
+  .deploy-kit {
+    display: block;
+    width: 100%;
+    max-width: 360px;
+    height: auto;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    margin-top: 32px;
   }
 
   .meter-n {
@@ -976,27 +967,11 @@ const modules = [
   }
 
   /* Instructor */
-  .duo {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: clamp(24px, 4vw, 48px);
+  .aar-text {
+    max-width: 720px;
   }
 
-  .duo-demo {
-    margin-bottom: 24px;
-  }
-
-  .duo-media {
-    margin-bottom: 24px;
-  }
-
-  .duo-media img {
-    width: 100%;
-    aspect-ratio: 16 / 9;
-    object-fit: cover;
-  }
-
-  .duo-card h3 {
+  .aar-text h3 {
     margin-bottom: 10px;
   }
 
@@ -1105,8 +1080,7 @@ const modules = [
 
   @media (max-width: 960px) {
     .hero-grid,
-    .split,
-    .duo {
+    .split {
       grid-template-columns: 1fr;
     }
 

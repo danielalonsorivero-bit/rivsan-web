@@ -5,7 +5,7 @@ export type Categoria = Curso['data']['categoria'];
 
 export const categorias: Record<Categoria, { label: string; partner: string; interest: string }> = {
   simulador: { label: 'Simulador VR', partner: 'Con instructor RIVSAN', interest: 'jornada' },
-  auxilios: { label: 'Primeros auxilios tácticos', partner: 'En colaboración con Iberotac', interest: 'auxilios' },
+  auxilios: { label: 'Primeros auxilios tácticos', partner: 'En colaboración con Ibero First Responders', interest: 'auxilios' },
   fuerza: { label: 'Uso de la fuerza no letal', partner: 'Cursos para FCSE', interest: 'fuerza' },
 };
 

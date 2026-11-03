@@ -3,7 +3,6 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import PageHero from '../../components/PageHero.astro';
 import DemoForm from '../../components/DemoForm.astro';
 import ForceDemo from '../../components/ForceDemo.astro';
-import CounterDroneDemo from '../../components/CounterDroneDemo.astro';
 import { perfiles, type Perfil } from '../../data/perfiles';
 import { videoPerfil } from '../../data/videos';
 
@@ -78,54 +77,21 @@ const otros = perfiles.filter((o) => o.slug !== p.slug);
     </div>
   </section>
 
-  <!-- Demo interactiva según el perfil -->
-  <section class="section">
-    <div class="container try">
-      <div class="reveal">
-        <p class="eyebrow">Pruébalo</p>
-        {
-          p.slug === 'defensa' ? (
-            <>
-              <h2 class="h-md">Identifica antes de disparar</h2>
-              <p class="muted">
-                Una muestra del módulo counter-drone: distingue hostiles de drones propios, gestiona la munición y
-                dispara solo en alcance. Al final, la evaluación del instructor.
-              </p>
-            </>
-          ) : (
-            <>
-              <h2 class="h-md">Cada conducta tiene su respuesta</h2>
-              <p class="muted">
-                Sube el nivel de resistencia del sujeto y mira cómo se gradúa la respuesta del agente y qué curso la
-                entrena.
-              </p>
-            </>
-          )
-        }
-      </div>
-      <div class="reveal">{p.slug === 'defensa' ? <CounterDroneDemo /> : <ForceDemo />}</div>
-    </div>
-  </section>
-
+  <!-- Demo interactiva: uso gradual de la fuerza (Fuerzas Armadas no lleva demo) -->
   {
-    p.slug === 'policia-local' && (
-      <section class="band">
-        <div class="container band-inner reveal">
-          <div>
-            <p class="band-eyebrow">Ley 6/2023 · Decreto 8/2026</p>
-            <h2 class="h-md">Te ayudamos con la justificación y la tramitación</h2>
-            <p>
-              Memoria justificativa, presupuesto desglosado y documentación técnica para el expediente de tu
-              ayuntamiento.
+    p.slug !== 'defensa' && (
+      <section class="section">
+        <div class="container try">
+          <div class="reveal">
+            <p class="eyebrow">Pruébalo</p>
+            <h2 class="h-md">Cada conducta tiene su respuesta</h2>
+            <p class="muted">
+              Sube el nivel de resistencia del sujeto y mira cómo se gradúa la respuesta del agente y qué curso la
+              entrena.
             </p>
           </div>
-          <div class="band-links">
-            <a href="/contratar/" class="btn btn-dark">
-              Cómo contratar <span class="arrow">→</span>
-            </a>
-            <a href="/normativa/#calculadora" class="band-link">
-              Calcular el ahorro
-            </a>
+          <div class="reveal">
+            <ForceDemo />
           </div>
         </div>
       </section>
@@ -256,64 +222,6 @@ const otros = perfiles.filter((o) => o.slug !== p.slug);
   .modules a:hover {
     border-color: var(--yellow);
     color: var(--yellow);
-  }
-
-  /* Franja amarilla de ruptura */
-  .band {
-    background: var(--yellow);
-    color: var(--ink);
-    padding-block: clamp(48px, 6vw, 72px);
-  }
-
-  .band-inner {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 32px;
-    flex-wrap: wrap;
-  }
-
-  .band-inner > div:first-child {
-    max-width: 640px;
-  }
-
-  .band-eyebrow {
-    font-family: var(--font-data);
-    font-weight: 500;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    font-size: 0.85rem;
-    margin-bottom: 0.75rem;
-  }
-
-  .band h2 {
-    font-size: clamp(2rem, 3.6vw, 2.75rem);
-    margin-bottom: 0.75rem;
-  }
-
-  .band p:last-child {
-    margin: 0;
-  }
-
-  .band-links {
-    display: flex;
-    align-items: center;
-    gap: 24px;
-    flex-wrap: wrap;
-  }
-
-  .btn-dark {
-    background: var(--ink);
-    color: #fff;
-  }
-
-  .btn-dark:hover {
-    background: #000;
-  }
-
-  .band-link {
-    font-weight: 600;
-    color: var(--ink);
   }
 
   .try {

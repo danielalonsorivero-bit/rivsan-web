@@ -7,7 +7,7 @@ imagenAlt: Equipo táctico atendiendo a un herido durante un ejercicio
 duracion: 16 h (2 jornadas)
 asistentes: 16
 modalidad: Presencial
-acreditacion: Diploma de aprovechamiento RIVSAN · Iberotac
+acreditacion: Diploma de aprovechamiento RIVSAN · Ibero First Responders
 dirigidoA: Agentes de Policía Local y FCSE sin formación sanitaria previa
 fechas:
   - inicio: 2026-11-26

@@ -11,6 +11,9 @@ import mapaSd from '../assets/video/nosotros-sd.mp4?url';
 import mapaHd from '../assets/video/nosotros-hd.mp4?url';
 import sede from '../assets/img/relion-sede.jpg';
 import operadores from '../assets/img/relion-operadores.jpg';
+import visor from '../assets/img/relion-visor.jpg';
+import logoRelion from '../assets/img/logo-relion-blanco.png';
+import logoIfr from '../assets/img/logo-ibero-first-responders.jpg';
 
 const pillars = [
   {
@@ -39,18 +42,28 @@ const steps = [
   { n: '05', title: 'Soporte', text: 'Mantenimiento preventivo, garantías y asistencia técnica local.' },
 ];
 
+// Capacidades de RE-liON, según su guía de marca. Numeradas: su marca no usa viñetas.
+const capacidades = [
+  { title: 'Sensores', text: 'Biofeedback, conciencia del entorno y captura de datos en tiempo real. El operador sabe más.' },
+  { title: 'Inmersión', text: 'Escenarios de alta fidelidad sin infraestructura fija. En cualquier lugar y momento.' },
+  { title: 'Equipo persona-máquina', text: 'Integración entre la cognición del operador y los sistemas autónomos.' },
+];
+
 const alliances = [
   {
     name: 'RE-liON',
-    role: 'Tecnología de simulación',
-    text: 'Fabricante neerlandés del sistema de entrenamiento inmersivo. RIVSAN es su socio exclusivo en España.',
+    role: 'Plataforma táctica',
+    text: 'Fabricante neerlandés de la plataforma táctica RE-liON. RIVSAN es su socio exclusivo en España.',
     href: site.partner.url,
+    logo: logoRelion,
+    wordmark: true,
   },
   {
-    name: 'Iberotac',
+    name: 'Ibero First Responders',
     role: 'Primeros auxilios tácticos',
     text: 'Acuerdo de colaboración para impartir formación en atención sanitaria táctica a Policía Local y FCSE.',
     href: '/formacion/#auxilios',
+    logo: logoIfr,
   },
 ];
 ---
@@ -122,29 +135,40 @@ const alliances = [
     </div>
   </section>
 
-  <!-- RE-liON -->
+  <!-- RE-liON: el logotipo va solo, en blanco sobre fondo oscuro y sin efectos (guía de marca de RE-liON) -->
   <section class="relion">
     <Image src={sede} alt="Sede de RE-liON en los Países Bajos" class="relion-banner" widths={[800, 1600, 2400]} sizes="100vw" />
     <div class="container relion-intro">
       <div class="relion-text reveal">
         <p class="eyebrow">Nuestro partner</p>
-        <h2 class="h-lg">RE-liON: <span class="accent">supercognición</span> para quienes nos protegen</h2>
+        <Image src={logoRelion} alt="RE-liON" class="relion-logo" widths={[400, 800]} sizes="320px" />
+        <h2 class="h-lg">Supercognición <span class="accent">para quienes nos protegen</span></h2>
         <p class="muted">
-          Fundada en 2005 en los Países Bajos, RE-liON es pionera mundial en la optimización del rendimiento humano para
-          fuerzas de seguridad y defensa. Desarrolló el primer sistema inmersivo sin cables del mundo y el primero
-          desplegable para escuadras completas.
+          Estar preparado no es un punto de llegada: es una condición que se mantiene. RE-liON existe para cerrar la
+          distancia entre estar equipado y estar preparado.
         </p>
-        <div class="relion-stats">
-          <div><strong><span data-count="12">12</span></strong><span>kits por unidad desplegable</span></div>
-          <div><strong><span data-count="95">95</span>%</strong><span>disponibilidad del sistema</span></div>
-          <div><strong>+<span data-count="20">20</span></strong><span>años de experiencia</span></div>
-        </div>
+        <p class="muted">
+          Nace en los Países Bajos, de la ingeniería: tecnología de sensores, investigación en rendimiento humano y
+          sistemas de grado aeroespacial. Su plataforma táctica está probada con la Policía Nacional, el Ejército y el
+          Ministerio de Defensa de los Países Bajos.
+        </p>
+        <ol class="relion-caps">
+          {
+            capacidades.map((c, i) => (
+              <li>
+                <span class="relion-caps-n">{String(i + 1).padStart(2, '0')}</span>
+                <h3>{c.title}</h3>
+                <p>{c.text}</p>
+              </li>
+            ))
+          }
+        </ol>
         <a href={site.partner.url} class="link-arrow" target="_blank" rel="noopener">
           Visitar re-lion.com <span aria-hidden="true">↗</span>
         </a>
       </div>
       <div class="relion-media hud reveal">
-        <Image src={operadores} alt="Dos operadores con visores de realidad virtual y fusiles simulados" widths={[500, 900]} sizes="(max-width: 960px) 100vw, 40vw" />
+        <Image src={visor} alt="Agente ajustándose el visor de RE-liON" widths={[500, 900, 1200]} sizes="(max-width: 960px) 100vw, 40vw" />
       </div>
     </div>
   </section>
@@ -162,8 +186,9 @@ const alliances = [
         {
           alliances.map((a) => (
             <a href={a.href} class="alliance reveal" {...(a.href.startsWith('http') ? { target: '_blank', rel: 'noopener' } : {})}>
+              <Image src={a.logo} alt={a.name} class:list={['alliance-logo', a.wordmark ? 'alliance-logo--wordmark' : 'alliance-logo--badge']} widths={[300, 600]} sizes="240px" />
               <span class="alliance-role">{a.role}</span>
-              <span class="alliance-name">{a.name}</span>
+              {!a.wordmark && <span class="alliance-name">{a.name}</span>}
               <p class="muted">{a.text}</p>
               <span class="link-arrow">
                 {a.href.startsWith('http') ? 'Web oficial ↗' : 'Ver cursos →'}
@@ -368,13 +393,12 @@ const alliances = [
     padding-bottom: var(--section-y);
   }
 
+  /* Foto plana, sin degradados ni filtros: es imagen de RE-liON */
   .relion-banner {
     width: 100%;
     height: clamp(180px, 26vw, 360px);
     object-fit: cover;
     object-position: 50% 60%;
-    filter: grayscale(0.6) brightness(0.7);
-    mask-image: linear-gradient(180deg, #000 60%, transparent);
   }
 
   .relion-intro {
@@ -382,50 +406,62 @@ const alliances = [
     grid-template-columns: 1.2fr 1fr;
     gap: clamp(32px, 6vw, 88px);
     align-items: center;
-    margin-top: -60px;
-    position: relative;
+    margin-top: clamp(48px, 6vw, 80px);
+  }
+
+  .relion-logo {
+    display: block;
+    width: min(320px, 70%);
+    height: auto;
+    margin: 0.5rem 0 1.75rem;
   }
 
   .relion-text h2 {
     margin-bottom: 1.25rem;
   }
 
-  .relion-stats {
+  .relion-caps {
+    list-style: none;
+    margin: 28px 0;
+    padding: 0;
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    margin: 28px 0;
     border-block: 1px solid var(--line);
   }
 
-  .relion-stats div {
+  .relion-caps li {
     padding: 18px 16px 18px 0;
-    display: grid;
-    gap: 4px;
   }
 
-  .relion-stats div + div {
+  .relion-caps li + li {
     padding-left: 16px;
     border-left: 1px solid var(--line);
   }
 
-  .relion-stats strong {
-    font-family: var(--font-display);
-    font-weight: 400;
-    font-size: 2.75rem;
-    line-height: 1;
+  .relion-caps-n {
+    font-family: var(--font-label);
+    font-weight: 600;
+    letter-spacing: 0.2em;
     color: var(--yellow);
+    font-size: 0.9rem;
   }
 
-  /* Solo la etiqueta: la cifra lleva dentro un <span data-count> que debe heredar del <strong> */
-  .relion-stats div > span {
+  .relion-caps h3 {
+    font-size: 1.6rem;
+    margin: 4px 0 6px;
+  }
+
+  .relion-caps p {
+    margin: 0;
     font-size: 0.9rem;
     color: var(--text-muted);
   }
 
   .relion-media img {
     width: 100%;
-    aspect-ratio: 1;
+    aspect-ratio: 4 / 5;
     object-fit: cover;
+    object-position: 50% 30%;
   }
 
   /* Alianzas */
@@ -448,6 +484,20 @@ const alliances = [
 
   .alliance:hover {
     border-color: rgba(247, 196, 0, 0.5);
+  }
+
+  .alliance-logo {
+    display: block;
+    height: auto;
+    margin-bottom: 20px;
+  }
+
+  .alliance-logo--wordmark {
+    width: 180px;
+  }
+
+  .alliance-logo--badge {
+    width: 96px;
   }
 
   .alliance-role {
@@ -506,9 +556,6 @@ const alliances = [
       grid-template-columns: 1fr;
     }
 
-    .relion-intro {
-      margin-top: 0;
-    }
   }
 
   @media (max-width: 600px) {
@@ -516,11 +563,11 @@ const alliances = [
       grid-template-columns: 1fr;
     }
 
-    .relion-stats {
+    .relion-caps {
       grid-template-columns: 1fr;
     }
 
-    .relion-stats div + div {
+    .relion-caps li + li {
       padding-left: 0;
       border-left: 0;
       border-top: 1px solid var(--line);

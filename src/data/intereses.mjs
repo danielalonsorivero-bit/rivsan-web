@@ -5,6 +5,7 @@ export const intereses = [
   { value: 'jornada', label: 'Jornada formativa con simulador' },
   { value: 'renting', label: 'Renting anual del simulador' },
   { value: 'compra', label: 'Compra llave en mano' },
+  { value: 'privada', label: 'Contratación privada' },
   { value: 'auxilios', label: 'Curso de primeros auxilios tácticos' },
   { value: 'fuerza', label: 'Curso de uso de la fuerza no letal' },
   { value: 'ahorro', label: 'Memoria justificativa / estudio de ahorro' },

@@ -28,8 +28,8 @@ export const nav: NavItem[] = [
     href: '/simulador/',
     children: [
       { label: 'Simulador VR', href: '/simulador/', desc: 'Entrenamiento inmersivo RE-liON en tu jefatura' },
-      { label: 'Jornadas con simulador', href: '/formacion/#simulador', desc: 'Equipo e instructores incluidos' },
-      { label: 'Primeros auxilios tácticos', href: '/formacion/#auxilios', desc: 'Asistencia bajo amenaza, con Iberotac' },
+      { label: 'Jornadas con simulador', href: '/simulador/', desc: 'Equipo e instructores incluidos' },
+      { label: 'Primeros auxilios tácticos', href: '/formacion/#auxilios', desc: 'Asistencia bajo amenaza, con Ibero First Responders' },
       { label: 'Uso de la fuerza no letal', href: '/formacion/#fuerza', desc: 'Control, arresto y defensa ante armas' },
     ],
   },
@@ -39,17 +39,16 @@ export const nav: NavItem[] = [
     children: [
       { label: 'Policía Local', href: '/soluciones/policia-local/', desc: 'Formación continua obligatoria' },
       { label: 'FCSE y unidades especiales', href: '/soluciones/fcse/', desc: 'Intervención en equipo y medición' },
-      { label: 'Fuerzas Armadas', href: '/soluciones/defensa/', desc: 'Escuadras, drones y ensayo de misión' },
+      { label: 'Fuerzas Armadas', href: '/soluciones/defensa/', desc: 'Escuadras y ensayo de misión' },
     ],
   },
   { label: 'Formación', href: '/formacion/' },
   {
     label: 'Recursos',
-    href: '/normativa/',
+    href: '/contratar/',
     children: [
       { label: 'Cómo contratar', href: '/contratar/', desc: 'Modalidades y tramitación en tu ayuntamiento' },
-      { label: 'Normativa', href: '/normativa/', desc: 'Ley 6/2023 y Decreto 8/2026' },
-      { label: 'Calculadora de ahorro', href: '/normativa/#calculadora', desc: 'Lo que te cuesta seguir igual' },
+      { label: 'Calculadora de ahorro', href: '/calculadora/', desc: 'Lo que te cuesta seguir igual' },
       { label: 'Preguntas frecuentes', href: '/preguntas-frecuentes/', desc: 'Espacio, mareo, datos, acreditación…' },
     ],
   },

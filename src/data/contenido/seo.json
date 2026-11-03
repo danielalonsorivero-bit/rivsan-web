@@ -25,10 +25,10 @@
       "descripcion": "Jornadas, renting o compra: cómo contratar el simulador y los cursos de RIVSAN desde un ayuntamiento o un organismo público, paso a paso."
     },
     {
-      "pagina": "Normativa y ahorro",
-      "ruta": "/normativa/",
-      "titulo": "Normativa y ahorro",
-      "descripcion": "Ley 6/2023 y Decreto 8/2026: la formación continua de la Policía Local de Andalucía es obligatoria. Calcula cuánto puedes ahorrar."
+      "pagina": "Calculadora de ahorro",
+      "ruta": "/calculadora/",
+      "titulo": "Calculadora de ahorro",
+      "descripcion": "Calcula cuánto le cuesta a tu jefatura el modelo tradicional de formación y cuánto puedes ahorrar entrenando con el simulador en tus instalaciones."
     },
     {
       "pagina": "Sobre nosotros",

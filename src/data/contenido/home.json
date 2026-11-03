@@ -13,7 +13,7 @@
         "animar": true
       },
       {
-        "prefijo": "",
+        "prefijo": "Hasta ",
         "valor": "12",
         "unidad": "agentes",
         "texto": "La unidad entrena junta, como interviene",
@@ -47,7 +47,7 @@
     "entrada": "Preparamos la propuesta según tus agentes, tu espacio y tu presupuesto, y te damos la documentación para tramitarla.",
     "planes": [
       {
-        "nombre": "Jornadas formativas",
+        "nombre": "Jornadas formativas con el sistema RE-liON",
         "resumen": "Entrena sin invertir en equipo. Nosotros lo llevamos todo.",
         "puntos": [
           "Hasta 20 agentes por jornada, en binomios",

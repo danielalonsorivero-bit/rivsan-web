@@ -3,11 +3,11 @@
     {
       "slug": "policia-local",
       "label": "Policía Local",
-      "short": "Cumple la formación obligatoria sin sacar a tus agentes del municipio.",
+      "short": "Herramientas para mejorar la formación de los agentes, evitando desplazamientos fuera de tu municipio.",
       "eyebrow": "Soluciones · Policía Local",
       "titulo": "Formación continua",
       "acento": "sin salir de tu jefatura",
-      "lead": "La Ley 6/2023 y el Decreto 8/2026 hacen obligatoria la formación continua en Andalucía. Te ayudamos a cumplirla con más frecuencia, menos coste y sin desplazar a la plantilla.",
+      "lead": "Las policías locales tienen el deber de recibir formación continua para actualizar sus competencias. Te ayudamos a mejorar tu formación.",
       "imagen": "policia-pabellon.jpg",
       "alt": "Dos agentes de policía con visores de realidad virtual entrenando en un pabellón",
       "interes": "jornada",
@@ -28,7 +28,7 @@
       "servicios": [
         {
           "title": "Jornadas con simulador",
-          "href": "/formacion/#simulador",
+          "href": "/simulador/",
           "text": "Llevamos equipo e instructores: hasta 20 agentes por jornada, sin comprar ni alquilar nada."
         },
         {
@@ -39,7 +39,7 @@
         {
           "title": "Primeros auxilios tácticos",
           "href": "/formacion/#auxilios",
-          "text": "Control de hemorragias y asistencia bajo amenaza, con Iberotac."
+          "text": "Control de hemorragias y asistencia bajo amenaza, con Ibero First Responders."
         },
         {
           "title": "Simulador propio",
@@ -65,7 +65,7 @@
     {
       "slug": "fcse",
       "label": "FCSE y unidades especiales",
-      "short": "Ensaya entradas, perímetros y trabajo en equipo con datos objetivos de cada intervención.",
+      "short": "Entrenamiento en entradas, perímetros y trabajo en equipo con datos objetivos de cada intervención.",
       "eyebrow": "Soluciones · FCSE",
       "titulo": "Entrena la unidad",
       "acento": "como interviene",
@@ -131,13 +131,13 @@
     {
       "slug": "defensa",
       "label": "Fuerzas Armadas",
-      "short": "Escuadras completas, amenaza dron y ensayo de misión sobre gemelos digitales.",
+      "short": "Escuadras completas y ensayo de misión sobre gemelos digitales.",
       "eyebrow": "Soluciones · Defensa",
       "titulo": "La escuadra completa,",
       "acento": "en cualquier lugar",
       "lead": "La misma tecnología que usan las fuerzas armadas de Países Bajos, Alemania o Singapur, desplegable en una base o en zona de operaciones.",
-      "imagen": "relion-operadores.jpg",
-      "alt": "Dos operadores con visores de realidad virtual y fusiles simulados",
+      "imagen": "relion-mil.jpg",
+      "alt": "Militar con uniforme de camuflaje, visor de realidad virtual y fusil simulado en un aeródromo",
       "interes": "demo",
       "retos": [
         {

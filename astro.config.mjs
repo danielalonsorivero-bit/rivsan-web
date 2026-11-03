@@ -9,13 +9,17 @@ import baseLinks from './integrations/base-links.mjs';
 // En Vercel (o con ADMIN_SERVIDOR=1) se activa el adaptador: la web sigue siendo estática,
 // pero el panel /admin/ se publica con su API como función de servidor (ver admin/integration.mjs).
 const servidor = !!process.env.VERCEL || process.env.ADMIN_SERVIDOR === '1';
+const base = process.env.BASE_PATH || '/';
 
 // SITE_URL y BASE_PATH permiten publicar la versión de muestra en GitHub Pages
 // (https://danielalonsorivero-bit.github.io/rivsan-web/). Sin ellas: dominio propio en la raíz.
 export default defineConfig({
   site: process.env.SITE_URL || 'https://rivsan.es',
-  base: process.env.BASE_PATH || '/',
+  base,
   trailingSlash: 'always',
+  // La página de normativa se retiró: su calculadora vive ahora en /calculadora/.
+  // Astro no antepone `base` al destino de las redirecciones estáticas.
+  redirects: { '/normativa/': `${base.replace(/\/?$/, '/')}calculadora/` },
   adapter: servidor ? vercel() : undefined,
   // admin(): panel en /admin/ con `npm run dev` o en Vercel; demo pública en /panel-demo/ (ambos fuera del sitemap)
   integrations: [

@@ -7,7 +7,7 @@ imagenAlt: Instructores revisando un ejercicio en una pantalla
 duracion: 16 h (2 jornadas)
 asistentes: 16
 modalidad: Presencial
-acreditacion: Diploma de aprovechamiento RIVSAN · Iberotac
+acreditacion: Diploma de aprovechamiento RIVSAN · Ibero First Responders
 dirigidoA: Agentes que han superado el Nivel I o acrediten formación equivalente
 fechas:
   - inicio: 2027-02-04

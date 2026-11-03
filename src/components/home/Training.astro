@@ -21,10 +21,12 @@ const lines = [
     alt: 'Dos agentes de policía con visores de realidad virtual entrenando en un pabellón',
     interest: 'jornada',
     categoria: 'simulador',
+    href: '/simulador/',
+    cta: 'Ver el simulador',
   },
   {
     title: 'Primeros auxilios tácticos',
-    partner: 'En colaboración con Iberotac',
+    partner: 'En colaboración con Ibero First Responders',
     text: 'Atención sanitaria en entornos hostiles: control de hemorragias, evacuación y asistencia bajo amenaza.',
     points: ['Formación práctica por escenarios', 'Instructores especializados', 'Acreditación del curso'],
     image: auxilios,
@@ -71,8 +73,8 @@ const lines = [
                 {l.points.map((p) => <li>{p}</li>)}
               </ul>
               <div class="card-links">
-                <a href={`/formacion/#${l.categoria}`} class="link-arrow">
-                  Ver cursos <span aria-hidden="true">→</span>
+                <a href={l.href ?? `/formacion/#${l.categoria}`} class="link-arrow">
+                  {l.cta ?? 'Ver cursos'} <span aria-hidden="true">→</span>
                 </a>
                 <a href={`/?interes=${l.interest}#contacto`} class="link-plain">Solicitar información</a>
               </div>

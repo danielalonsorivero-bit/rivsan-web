@@ -3,36 +3,34 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import PageHero from '../components/PageHero.astro';
 import DemoForm from '../components/DemoForm.astro';
 
-// PENDIENTE DE VALIDAR con un asesor de contratación pública antes de publicar.
-// Umbrales: contrato menor de servicios y suministros < 15.000 € (valor estimado, sin IVA), art. 118 LCSP.
+// Las vías de tramitación se explican de palabra, no en la web
 const modalidades = [
   {
     name: 'Jornada formativa',
-    what: 'Servicio de formación con equipo e instructores RIVSAN.',
-    route: 'Contrato menor de servicios',
-    note: 'El importe de una jornada queda muy por debajo del umbral de 15.000 € del contrato menor.',
+    what: 'Servicio de formación con el sistema RE-liON, equipo e instructores RIVSAN.',
     interest: 'jornada',
   },
   {
     name: 'Renting anual',
     what: 'Arrendamiento del sistema con licencias, mantenimiento y soporte.',
-    route: 'Suministro en arrendamiento',
-    note: 'Cuota anual que suele imputarse a gasto corriente. Según el importe: contrato menor o procedimiento simplificado.',
     interest: 'renting',
     featured: true,
   },
   {
     name: 'Compra llave en mano',
     what: 'Equipo en propiedad, licencia permanente e implantación.',
-    route: 'Contrato de suministro',
-    note: 'Inversión. Como socio exclusivo de RE-liON en España, aportamos el certificado de exclusividad para el expediente.',
     interest: 'compra',
+  },
+  {
+    name: 'Contratación privada',
+    what: '¿Deseas formarte con nosotros? Pide presupuesto.',
+    interest: 'privada',
   },
 ];
 
 const steps = [
   { n: '01', title: 'Demostración', text: 'Tus agentes prueban el sistema en la jefatura. Sin compromiso.' },
-  { n: '02', title: 'Propuesta y memoria', text: 'Te enviamos presupuesto desglosado y memoria justificativa con la necesidad, la normativa y el coste comparado.' },
+  { n: '02', title: 'Propuesta y memoria', text: 'Te enviamos presupuesto desglosado y memoria justificativa con la necesidad y el coste comparado.' },
   { n: '03', title: 'Expediente', text: 'Tu ayuntamiento tramita el contrato. Respondemos a secretaría e intervención con la documentación técnica que pidan.' },
   { n: '04', title: 'Implantación', text: 'Desplegamos el equipo, formamos a tus instructores y empieza el entrenamiento.' },
 ];
@@ -65,7 +63,7 @@ const docs = [
     <div class="container">
       <div class="head reveal">
         <p class="eyebrow">Modalidades</p>
-        <h2 class="h-lg">Tres formas de empezar, <span class="accent">tres vías de tramitación</span></h2>
+        <h2 class="h-lg">Cuatro formas <span class="accent">de empezar</span></h2>
       </div>
       <div class="grid">
         {
@@ -73,11 +71,6 @@ const docs = [
             <article class:list={['mod', 'reveal', { 'mod--featured hud': m.featured }]}>
               <h3 class="h-md">{m.name}</h3>
               <p class="muted">{m.what}</p>
-              <dl>
-                <dt>Vía habitual</dt>
-                <dd>{m.route}</dd>
-              </dl>
-              <p class="note">{m.note}</p>
               <a href={`?interes=${m.interest}#contacto`} class="link-arrow">
                 Solicitar presupuesto <span aria-hidden="true">→</span>
               </a>
@@ -85,11 +78,6 @@ const docs = [
           ))
         }
       </div>
-      <p class="disclaimer">
-        Información orientativa. La vía de contratación la decide cada órgano de contratación según el importe y su
-        planificación anual; consulta siempre con secretaría-intervención. Recuerda que un contrato no puede
-        fraccionarse para quedar por debajo de los umbrales.
-      </p>
     </div>
   </section>
 
@@ -121,7 +109,7 @@ const docs = [
         <p class="eyebrow">Lo que te damos</p>
         <h2 class="h-lg">El expediente, <span class="accent">ya preparado</span></h2>
         <p class="lead">Toda la documentación técnica y económica que suele pedir tu departamento de contratación.</p>
-        <a href="/normativa/#calculadora" class="link-arrow">Calcula antes tu ahorro <span aria-hidden="true">→</span></a>
+        <a href="/calculadora/" class="link-arrow">Calcula antes tu ahorro <span aria-hidden="true">→</span></a>
       </div>
       <ul class="docs reveal">
         {docs.map((d) => <li>{d}</li>)}
@@ -145,7 +133,7 @@ const docs = [
 
   .grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: 20px;
   }
 
@@ -166,44 +154,12 @@ const docs = [
     margin-bottom: 10px;
   }
 
-  dl {
-    margin: 8px 0 12px;
-    padding: 16px 0;
-    border-block: 1px solid var(--line);
-  }
-
-  dt {
-    font-family: var(--font-label);
-    font-weight: 600;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    font-size: 0.8rem;
-    color: var(--text-muted);
-  }
-
-  dd {
-    margin: 4px 0 0;
-    font-family: var(--font-display);
-    font-size: 1.6rem;
-    line-height: 1.05;
-    text-transform: uppercase;
-    color: var(--yellow);
-  }
-
-  .note {
-    font-size: 0.95rem;
+  .mod p {
     margin-bottom: 24px;
   }
 
   .mod .link-arrow {
     margin-top: auto;
-  }
-
-  .disclaimer {
-    margin: 32px 0 0;
-    font-size: 0.875rem;
-    color: var(--text-dim);
-    max-width: 80ch;
   }
 
   .steps {
@@ -269,6 +225,12 @@ const docs = [
     color: var(--ink);
     background: var(--text-dim);
     border-radius: 2px;
+  }
+
+  @media (max-width: 1200px) {
+    .grid {
+      grid-template-columns: 1fr 1fr;
+    }
   }
 
   @media (max-width: 960px) {
