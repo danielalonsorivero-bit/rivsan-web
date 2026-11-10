@@ -2,8 +2,8 @@
 titulo: Primeros auxilios tácticos · Nivel I
 categoria: auxilios
 resumen: Atención sanitaria inmediata en intervenciones con amenaza activa. Control de hemorragias, vía aérea y evacuación del herido en entorno hostil.
-imagen: ../../assets/img/form-auxilios.jpg
-imagenAlt: Equipo táctico atendiendo a un herido durante un ejercicio
+imagen: ../../assets/img/curso-hemorragias-aula.jpg
+imagenAlt: Instructor explicando la anatomía del control de hemorragias ante una clase de policías locales
 duracion: 16 h (2 jornadas)
 asistentes: 16
 modalidad: Presencial

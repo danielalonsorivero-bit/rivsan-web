@@ -2,8 +2,8 @@
 titulo: Primeros auxilios tácticos · Nivel II
 categoria: auxilios
 resumen: Profundiza en la atención a múltiples víctimas, el triaje y la coordinación con los servicios sanitarios en incidentes complejos.
-imagen: ../../assets/img/aar-instructor.jpg
-imagenAlt: Instructores revisando un ejercicio en una pantalla
+imagen: ../../assets/img/curso-hemorragias-noche.jpg
+imagenAlt: Control de una hemorragia a oscuras, con luz roja, sobre un herido simulado
 duracion: 16 h (2 jornadas)
 asistentes: 16
 modalidad: Presencial

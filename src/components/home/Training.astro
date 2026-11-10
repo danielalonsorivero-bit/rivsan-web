@@ -3,7 +3,7 @@ import { Image } from 'astro:assets';
 import { getCollection } from 'astro:content';
 import { calendario, categorias, rangoCorto } from '../../data/formacion';
 import jornadas from '../../assets/img/policia-pabellon.jpg';
-import auxilios from '../../assets/img/form-auxilios.jpg';
+import auxilios from '../../assets/img/auxilios-patio.jpg';
 import defensa from '../../assets/img/form-defensa.jpg';
 
 const abiertas = calendario(await getCollection('cursos'));
@@ -30,7 +30,7 @@ const lines = [
     text: 'Atención sanitaria en entornos hostiles: control de hemorragias, evacuación y asistencia bajo amenaza.',
     points: ['Formación práctica por escenarios', 'Instructores especializados', 'Acreditación del curso'],
     image: auxilios,
-    alt: 'Equipo táctico atendiendo a un herido durante un ejercicio',
+    alt: 'Dos instructores atienden a un herido simulado tendido en el suelo durante una práctica',
     interest: 'auxilios',
     categoria: 'auxilios',
   },

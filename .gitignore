@@ -15,3 +15,6 @@ entregables/
 
 # Foto de referencia del especialista (persona real): no se publica
 src/assets/sprites/reference.png
+
+# Fotos originales del cliente (sin pixelar): nunca al repositorio público
+src/assets/img/fotos */

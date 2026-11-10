@@ -14,6 +14,10 @@ import operadores from '../assets/img/relion-operadores.jpg';
 import visor from '../assets/img/relion-visor.jpg';
 import logoRelion from '../assets/img/logo-relion-blanco.png';
 import logoIfr from '../assets/img/logo-ibero-first-responders.png';
+import fotoAula from '../assets/img/aula-instructor.jpg';
+import fotoVictima from '../assets/img/auxilios-instructor.jpg';
+import fotoTorniquete from '../assets/img/taller-torniquete.jpg';
+import fotoEntrada from '../assets/img/entrada-tactica.jpg';
 
 const pillars = [
   {
@@ -32,6 +36,14 @@ const pillars = [
     title: 'Formación integral',
     text: 'Simulador, primeros auxilios tácticos y uso de la fuerza no letal: toda la preparación del agente con un proveedor.',
   },
+];
+
+// Fotos de cursos reales. Las caras de frente van pixeladas (petición del cliente, 10 nov 2026).
+const terreno = [
+  { src: fotoAula, caption: 'Clase teórica', alt: 'Instructor de RIVSAN de pie ante una clase de agentes que toman notas', pos: '30% 50%' },
+  { src: fotoVictima, caption: 'Valoración de una víctima', alt: 'Instructor arrodillado junto a un herido simulado tendido en el suelo de un patio', pos: '50% 30%' },
+  { src: fotoTorniquete, caption: 'Aplicación de torniquete', alt: 'Instructor aplicando un torniquete en la pierna de un militar tendido en el suelo', pos: '50% 50%' },
+  { src: fotoEntrada, caption: 'Entrada táctica', alt: 'Dos operadores con casco y equipo táctico entrando en una estructura', pos: '50% 50%' },
 ];
 
 const steps = [
@@ -110,6 +122,28 @@ const alliances = [
           ))
         }
       </div>
+    </div>
+  </section>
+
+  <!-- En el terreno: fotos de cursos reales -->
+  <section class="section field-section">
+    <div class="container">
+      <div class="head reveal">
+        <p class="eyebrow">En el terreno</p>
+        <h2 class="h-lg">Formación presencial, <span class="accent">por escenarios</span></h2>
+      </div>
+      <ul class="field">
+        {
+          terreno.map((f) => (
+            <li class="reveal">
+              <figure>
+                <Image src={f.src} alt={f.alt} widths={[400, 800]} sizes="(max-width: 700px) 50vw, 25vw" style={`object-position: ${f.pos}`} />
+                <figcaption>{f.caption}</figcaption>
+              </figure>
+            </li>
+          ))
+        }
+      </ul>
     </div>
   </section>
 
@@ -303,6 +337,48 @@ const alliances = [
   }
 
   /* Pilares */
+  .field-section {
+    padding-top: 0;
+  }
+
+  .field {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+  }
+
+  .field figure {
+    margin: 0;
+  }
+
+  .field img {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 3 / 4;
+    object-fit: cover;
+    border: 1px solid var(--line);
+  }
+
+  .field figcaption {
+    margin-top: 12px;
+    font-family: var(--font-label);
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+  }
+
+  @media (max-width: 960px) {
+    .field {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
   .pillars {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
